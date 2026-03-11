@@ -7,21 +7,25 @@
 
 ## 每次日报
 - 最新运行日期：2026-02-10 ~ 2026-03-11
-- 运行时间：2026-03-11 03:51:09 UTC
+- 运行时间：2026-03-11 04:19:06 UTC
 - 运行状态：成功
-- 本次总论文数：0
+- 本次总论文数：1
 - 精读区：0
-- 速读区：0
+- 速读区：1
 
 ### 今日简报（AI）
-> 今日无新推荐，系统未产出可展示论文。
+今日聚焦无人机在海上晃动平台精准降落的预测控制技术。
+重点推荐 SpecFuse 框架，其通过时频融合预测算法显著提升了复杂海况下的着舰稳定性。
+建议从事移动平台自主着陆或抗干扰控制的研究者关注此融合预测方案。
 - 详情：[/20260210-20260311/README](/20260210-20260311/README)
 
 ### 精读区论文标签
 - 本次无精读推荐。
 
 ### 速读区论文标签
-- 本次无速读推荐。
+1. [SpecFuse: A Spectral-Temporal Fusion Predictive Control Framework for UAV Landing on Oscillating Marine Platforms](/20260210-20260311/2602.15633v1-specfuse-a-spectral-temporal-fusion-predictive-control-framework-for-uav-landing-on-oscillating-marine-platforms)  
+   标签：评分：7.0/10、query:wind-wind-control
+   evidence：解决了风力干扰和动态海况下的无人机控制问题
 
 
 <div class="dpr-home-promo-card">

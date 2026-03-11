@@ -1,16 +1,56 @@
 {
   "mode": "standard",
-  "generated_at": "2026-03-11T03:51:08.749211+00:00",
+  "generated_at": "2026-03-11T04:18:36.335993+00:00",
   "stats": {
     "mode": "standard",
-    "tag_count": 0,
+    "tag_count": 1,
     "deep_divecandidates": 0,
-    "deep_cap": null,
+    "deep_cap": 6,
     "deep_selected": 0,
-    "quick_candidates": 0,
-    "quick_skim_target": 10,
-    "quick_selected": 0
+    "quick_candidates": 1,
+    "quick_skim_target": 11,
+    "quick_selected": 1
   },
   "deep_dive": [],
-  "quick_skim": []
+  "quick_skim": [
+    {
+      "id": "2602.15633v1",
+      "title": "SpecFuse: A Spectral-Temporal Fusion Predictive Control Framework for UAV Landing on Oscillating Marine Platforms",
+      "abstract": "Autonomous landing of Uncrewed Aerial Vehicles (UAVs) on oscillating marine platforms is severely constrained by wave-induced multi-frequency oscillations, wind disturbances, and prediction phase lags in motion prediction. Existing methods either treat platform motion as a general random process or lack explicit modeling of wave spectral characteristics, leading to suboptimal performance under dynamic sea conditions. To address these limitations, we propose SpecFuse: a novel spectral-temporal fusion predictive control framework that integrates frequency-domain wave decomposition with time-domain recursive state estimation for high-precision 6-DoF motion forecasting of Uncrewed Surface Vehicles (USVs). The framework explicitly models dominant wave harmonics to mitigate phase lags, refining predictions in real time via IMU data without relying on complex calibration. Additionally, we design a hierarchical control architecture featuring a sampling-based HPO-RRT* algorithm for dynamic trajectory planning under non-convex constraints and a learning-augmented predictive controller that fuses data-driven disturbance compensation with optimization-based execution. Extensive validations (2,000 simulations + 8 lake experiments) show our approach achieves a 3.2 cm prediction error, 4.46 cm landing deviation, 98.7% / 87.5% success rates (simulation / real-world), and 82 ms latency on embedded hardware, outperforming state-of-the-art methods by 44%-48% in accuracy. Its robustness to wave-wind coupling disturbances supports critical maritime missions such as search and rescue and environmental monitoring. All code, experimental configurations, and datasets will be released as open-source to facilitate reproducibility.",
+      "authors": [
+        "Haichao Liu",
+        "Yufeng Hu",
+        "Shuang Wang",
+        "Kangjun Guo",
+        "Jun Ma",
+        "Jinni Zhou"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-02-17T15:03:05+00:00",
+      "link": "https://arxiv.org/pdf/2602.15633v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Addresses UAV control under wind disturbances and dynamic sea conditions",
+      "llm_evidence_cn": "解决了风力干扰和动态海况下的无人机控制问题",
+      "llm_evidence": "解决了风力干扰和动态海况下的无人机控制问题",
+      "canonical_evidence": "解决了风力干扰和动态海况下的无人机控制问题",
+      "llm_tldr_en": "SpecFuse uses spectral-temporal fusion for high-precision UAV landing control under wind and wave disturbances.",
+      "llm_tldr_cn": "SpecFuse框架通过频域波浪分解与时域状态估计，实现了风浪干扰下无人机的高精度降落控制。",
+      "llm_tldr": "SpecFuse框架通过频域波浪分解与时域状态估计，实现了风浪干扰下无人机的高精度降落控制。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Control Methods Under Wind Disturbances",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
 }

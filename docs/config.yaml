@@ -25,3 +25,62 @@ subscriptions:
     stage: A
     diff_threshold_pct: 15
   keyword_recall_mode: or
+  intent_profiles:
+    - tag: WIND/WIND control
+      description: 基于多传感器融合的风场反演、风切变检测、风场中飞行控制及危急情况下的共享控制研究
+      enabled: true
+      keywords:
+        - keyword: shared control
+          keyword_cn: 共享控制
+          query: human-machine shared control for emergency flight maneuvers
+        - keyword: control under wind
+          keyword_cn: 风干扰下的飞行控制
+          query: c
+        - keyword: wind shear detection
+          keyword_cn: 风切变检测
+          query: low-level wind shear detection and identification
+        - keyword: wind field reconstruction
+          keyword_cn: 风场重建
+          query: w
+      intent_queries:
+        - query: Construction Method for PINNs Integrating Spatiotemporal Information
+          query_cn: 融合时空信息的PINN的构建方法
+          enabled: true
+          source: manual
+          note: ''
+        - query: How to Achieve Human Machine Co piloting in Extreme Hazardous Situations
+          query_cn: 极端为危险情况下如何实现人机共驾
+          enabled: true
+          source: manual
+          note: ''
+        - query: What are the current challenges facing wind farm reconstruction?
+          query_cn: 风场重建目前面临的问题是什么
+          enabled: true
+          source: manual
+          note: ''
+        - query: How do wind disturbances and flying shear interact?
+          query_cn: 风扰动下的控制和飞切变是怎么结合的
+          enabled: true
+          source: manual
+          note: ''
+        - query: Current Challenges in Wind Shear Detection
+          query_cn: 风切变检测目前存在的难题
+          enabled: true
+          source: manual
+          note: ''
+        - query: Approach to Wind Shear Detection
+          query_cn: 风切变检测的思路
+          enabled: true
+          source: manual
+          note: ''
+        - query: Control Methods Under Wind Disturbances
+          query_cn: 风扰动下的控制方法
+          enabled: true
+          source: manual
+          note: ''
+        - query: Approach to Detecting Wind Shear Using Multi Source Sensor Data
+          query_cn: 利用多源传感器数据检测风切变的思路
+          enabled: true
+          source: manual
+          note: ''
+      updated_at: '2026-03-11T04:12:36.686Z'

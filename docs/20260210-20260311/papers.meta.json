@@ -1,8 +1,23 @@
 {
   "label": "2026-02-10 ~ 2026-03-11",
   "date": "2026-02-10 ~ 2026-03-11",
-  "generated_at": "2026-03-11T03:51:09",
-  "count": 0,
-  "papers": [],
+  "generated_at": "2026-03-11T04:19:14",
+  "count": 1,
+  "papers": [
+    {
+      "paper_id": "20260210-20260311/2602.15633v1-specfuse-a-spectral-temporal-fusion-predictive-control-framework-for-uav-landing-on-oscillating-marine-platforms",
+      "section": "quick",
+      "title_en": "SpecFuse: A Spectral-Temporal Fusion Predictive Control Framework for UAV Landing on Oscillating Marine Platforms",
+      "authors": "Haichao Liu, Yufeng Hu, Shuang Wang, Kangjun Guo, Jun Ma, Jinni Zhou",
+      "date": "2026-02-17",
+      "pdf": "https://arxiv.org/pdf/2602.15633v1",
+      "score": "7.0",
+      "evidence": "解决了风力干扰和动态海况下的无人机控制问题",
+      "tldr": "针对无人机在波浪振荡海面平台降落面临的相位滞后和环境干扰挑战，本文提出SpecFuse框架。该框架融合频域波浪分解与时域递归状态估计，实现高精度6自由度运动预测，并结合HPO-RRT*轨迹规划与学习增强型预测控制。实验证明该方法在复杂海况下具有极高的着陆精度和鲁棒性，显著优于现有技术。",
+      "tags": "query:wind-wind-control",
+      "abstract_en": "Autonomous landing of Uncrewed Aerial Vehicles (UAVs) on oscillating marine platforms is severely constrained by wave-induced multi-frequency oscillations, wind disturbances, and prediction phase lags in motion prediction. Existing methods either treat platform motion as a general random process or lack explicit modeling of wave spectral characteristics, leading to suboptimal performance under dynamic sea conditions. To address these limitations, we propose SpecFuse: a novel spectral-temporal fusion predictive control framework that integrates frequency-domain wave decomposition with time-domain recursive state estimation for high-precision 6-DoF motion forecasting of Uncrewed Surface Vehicles (USVs). The framework explicitly models dominant wave harmonics to mitigate phase lags, refining predictions in real time via IMU data without relying on complex calibration. Additionally, we design a hierarchical control architecture featuring a sampling-based HPO-RRT* algorithm for dynamic trajectory planning under non-convex constraints and a learning-augmented predictive controller that fuses data-driven disturbance compensation with optimization-based execution. Extensive validations (2,000 simulations + 8 lake experiments) show our approach achieves a 3.2 cm prediction error, 4.46 cm landing deviation, 98.7% / 87.5% success rates (simulation / real-world), and 82 ms latency on embedded hardware, outperforming state-of-the-art methods by 44%-48% in accuracy. Its robustness to wave-wind coupling disturbances supports critical maritime missions such as search and rescue and environmental monitoring. All code, experimental configurations, and datasets will be released as open-source to facilitate reproducibility.",
+      "selection_source": "fresh_fetch"
+    }
+  ],
   "errors": []
 }
