@@ -1,0 +1,638 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-03-11T04:44:16.019968+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 10,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 24,
+    "quick_skim_target": 11,
+    "quick_selected": 11
+  },
+  "deep_dive": [
+    {
+      "id": "2603.09194v1",
+      "title": "WESPR: Wind-adaptive Energy-Efficient Safe Perception & Planning for Robust Flight with Quadrotors",
+      "abstract": "Local wind conditions strongly influence drone performance: headwinds increase flight time, crosswinds and wind shear hinder agility in cluttered spaces, while tailwinds reduce travel time. Although adaptive controllers can mitigate turbulence, they remain unaware of the surrounding geometry that generates it, preventing proactive avoidance. Existing methods that model how wind interacts with the environment typically rely on computationally expensive fluid dynamics simulations, limiting real-time adaptation to new environments and conditions. To bridge this gap, we present WESPR, a fast framework that predicts how environmental geometry affects local wind conditions, enabling proactive path planning and control adaptation. Our lightweight pipeline integrates geometric perception and local weather data to estimate wind fields, compute cost-efficient paths, and adjust control strategies-all within 10 seconds. We validate WESPR on a Crazyflie drone navigating turbulent obstacle courses. Our results show a 12.5-58.7% reduction in maximum trajectory deviation and a 24.6% improvement in stability compared to a wind-agnostic adaptive controller.",
+      "authors": [
+        "Khuzema Habib",
+        "Pranav Deshakulkarni Manjunath",
+        "Kasra Torshizi",
+        "Troi Williams",
+        "Pratap Tokekar"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-03-10T05:09:43+00:00",
+      "link": "https://arxiv.org/pdf/2603.09194v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "wind-adaptive perception and planning for robust flight under wind shear",
+      "llm_evidence_cn": "风切变下鲁棒飞行的风自适应感知与规划",
+      "llm_evidence": "风切变下鲁棒飞行的风自适应感知与规划",
+      "canonical_evidence": "风切变下鲁棒飞行的风自适应感知与规划",
+      "llm_tldr_en": "Predicts environmental wind effects to enable proactive path planning and control adaptation for quadrotors.",
+      "llm_tldr_cn": "预测环境风影响，实现四旋翼飞行器的前馈路径规划和控制自适应。",
+      "llm_tldr": "预测环境风影响，实现四旋翼飞行器的前馈路径规划和控制自适应。",
+      "llm_tags": [
+        "query:wind-wind-control:composite"
+      ],
+      "matched_query_tag": "query:wind-wind-control:composite",
+      "matched_query_text": "Papers central to 基于多传感器融合的风场反演、风切变检测、风场中飞行控制及危急情况下的共享控制研究, especially work that connects or combines: human-machine shared control for emergency flight maneuvers; c; low-level wind shear detection and identification; w; Construction Method for PINNs Integrating Spatiotemporal Information; How to Achieve Human Machine Co piloting in Extreme Hazardous Situations; What are the current challenges facing wind farm reconstruction?; How do wind disturbances and flying shear interact?; Current Challenges in Wind Shear Detection; Approach to Wind Shear Detection.",
+      "matched_requirement_id": "req-composite-wind-wind-control",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.02472v1",
+      "title": "Vortical similarities across laminar and turbulent extreme gust encounters",
+      "abstract": "This study uncovers a striking similarity between massively separated laminar and turbulent flows that develop over a square wing during extreme vortex gust encounters. The evolving large-scale, vortical core structures responsible for significant transient lift variations exhibit remarkable similarity across Re = 600 and 10,000. The formation of these structures is attributed to a substantial gust-induced vorticity flux produced at the wing surface, resulting in shared large-scale topological features between the low- and high-Reynolds-number flows. Although fine-scale vortical structures quickly emerge in the Re = 10,000 case, the large-scale structures identified by scale decomposition of the turbulent flow resemble those observed at Re = 600. These findings suggest that large-scale vortical features present in laminar extreme aerodynamic flows provide key insights into their higher Reynolds number counterparts, potentially reducing the complexity of flow modeling and control for extreme aerodynamics.",
+      "authors": [
+        "Hiroto Odaka",
+        "Barbara Lopez-Doriga",
+        "Kunihiko Taira"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn"
+      ],
+      "published": "2026-03-02T23:41:33+00:00",
+      "link": "https://arxiv.org/pdf/2603.02472v1",
+      "tags": [
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "vortical structures during extreme gust encounters on wings",
+      "llm_evidence_cn": "机翼遭遇极端阵风时的涡流结构",
+      "llm_evidence": "机翼遭遇极端阵风时的涡流结构",
+      "canonical_evidence": "机翼遭遇极端阵风时的涡流结构",
+      "llm_tldr_en": "Analyzes vortical similarities in laminar and turbulent flows during extreme gust encounters.",
+      "llm_tldr_cn": "分析了机翼在遭遇极端阵风时，层流和湍流中涡流结构的相似性。",
+      "llm_tldr": "分析了机翼在遭遇极端阵风时，层流和湍流中涡流结构的相似性。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "How do wind disturbances and flying shear interact?",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.07957v1",
+      "title": "PSTNet: Physically-Structured Turbulence Network",
+      "abstract": "Reliable real-time estimation of atmospheric turbulence intensity remains an open challenge for aircraft operating across diverse altitude bands, particularly over oceanic, polar, and data-sparse regions that lack operational nowcasting infrastructure. Classical spectral models encode climatological averages rather than the instantaneous atmospheric state, and generic ML regressors offer adaptivity but provide no guarantee that predictions respect fundamental scaling laws. This paper introduces the Physically-Structured Turbulence Network (PSTNet), a lightweight architecture that embeds physics directly into its structure. PSTNet couples four components: (i) a zero-parameter backbone derived from Monin-Obukhov theory, (ii) a regime-gated mixture of specialist sub-networks supervised by Richardson-number-derived soft targets, (iii) Feature-wise Linear Modulation layers conditioning hidden representations on local air-density ratio, and (iv) a Kolmogorov output layer enforcing inertial-subrange scaling as an architectural constraint. The entire model contains only 552 learnable parameters, requiring fewer than 2.5 kB of storage and executing in under 12s on a Cortex-M7 microcontroller. We validate PSTNet on 340 paired six-degree-of-freedom guidance simulations spanning three vehicle classes (Mach 2.8, 4.5, and 8.0) and six operational categories with real-time satellite weather ingestion. PSTNet achieves a mean miss-distance improvement of +2.8% with a 78% win rate and a statistically significant effect size. Our results demonstrate that encoding domain physics as architectural priors yields a more efficient and interpretable path to turbulence estimation accuracy than scaling model capacity, establishing PSTNet as a viable drop-in replacement for legacy look-up tables in resource-constrained, safety-critical on-board guidance systems.",
+      "authors": [
+        "Boris Kriuk",
+        "Fedor Kriuk"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-03-09T04:46:46+00:00",
+      "link": "https://arxiv.org/pdf/2603.07957v1",
+      "tags": [
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "real-time estimation of atmospheric turbulence intensity for aircraft",
+      "llm_evidence_cn": "飞机大气湍流强度的实时估计",
+      "llm_evidence": "飞机大气湍流强度的实时估计",
+      "canonical_evidence": "飞机大气湍流强度的实时估计",
+      "llm_tldr_en": "Proposes a physics-embedded network for real-time estimation of atmospheric turbulence for aircraft operations.",
+      "llm_tldr_cn": "提出了一种嵌入物理结构的神经网络，用于飞机运行中大气湍流的实时估计。",
+      "llm_tldr": "提出了一种嵌入物理结构的神经网络，用于飞机运行中大气湍流的实时估计。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "low-level wind shear detection and identification",
+      "matched_requirement_id": "req-3",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.09371v1",
+      "title": "Flow Field Reconstruction via Voronoi-Enhanced Physics-Informed Neural Networks with End-to-End Sensor Placement Optimization",
+      "abstract": "(short version abstract, full in article)High-fidelity flow field reconstruction is important in fluid dynamics, but it is challenged by sparse and spatiotemporally incomplete sensor measurements, as well as failures of pre-deployed measurement points that can invalidate pre-trained reconstruction models. Physics-informed neural networks (PINNs) alleviate dependence on large labeled datasets by incorporating governing physics, yet sensor placement optimization, a key factor in reconstruction accuracy and robustness, remains underexplored. In this study, we propose a PINN with Voronoi-enhanced Sensor Optimization (VSOPINN). VSOPINN enables differentiable soft Voronoi construction for sparse sensor data rasterization, end-to-end fusion of centroidal Voronoi tessellation (CVT) with PINNs for adaptive sensor placement, and unified layout optimization for multi-condition flow reconstruction through a shared encoder-multi-decoder architecture. We validate VSOPINN on three representative problems: lid-driven cavity flow, vascular flow, and annular rotating flow. Results show that VSOPINN significantly improves reconstruction accuracy across different Reynolds numbers, adaptively learns effective sensor layouts, and remains robust under partial sensor failure. The study clarifies the intrinsic relationship between sensor placement and reconstruction precision in PINN-based flow field reconstruction.",
+      "authors": [
+        "Renjie Xiao",
+        "Bingteng Sun",
+        "Yiling Chen",
+        "Lin Lu",
+        "Qiang Du",
+        "Junqiang Zhu"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn",
+        "cs.LG"
+      ],
+      "published": "2026-03-10T08:46:52+00:00",
+      "link": "https://arxiv.org/pdf/2603.09371v1",
+      "tags": [
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "PINN for flow field reconstruction with spatiotemporal sensor optimization",
+      "llm_evidence_cn": "具有时空传感器优化的PINN流场重建",
+      "llm_evidence": "具有时空传感器优化的PINN流场重建",
+      "canonical_evidence": "具有时空传感器优化的PINN流场重建",
+      "llm_tldr_en": "Introduces a Voronoi-enhanced PINN for flow field reconstruction and sensor placement optimization.",
+      "llm_tldr_cn": "引入了一种用于流场重建和传感器布置优化的Voronoi增强型PINN。",
+      "llm_tldr": "引入了一种用于流场重建和传感器布置优化的Voronoi增强型PINN。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Construction Method for PINNs Integrating Spatiotemporal Information",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.09668v1",
+      "title": "DiffWind: Physics-Informed Differentiable Modeling of Wind-Driven Object Dynamics",
+      "abstract": "Modeling wind-driven object dynamics from video observations is highly challenging due to the invisibility and spatio-temporal variability of wind, as well as the complex deformations of objects. We present DiffWind, a physics-informed differentiable framework that unifies wind-object interaction modeling, video-based reconstruction, and forward simulation. Specifically, we represent wind as a grid-based physical field and objects as particle systems derived from 3D Gaussian Splatting, with their interaction modeled by the Material Point Method (MPM). To recover wind-driven object dynamics, we introduce a reconstruction framework that jointly optimizes the spatio-temporal wind force field and object motion through differentiable rendering and simulation. To ensure physical validity, we incorporate the Lattice Boltzmann Method (LBM) as a physics-informed constraint, enforcing compliance with fluid dynamics laws. Beyond reconstruction, our method naturally supports forward simulation under novel wind conditions and enables new applications such as wind retargeting. We further introduce WD-Objects, a dataset of synthetic and real-world wind-driven scenes. Extensive experiments demonstrate that our method significantly outperforms prior dynamic scene modeling approaches in both reconstruction accuracy and simulation fidelity, opening a new avenue for video-based wind-object interaction modeling.",
+      "authors": [
+        "Yuanhang Lei",
+        "Boming Zhao",
+        "Zesong Yang",
+        "Xingxuan Li",
+        "Tao Cheng",
+        "Haocheng Peng",
+        "Ru Zhang",
+        "Yang Yang",
+        "Siyuan Huang",
+        "Yujun Shen",
+        "Ruizhen Hu",
+        "Hujun Bao",
+        "Zhaopeng Cui"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV"
+      ],
+      "published": "2026-03-10T13:41:24+00:00",
+      "link": "https://arxiv.org/pdf/2603.09668v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "physics-informed differentiable modeling of wind-driven dynamics",
+      "llm_evidence_cn": "风驱动动力学的物理告知微分建模",
+      "llm_evidence": "风驱动动力学的物理告知微分建模",
+      "canonical_evidence": "风驱动动力学的物理告知微分建模",
+      "llm_tldr_en": "Optimizes spatio-temporal wind force fields and object motion through a differentiable physics framework.",
+      "llm_tldr_cn": "通过可微分物理框架优化时空风力场和物体运动重建。",
+      "llm_tldr": "通过可微分物理框架优化时空风力场和物体运动重建。",
+      "llm_tags": [
+        "query:wind-wind-control:composite"
+      ],
+      "matched_query_tag": "query:wind-wind-control:composite",
+      "matched_query_text": "Papers central to 基于多传感器融合的风场反演、风切变检测、风场中飞行控制及危急情况下的共享控制研究, especially work that connects or combines: human-machine shared control for emergency flight maneuvers; c; low-level wind shear detection and identification; w; Construction Method for PINNs Integrating Spatiotemporal Information; How to Achieve Human Machine Co piloting in Extreme Hazardous Situations; What are the current challenges facing wind farm reconstruction?; How do wind disturbances and flying shear interact?; Current Challenges in Wind Shear Detection; Approach to Wind Shear Detection.",
+      "matched_requirement_id": "req-composite-wind-wind-control",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.03669v1",
+      "title": "Automated Analysis of Ripple-Scale Gravity Wave Structures in the Mesosphere Using Convolutional Neural Networks",
+      "abstract": "The mesosphere and lower thermosphere (MLT), spanning approximately 80--100~km in altitude, is a region of intense dynamical activity where atmospheric gravity waves amplify due to decreasing air density. These waves often undergo breaking, inducing energy and momentum dissipation as well as turbulent mixing. These processes can be described by atmospheric instabilities -- including convective and shear instabilities -- that regulate the vertical coupling between atmospheric layers. Ripple-like structures observed in mesospheric airglow imagery represent small-scale, short-lived signatures of such instabilities. Their occurrence often reflects localized instabilities, critical wave interactions, or wave ducting phenomena. Therefore, detecting and analyzing these features across broad spatial and temporal domains remains a challenge. In this study, we develop a deep learning framework using convolutional neural networks (CNNs) to automatically detect ripple-scale wave structures in all-sky airglow images. Trained on labeled datasets with recognized ripples, the model learns the spatial morphology associated with instability-driven gravity waves and achieves high accuracy in identifying ripple events. Beyond detection, we perform a statistical characterization of the detected ripples to examine their frequency of occurrence, orientation distributions, scales, and geographic and seasonal variability. These statistics are used to infer underlying physical mechanisms, such as localized instability conditions and background wind filtering. This work advances our understanding of instability-driven dynamics in the upper atmosphere through AI-powered detection, while also highlighting the potential of deep learning in scientific research.",
+      "authors": [
+        "Jiahui Hu",
+        "Alan Liu",
+        "Adriana Feener",
+        "Jing Li",
+        "Tao Li",
+        "Wenjun Dong"
+      ],
+      "primary_category": "physics.ao-ph",
+      "categories": [
+        "physics.ao-ph"
+      ],
+      "published": "2026-03-04T02:50:00+00:00",
+      "link": "https://arxiv.org/pdf/2603.03669v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "analysis of shear instabilities and gravity waves in the atmosphere",
+      "llm_evidence_cn": "大气中剪切不稳定性及重力波的分析",
+      "llm_evidence": "大气中剪切不稳定性及重力波的分析",
+      "canonical_evidence": "大气中剪切不稳定性及重力波的分析",
+      "llm_tldr_en": "Uses CNNs to analyze atmospheric gravity waves and shear instabilities in the mesosphere.",
+      "llm_tldr_cn": "使用卷积神经网络分析中间层的大气重力波和剪切不稳定性。",
+      "llm_tldr": "使用卷积神经网络分析中间层的大气重力波和剪切不稳定性。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "How do wind disturbances and flying shear interact?",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2603.02143v2",
+      "title": "Turbulence generation and data assimilation in wall-bounded flows with a latent diffusion model",
+      "abstract": "Wall-bounded turbulent flows are chaotic and multiscale, rendering real-time prediction at high Reynolds numbers computationally prohibitive in applications such as wind farms. Classical data assimilation methods are based on repeated solution of the governing equations and thus inherit this cost. Generative models instead learn the probability distribution of flow states, enabling scalable probabilistic reconstruction. Using plane Couette flow as a canonical configuration, we develop a generative framework that couples a $β$-variational autoencoder with a transformer-based diffusion model to generate four-dimensional spatiotemporal samples. Bayesian conditioning enables data assimilation without retraining and allows statistical constraints to be imposed through sampling. The framework is applied to a subdomain of turbulent plane Couette flow at $Re_h=1300$, where the corresponding DNS resolution in this region requires $O(10^6)$ spatial degrees of freedom. The diffusion model reproduces two-point correlations, energy spectra, and single-point statistics up to fourth order using $O(10)$ latent spatial degrees of freedom, yielding a compression ratio of $O(10^5)$ - one to two orders of magnitude above prior reports. Two assimilation scenarios demonstrate that conditional diffusion models with the proposed sampling strategy can enforce complex statistical constraints. However, enforcing these constraints while preserving physical fidelity and sample diversity introduces an inherent trade-off. Excessive conditioning can distort the learned diffusion prior, paralleling limitations of classical ensemble-based data assimilation. These results highlight both the promise of diffusion models as probabilistic surrogates for turbulent wall-bounded flows and the challenges of conditioning such models, establishing a foundation for future real-time reconstruction from operational data.",
+      "authors": [
+        "Fabian Steinbrenner",
+        "Baris Turan",
+        "Hao Teng",
+        "Heng Xiao"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn"
+      ],
+      "published": "2026-03-02T18:07:22+00:00",
+      "link": "https://arxiv.org/pdf/2603.02143v2",
+      "tags": [
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "spatiotemporal flow reconstruction for wind farm applications",
+      "llm_evidence_cn": "风电场应用的时空流场重构",
+      "llm_evidence": "风电场应用的时空流场重构",
+      "canonical_evidence": "风电场应用的时空流场重构",
+      "llm_tldr_en": "Uses diffusion models for spatiotemporal data assimilation and flow reconstruction in wind farm turbulence.",
+      "llm_tldr_cn": "利用扩散模型进行风电场湍流的时空数据同化和流场重构。",
+      "llm_tldr": "利用扩散模型进行风电场湍流的时空数据同化和流场重构。",
+      "llm_tags": [
+        "query:wind-wind-control:composite"
+      ],
+      "matched_query_tag": "query:wind-wind-control:composite",
+      "matched_query_text": "Papers central to 基于多传感器融合的风场反演、风切变检测、风场中飞行控制及危急情况下的共享控制研究, especially work that connects or combines: human-machine shared control for emergency flight maneuvers; c; low-level wind shear detection and identification; w; Construction Method for PINNs Integrating Spatiotemporal Information; How to Achieve Human Machine Co piloting in Extreme Hazardous Situations; What are the current challenges facing wind farm reconstruction?; How do wind disturbances and flying shear interact?; Current Challenges in Wind Shear Detection; Approach to Wind Shear Detection.",
+      "matched_requirement_id": "req-composite-wind-wind-control",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.02028v1",
+      "title": "Latent attention on masked patches for flow reconstruction",
+      "abstract": "Vision transformers have demonstrated outstanding performance on image generation applications, but their adoption in scientific disciplines, like fluid dynamics, has been limited. We introduce the Latent Attention on Masked Patches (LAMP) model, an interpretable regression-based modified vision transformer designed for masked flow reconstruction. LAMP follows a three-fold strategy: (i) partition of each flow snapshot into patches, (ii) dimensionality reduction of each patch via patch-wise proper orthogonal decomposition, and (iii) reconstruction of the full field from a masked input using a single-layer transformer trained via closed-form linear regression. We test the method on two canonical 2D unsteady wakes: a wake past a bluff body, and a chaotic wake past a flat plate. We show that the LAMP accurately reconstructs the full flow field from a 90\\%-masked and noisy input, across signal-to-noise ratios between 10 and 30\\,dB. Incorporating nonlinear measurement states can reduce the prediction error by up to an order of magnitude. The learned attention matrix yields physically interpretable multi-fidelity optimal sensor-placement maps. The modularity of the framework enables nonlinear compression and deep attention blocks, thereby providing an efficient baseline for nonlinear and high-dimensional masked flow reconstruction.",
+      "authors": [
+        "Ben Eze",
+        "Luca Magri",
+        "Andrea Nóvoa"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-03-02T16:12:40+00:00",
+      "link": "https://arxiv.org/pdf/2603.02028v1",
+      "tags": [
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "vision transformer for masked flow reconstruction",
+      "llm_evidence_cn": "用于掩码流场重建的视觉Transformer",
+      "llm_evidence": "用于掩码流场重建的视觉Transformer",
+      "canonical_evidence": "用于掩码流场重建的视觉Transformer",
+      "llm_tldr_en": "Introduces a transformer-based model for reconstructing full fluid flow fields from sparse inputs.",
+      "llm_tldr_cn": "引入了一种基于Transformer的模型，用于从稀疏输入中重建完整的流体流场。",
+      "llm_tldr": "引入了一种基于Transformer的模型，用于从稀疏输入中重建完整的流体流场。",
+      "llm_tags": [
+        "query:wind-wind-control:composite"
+      ],
+      "matched_query_tag": "query:wind-wind-control:composite",
+      "matched_query_text": "Papers central to 基于多传感器融合的风场反演、风切变检测、风场中飞行控制及危急情况下的共享控制研究, especially work that connects or combines: human-machine shared control for emergency flight maneuvers; c; low-level wind shear detection and identification; w; Construction Method for PINNs Integrating Spatiotemporal Information; How to Achieve Human Machine Co piloting in Extreme Hazardous Situations; What are the current challenges facing wind farm reconstruction?; How do wind disturbances and flying shear interact?; Current Challenges in Wind Shear Detection; Approach to Wind Shear Detection.",
+      "matched_requirement_id": "req-composite-wind-wind-control",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.01807v1",
+      "title": "Influence of Turbulence Length Scale and Platform Surge Motion on Wake Dynamics in Tandem Floating Wind Turbines",
+      "abstract": "Wake interaction is a key factor limiting the performance of floating offshore wind turbine arrays, yet the combined influence of inflow turbulence structure and platform motion on wake dynamics remains poorly understood. This study examines how the integral length scale of inflow turbulence and platform surge motion shapes wake development and power performance in a tandem configuration of two aligned floating offshore wind turbines separated by five rotor diameters. High-fidelity computational fluid dynamics simulations are performed using OpenFOAM, based on Large-Eddy Simulation with an Actuator-Line Model and the Wall-Adapting Local Eddy-Viscosity subgrid-scale closure. Synthetic turbulent inflows are generated using the Divergence-Free Synthetic Eddy Method, with prescribed integral length scales spanning 0.25-1.25 times the rotor radius. Over this range, increasing the integral length scale naturally leads to higher freestream turbulence intensity, which increases from approximately 1.9% to 7.2%. The corresponding dominant inflow frequencies are extracted from time-resolved velocity signals, yielding Strouhal numbers in the range St approx 0.71 to 0.12. Wake evolution is analyzed through disk-averaged velocity deficits, turbulent kinetic energy distributions, spectral characteristics, vortex topology, and time-averaged power coefficients. The results show that the inflow turbulence integral length scale is the primary parameter controlling wake recovery. Larger integral scales introduce energetic, low-frequency eddies that destabilize the tip-vortex system, enhance lateral and vertical entrainment, and accelerate wake mixing. These mechanisms lead to substantial reductions in the inter-turbine velocity deficit and translate directly into increased downstream power output...",
+      "authors": [
+        "Ahmad Nabhani",
+        "Josep M. Bergada"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn"
+      ],
+      "published": "2026-03-02T12:42:22+00:00",
+      "link": "https://arxiv.org/pdf/2603.01807v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "turbulence and wake dynamics in floating wind turbines",
+      "llm_evidence_cn": "漂浮式风力机的湍流与尾迹动力学",
+      "llm_evidence": "漂浮式风力机的湍流与尾迹动力学",
+      "canonical_evidence": "漂浮式风力机的湍流与尾迹动力学",
+      "llm_tldr_en": "Investigates the impact of inflow turbulence and platform motion on floating wind turbine wake dynamics.",
+      "llm_tldr_cn": "研究了来流湍流和平台运动对漂浮式风机尾迹动力学的影响。",
+      "llm_tldr": "研究了来流湍流和平台运动对漂浮式风机尾迹动力学的影响。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "What are the current challenges facing wind farm reconstruction?",
+      "matched_requirement_id": "req-7",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.06933v1",
+      "title": "Adaptive Gain Nonlinear Observer for External Wrench Estimation in Human-UAV Physical Interaction",
+      "abstract": "This paper presents an Adaptive Gain Nonlinear Observer (AGNO) for estimating the external interaction wrench (forces and torques) in human-UAV physical interaction for assistive payload transportation. The proposed AGNO uses the full nonlinear dynamic model to achieve an accurate and robust wrench estimation without relying on dedicated force-torque sensors. A key feature of this approach is the explicit consideration of the non-constant inertia matrix, which is essential for aerial systems with asymmetric mass distribution or shifting payloads. A comprehensive dynamic model of a cooperative transportation system composed of two quadrotors and a shared payload is derived, and the stability of the observer is rigorously established using Lyapunov-based analysis. Simulation results validate the effectiveness of the proposed observer in enabling intuitive and safe human-UAV interaction. Comparative evaluations demonstrate that the proposed AGNO outperforms an Extended Kalman Filter (EKF) in terms of estimation root mean square errors (RMSE), particularly for torque estimation under nonlinear interaction conditions. This approach reduces system weight and cost by eliminating additional sensing hardware, enhancing practical feasibility.",
+      "authors": [
+        "Hussein N. Naser",
+        "Hashim A. Hashim",
+        "Mojtaba Ahmadi"
+      ],
+      "primary_category": "eess.SY",
+      "categories": [
+        "eess.SY"
+      ],
+      "published": "2026-03-06T23:08:44+00:00",
+      "link": "https://arxiv.org/pdf/2603.06933v1",
+      "tags": [
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "wrench estimation in human-UAV physical interaction",
+      "llm_evidence_cn": "人机物理交互中的力矩估计",
+      "llm_evidence": "人机物理交互中的力矩估计",
+      "canonical_evidence": "人机物理交互中的力矩估计",
+      "llm_tldr_en": "An adaptive nonlinear observer for estimating interaction forces in human-UAV collaborative tasks.",
+      "llm_tldr_cn": "一种自适应非线性观测器，用于估计人机协作运输中的交互力矩。",
+      "llm_tldr": "一种自适应非线性观测器，用于估计人机协作运输中的交互力矩。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "How to Achieve Human Machine Co piloting in Extreme Hazardous Situations",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.02059v1",
+      "title": "TRAKNN: Efficient Trajectory Aware Spatiotemporal kNN for Rare Meteorological Trajectory Detection",
+      "abstract": "Extreme weather events, such as windstorms and heatwaves, are driven by persistent atmospheric circulation patterns that evolve over several consecutive days. While traditional circulation-based studies often focus on instantaneous atmospheric states, capturing the temporal evolution, or trajectory, of these spatial fields is essential for characterizing rare and potentially impactful atmospheric behavior. However, performing an exhaustive similarity search on multi-decadal, continental-scale gridded datasets presents significant computational and memory challenges. In this paper, we propose TRAKNN (TRajectory Aware KNN), a fully unsupervised and data-agnostic framework for detecting geometrically rare short trajectories in spatio-temporal data with an exact kNN approach. TRAKNN leverages a recurrence-based algorithm that decouples computational complexity from trajectory length and efficient batch operations, maximizing computational intensity. These optimizations enable exhaustive analysis on standard workstations, either on CPU or on GPU. We evaluate our approach on 75 years of daily European sea-level pressure data. Our results illustrate that rare trajectories identified by TRAKNN correspond to physically coherent atmospheric anomalies and align with independent extreme-event databases.",
+      "authors": [
+        "Guillaume Coulaud",
+        "Davide Faranda"
+      ],
+      "primary_category": "stat.ML",
+      "categories": [
+        "stat.ML",
+        "cs.LG"
+      ],
+      "published": "2026-03-02T16:49:02+00:00",
+      "link": "https://arxiv.org/pdf/2603.02059v1",
+      "tags": [
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "spatiotemporal detection of rare meteorological trajectories like windstorms",
+      "llm_evidence_cn": "风暴等稀有气象轨迹的时空检测",
+      "llm_evidence": "风暴等稀有气象轨迹的时空检测",
+      "canonical_evidence": "风暴等稀有气象轨迹的时空检测",
+      "llm_tldr_en": "Introduces a framework for detecting rare meteorological trajectories in large-scale spatiotemporal datasets.",
+      "llm_tldr_cn": "介绍了一种在大规模时空数据集中检测稀有气象轨迹的框架。",
+      "llm_tldr": "介绍了一种在大规模时空数据集中检测稀有气象轨迹的框架。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Approach to Detecting Wind Shear Using Multi Source Sensor Data",
+      "matched_requirement_id": "req-12",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.01918v1",
+      "title": "PAC Finite-Time Safety Guarantees for Stochastic Systems with Unknown Disturbance Distributions",
+      "abstract": "We investigate the problem of establishing finite-time probabilistic safety guarantees for discrete-time stochastic dynamical systems subject to unknown disturbance distributions, using barrier certificate methods. Our approach develops a data-driven safety certification framework that relies only on a finite collection of independent and identically distributed (i.i.d.) disturbance samples. Within this framework, we propose a certification procedure such that, with confidence at least $1-δ$ over the sampled disturbances, if the output of the certification procedure is accepted, the probability that the system remains within a prescribed safe set over a finite horizon is at least $1-ε$. A key challenge lies in formally characterizing the probably approximately correct (PAC) generalization behavior induced by finite samples. To address this, we derive PAC generalization bounds using tools from VC dimension, scenario optimization, and Rademacher complexity. These results illuminate the fundamental trade-offs between sample size, model complexity, and safety tolerance, providing both theoretical insight and practical guidance for designing reliable, data-driven safety certificates in discrete-time stochastic systems.",
+      "authors": [
+        "Taoran Wu",
+        "Dominik Wagner",
+        "C. -H. Luke Ong",
+        "Bai Xue"
+      ],
+      "primary_category": "eess.SY",
+      "categories": [
+        "eess.SY"
+      ],
+      "published": "2026-03-02T14:31:28+00:00",
+      "link": "https://arxiv.org/pdf/2603.01918v1",
+      "tags": [
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "safety guarantees for stochastic systems with unknown disturbances",
+      "llm_evidence_cn": "具有未知扰动的随机系统的安全保证",
+      "llm_evidence": "具有未知扰动的随机系统的安全保证",
+      "canonical_evidence": "具有未知扰动的随机系统的安全保证",
+      "llm_tldr_en": "Provides probabilistic safety certificates for systems under unknown disturbances using data-driven barrier methods.",
+      "llm_tldr_cn": "利用数据驱动的屏障方法为未知扰动下的系统提供概率安全保证。",
+      "llm_tldr": "利用数据驱动的屏障方法为未知扰动下的系统提供概率安全保证。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Control Methods Under Wind Disturbances",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.07826v1",
+      "title": "Physics-infused Learning for Aerial Manipulator in Winds and Near-Wall Environments",
+      "abstract": "Aerial manipulation (AM) expands UAV capabilities beyond passive observation to contact-based operations at high altitudes and in otherwise inaccessible environments. Although recent advances show promise, most AM systems are developed in controlled settings that overlook key aerodynamic effects. Simplified thrust models are often insufficient to capture the nonlinear wind disturbances and proximity-induced flow variations present in real-world environments near infrastructure, while high-fidelity CFD methods remain impractical for real-time use. Learning-based models are computationally efficient at inference, but often struggle to generalize to unseen condition. This paper combines both approaches by integrating a physics-based blade-element model with a learning-based residual force estimator, along with a rotor-speed allocation strategy for disturbance compensation, resulting in a unified control framework. The blade-element model computes per-rotor aerodynamic forces under wind and provides a refined feedforward disturbance estimate. A learning-based estimator then predicts the residual forces not captured by the model, enabling compensation for unmodeled aerodynamic effects. An online adaptation mechanism further updates the residual-force prediction and rotor-speed allocation jointly to reduce the mismatch between desired and realized thrust. We evaluate this framework in both free-flight and wall-contact tracking tasks in a simulated near-wall wind environment. Results demonstrate improved disturbance estimation and trajectory-tracking accuracy over conventional approaches, enabling robust wall-contact execution under challenging aerodynamic conditions.",
+      "authors": [
+        "Yiming Zhang",
+        "Junyi Geng"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-03-08T22:08:15+00:00",
+      "link": "https://arxiv.org/pdf/2603.07826v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "UAV aerial manipulation under nonlinear wind disturbances",
+      "llm_evidence_cn": "非线性风扰动下的无人机空中作业",
+      "llm_evidence": "非线性风扰动下的无人机空中作业",
+      "canonical_evidence": "非线性风扰动下的无人机空中作业",
+      "llm_tldr_en": "Integrates physics-based models with learning to control aerial manipulators in complex wind environments.",
+      "llm_tldr_cn": "结合物理模型与学习方法，实现复杂风场环境下空中机械臂的精确控制。",
+      "llm_tldr": "结合物理模型与学习方法，实现复杂风场环境下空中机械臂的精确控制。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Control Methods Under Wind Disturbances",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.02143v1",
+      "title": "Turbulence generation and data assimilation in wall-bounded flows with a latent diffusion model",
+      "abstract": "Wall-bounded turbulent flows are chaotic and multiscale, rendering real-time prediction at high Reynolds numbers computationally prohibitive in applications such as wind farms. Classical data assimilation methods are based on repeated solution of the governing equations and thus inherit this cost. Generative models instead learn the probability distribution of flow states, enabling scalable probabilistic reconstruction. Using plane Couette flow as a canonical configuration, we develop a generative framework that couples a $β$-variational autoencoder with a transformer-based diffusion model to generate four-dimensional spatiotemporal samples. Bayesian conditioning enables data assimilation without retraining and allows statistical constraints to be imposed through sampling. The framework is applied to a subdomain of turbulent plane Couette flow at $Re_h=1300$, where the corresponding DNS resolution in this region requires $O(10^6)$ spatial degrees of freedom. The diffusion model reproduces two-point correlations, energy spectra, and single-point statistics up to fourth order using $O(10)$ latent spatial degrees of freedom, yielding a compression ratio of $O(10^5)$ - one to two orders of magnitude above prior reports. Two assimilation scenarios demonstrate that conditional diffusion models with the proposed sampling strategy can enforce complex statistical constraints. However, enforcing these constraints while preserving physical fidelity and sample diversity introduces an inherent trade-off. Excessive conditioning can distort the learned diffusion prior, paralleling limitations of classical ensemble-based data assimilation. These results highlight both the promise of diffusion models as probabilistic surrogates for turbulent wall-bounded flows and the challenges of conditioning such models, establishing a foundation for future real-time reconstruction from operational data.",
+      "authors": [
+        "Fabian Steinbrenner",
+        "Baris Turan",
+        "Hao Teng",
+        "Heng Xiao"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn"
+      ],
+      "published": "2026-03-02T18:07:22+00:00",
+      "link": "https://arxiv.org/pdf/2603.02143v1",
+      "tags": [
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "generative framework for spatiotemporal samples in wind farm applications",
+      "llm_evidence_cn": "风电场应用中时空样本的生成框架",
+      "llm_evidence": "风电场应用中时空样本的生成框架",
+      "canonical_evidence": "风电场应用中时空样本的生成框架",
+      "llm_tldr_en": "Uses latent diffusion models for real-time prediction and data assimilation in turbulent flows like wind farms.",
+      "llm_tldr_cn": "利用潜在扩散模型对风电场等湍流进行实时预测和数据同化。",
+      "llm_tldr": "利用潜在扩散模型对风电场等湍流进行实时预测和数据同化。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Construction Method for PINNs Integrating Spatiotemporal Information",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.01947v1",
+      "title": "physfusion: A Transformer-based Dual-Stream Radar and Vision Fusion Framework for Open Water Surface Object Detection",
+      "abstract": "Detecting water-surface targets for Unmanned Surface Vehicles (USVs) is challenging due to wave clutter,   specular reflections, and weak appearance cues in long-range observations. Although 4D millimeter-wave   radar complements cameras under degraded illumination, maritime radar point clouds are sparse and   intermittent, with reflectivity attributes exhibiting heavy-tailed variations under scattering and   multipath, making conventional fusion designs struggle to exploit radar cues effectively.   We propose PhysFusion, a physics-informed radar-image detection framework for water-surface perception.   The framework integrates: (1) a Physics-Informed Radar Encoder (PIR Encoder) with an RCS Mapper and   Quality Gate, transforming per-point radar attributes into compact scattering priors and predicting   point-wise reliability for robust feature learning under clutter; (2) a Radar-guided Interactive Fusion   Module (RIFM) performing query-level radar-image fusion between semantically enriched radar features and   multi-scale visual features, with the radar branch modeled by a dual-stream backbone including a   point-based local stream and a transformer-based global stream using Scattering-Aware Self-Attention   (SASA); and (3) a Temporal Query Aggregation module (TQA) aggregating frame-wise fused queries over a   short temporal window for temporally consistent representations.   Experiments on WaterScenes and FLOW demonstrate that PhysFusion achieves 59.7% mAP50:95 and 90.3% mAP50   on WaterScenes (T=5 radar history) using 5.6M parameters and 12.5G FLOPs, and reaches 94.8% mAP50 and   46.2% mAP50:95 on FLOW under radar+camera setting. Ablation studies quantify the contributions of PIR   Encoder, SASA-based global reasoning, and RIFM.",
+      "authors": [
+        "Yuting Wan",
+        "Liguo Sun",
+        "Jiuwu Hao",
+        "Zao Zhang",
+        "Pin LV"
+      ],
+      "primary_category": "cs.CV",
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "published": "2026-03-02T15:00:22+00:00",
+      "link": "https://arxiv.org/pdf/2603.01947v1",
+      "tags": [
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "physics-informed radar and vision fusion for object detection",
+      "llm_evidence_cn": "物理启发的雷达与视觉融合目标检测",
+      "llm_evidence": "物理启发的雷达与视觉融合目标检测",
+      "canonical_evidence": "物理启发的雷达与视觉融合目标检测",
+      "llm_tldr_en": "A physics-informed transformer framework for dual-stream radar and vision fusion in maritime perception.",
+      "llm_tldr_cn": "一种物理启发的Transformer框架，用于水面感知的雷达与视觉双流融合。",
+      "llm_tldr": "一种物理启发的Transformer框架，用于水面感知的雷达与视觉双流融合。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Approach to Detecting Wind Shear Using Multi Source Sensor Data",
+      "matched_requirement_id": "req-12",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.08045v1",
+      "title": "Trajectory Tracking Control Design for Autonomous Helicopters with Guaranteed Error Bounds",
+      "abstract": "This paper presents a systematic framework for computing formally guaranteed trajectory tracking error bounds for autonomous helicopters based on Robust Positive Invariant (RPI) sets. The approach focuses on establishing a closed-loop translational error dynamics which is cast into polytopic linear parameter-varying form with bounded additive and state-dependent disturbances. Ellipsoidal RPI sets are computed, yielding explicit position error bounds suitable as certified buffer zones in upper-level trajectory planning. Three controller architectures are compared with respect to the conservatism of their error bounds and tracking performance. Simulation results on a nonlinear helicopter model demonstrate that all architectures respect the derived bounds, while highlighting trade-offs between dynamical fidelity and conservatism in invariant set computation.",
+      "authors": [
+        "Philipp Schitz",
+        "Johann C. Dauer",
+        "Paolo Mercorelli"
+      ],
+      "primary_category": "eess.SY",
+      "categories": [
+        "eess.SY",
+        "cs.RO"
+      ],
+      "published": "2026-03-09T07:35:09+00:00",
+      "link": "https://arxiv.org/pdf/2603.08045v1",
+      "tags": [
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "trajectory tracking control for helicopters with bounded disturbances",
+      "llm_evidence_cn": "具有有界扰动的直升机轨迹跟踪控制",
+      "llm_evidence": "具有有界扰动的直升机轨迹跟踪控制",
+      "canonical_evidence": "具有有界扰动的直升机轨迹跟踪控制",
+      "llm_tldr_en": "Develops a trajectory tracking framework for autonomous helicopters with guaranteed error bounds under disturbances.",
+      "llm_tldr_cn": "开发了具有扰动下保证误差范围的自主直升机轨迹跟踪框架。",
+      "llm_tldr": "开发了具有扰动下保证误差范围的自主直升机轨迹跟踪框架。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Control Methods Under Wind Disturbances",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.02642v1",
+      "title": "cuNRTO: GPU-Accelerated Nonlinear Robust Trajectory Optimization",
+      "abstract": "Robust trajectory optimization enables autonomous systems to operate safely under uncertainty by computing control policies that satisfy the constraints for all bounded disturbances. However, these problems often lead to large Second Order Conic Programming (SOCP) constraints, which are computationally expensive. In this work, we propose the CUDA Nonlinear Robust Trajectory Optimization (cuNRTO) framework by introducing two dynamic optimization architectures that have direct application to robust decision-making and are implemented on CUDA. The first architecture, NRTO-DR, leverages the Douglas-Rachford (DR) splitting method to solve the SOCP inner subproblems of NRTO, thereby significantly reducing the computational burden through parallel SOCP projections and sparse direct solves. The second architecture, NRTO-FullADMM, is a novel variant that further exploits the problem structure to improve scalability using the Alternating Direction Method of Multipliers (ADMM). Finally, we provide GPU implementation of the proposed methodologies using custom CUDA kernels for SOC projection steps and cuBLAS GEMM chains for feedback gain updates. We validate the performance of cuNRTO through simulated experiments on unicycle, quadcopter, and Franka manipulator models, demonstrating speedup up to 139.6$\\times$.",
+      "authors": [
+        "Jiawei Wang",
+        "Arshiya Taj Abdul",
+        "Evangelos A. Theodorou"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.DC",
+        "eess.SY"
+      ],
+      "published": "2026-03-03T06:17:08+00:00",
+      "link": "https://arxiv.org/pdf/2603.02642v1",
+      "tags": [
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "robust trajectory optimization under bounded disturbances",
+      "llm_evidence_cn": "有界扰动下的鲁棒轨迹优化",
+      "llm_evidence": "有界扰动下的鲁棒轨迹优化",
+      "canonical_evidence": "有界扰动下的鲁棒轨迹优化",
+      "llm_tldr_en": "A GPU-accelerated framework for nonlinear robust trajectory optimization under uncertainty.",
+      "llm_tldr_cn": "一种GPU加速的框架，用于不确定性下的非线性鲁棒轨迹优化。",
+      "llm_tldr": "一种GPU加速的框架，用于不确定性下的非线性鲁棒轨迹优化。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Control Methods Under Wind Disturbances",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

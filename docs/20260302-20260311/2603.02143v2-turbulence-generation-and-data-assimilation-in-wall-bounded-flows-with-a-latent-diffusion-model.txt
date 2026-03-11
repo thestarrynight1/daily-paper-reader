@@ -1,0 +1,1287 @@
+Title: Turbulence generation and data assimilation in wall-bounded flows with a latent diffusion model
+
+URL Source: https://arxiv.org/pdf/2603.02143v2
+
+Published Time: Thu, 05 Mar 2026 02:13:02 GMT
+
+Number of Pages: 34
+
+Markdown Content:
+> This draft was prepared using the LaTeX style file belonging to J. Fluid Mech.
+
+## Turbulence generation and data assimilation in wall-bounded flows with a latent diffusion model 
+
+Fabian Steinbrenner 1,2, ∗, Baris Turan 1,2, ∗, Hao Teng 1,2 and Heng Xiao 1,2  
+
+> 1Stuttgart Center for Simulation Science, University of Stuttgart, 70569 Stuttgart, Germany
+> 2Institute of Aerospace Thermodynamics, University of Stuttgart, 70569 Stuttgart, Germany
+> ∗Equal contribution
+> Corresponding authors: Hao Teng, ddsim.hao.teng@gmail.com and Heng Xiao heng.xiao@simtech.uni-stuttgart.de
+
+Wall-bounded turbulent flows are chaotic and multiscale, rendering real-time prediction at high Reynolds numbers computationally prohibitive in applications such as wind farms. Classical data assimilation are based on repeated solution of the governing equations and thus inherits this cost. Generative models instead learn the probability distribution of flow states, enabling scalable probabilistic reconstruction. Using plane Couette flow as a canonical configuration, we develop a stochastic generative framework that couples a 𝛽 -variational autoencoder with a transformer-based diffusion model to generate four-dimensional spatiotemporal samples. Bayesian conditioning enables data assimilation without retraining and allows statistical constraints to be imposed through sampling. The framework is applied to a subdomain of turbulent plane Couette flow at 𝑅𝑒 ℎ = 1300, where the corresponding DNS resolution in this generation region requires 𝑂 (10 6) spatial degrees of freedom. The diffusion model reproduces two-point correlations, energy spectra, and single-point statistics up to fourth order using 𝑂 (10 ) latent spatial degrees of freedom, yielding a compression ratio of 𝑂 (10 5) – one to two orders of magnitude above prior reports. Two assimilation scenarios demonstrate that conditional diffusion models with the proposed sampling strategy can enforce complex statistical constraints. However, enforcing these constraints while preserving physical fidelity and sample diversity introduces an inherent trade-off. Excessive conditioning can distort the learned diffusion prior, paralleling known limitations of classical ensemble-based data assimilation. These results highlight both the promise of diffusion models as scalable probabilistic surrogates for turbulent wall-bounded flows and the intrinsic challenges of conditioning such models, establishing a foundation for future real-time reconstruction from operational data. 
+
+1. Introduction 
+
+Prediction and uncertainty quantification of unsteady turbulent flows in complex systems remains a fundamental challenge in fluid mechanics. This challenge is most severe for high-Reynolds-number, wall-bounded flows, where turbulence is multiscale, strongly non-stationary, and only sparsely observed. Accurate, time-resolved prediction of the evolving flow dynamics is therefore essential for monitoring, control, and decision-making. This requirement goes beyond traditional engineering objectives that focus on time-averaged quantities. Emerging control and forecasting strategies instead demand fast and reliable predictions of transient flow behavior under uncertain and rapidly 
+
+> arXiv:2603.02143v2 [physics.flu-dyn] 4 Mar 2026
+
+F. Steinbrenner, B. Turan, H. Teng and H. Xiao 
+
+changing conditions. Such demands arise in natural and industrial settings, including urban climate, atmospheric boundary layers, extreme weather events, and wind power plants (Bauer et al. 2015; Veers et al. 2019), often coupled. Wind farms provide a canonical example of this broader class of problems. They couple natural atmospheric turbulence with engineered systems and operate under highly unsteady inflow conditions (Veers et al. 2019). Real-time turbine control strategies therefore rely on accurate predictions of the evolving flow field to optimize power generation and ensure stable operation (Meyers et al. 2022). Yet the core inputs, such as terrain, boundary conditions and atmospheric boundary layer stability are often imprecisely known or vary over time. Moreover, turbulence at high-Reynolds-numbers is inherently uncertain: it exhibits chaotic dynamics across a wide range of interacting scales. Modelling uncertainties such as subgrid-scale errors in large-eddy simulations and discretization errors of the numerical solvers further contribute to the overall uncertainty of the system. Wind farms produce extensive observation data during operation through meteorological masts, unmanned aerial vehicles (UAV) (Molter & Cheng 2020) and light detection and ranging (LiDAR) systems (Guo et al. 2022). This data can be used to mitigate the aforementioned predictive uncertainty through data assimilation. Data assimilation combines incomplete observations of a system with the predictions of the numerical model to interpolate its state. However, the application of traditional data assimilation frameworks such as ensemble Kalman filter (EnKF) and four-dimensional variational methods to real-time prediction of wind farm flows is hindered by their high computational cost. The recent surge in generative AI presents a promising new avenue for addressing this limitation. Stochastic generative models are data-driven approaches that learn an underlying data probability distribution and are capable of producing new samples that statistically resemble those observed in the training data. Building on these capabilities, we envision a data assimilation framework based on a stochastic generative surrogate model for the real-time reconstruction of the full wind-farm flow field from observation data. A schematic of this vision is outlined in figure 1 (𝑎 ). In a first offline step, high-fidelity simulations 
+
+are carried out under several representative operating conditions such as different wind speeds, terrains and atmospheric boundary stabilities. Then, a stochastic generative model 
+
+is trained on this simulation data. The trained model can efficiently generate samples from the data distribution, replacing the costly numerical solvers used in traditional data assimilation frameworks. During deployment , the surrogate model is exposed to operating conditions that differ, at least slightly, from those encountered during training. In this setting, the trained model provides a prior over plausible flow fields, which is combined with real-time observations through conditional generation. The observations steer the stochastic generative model toward the actual operating conditions, allowing it to adapt its predictions beyond the training distribution. Diffusion models have recently emerged as the state-of-the-art in generative modelling, surpassing the previous generation of generative adversarial networks with their stable training and high sample quality (Dhariwal & Nichol 2021). In diffusion models, Gaussian noise is first incrementally added to data samples e.g., flow field snapshots in the forward process, ultimately degrading them into pure noise. The added noise at a given step of the forward process is estimated by a neural network during training. The trained network is used to progressively remove the added noise in the reverse process, ultimately generating a clean sample. A key feature of diffusion models is their ability to generate conditional samples within a Bayesian framework, which enables the generation of samples consistent with specified conditions (Zhan et al. 2025). These conditions could be multi-source observations obtained from UAVs or LiDARs in the case of wind farms, allowing diffusion models to be used in data assimilation tasks. 
+
+> 2
+
+Turbulence generation and data assimilation with a latent diffusion model cx 
+
+High -Fidelity Simulations (Offline) Stochastic Generative Model Deployment and Data Assimilation 
+
+DNS of 4D Turbulent Plane 
+
+Couette Flow 
+
+Latent Diffusion Transformer Data Assimilation 
+
+(same Configuration) 
+
+Sample 
+
+Space 
+
+Learned 
+
+Data Space 
+
+Generative 
+
+Model 
+
+Wind Conditions 
+
+Terrains 
+
+Atmospheric Boundary 
+
+Layer Stability 
+
+Data 
+
+Space 
+
+Overarching Goal: Real -time Generation of the full Wind Farm Flow Field 
+
+Scope of this Work: Indirect Imposition of Turbulent Statistics 
+
+UAVs 
+
+Efficient Reproduction of 
+
+Turbulent Statistics 
+
+≈
+
+> Energy Flatness
+
+Block 
+
+≈
+
+Scattered 
+
+DNS 
+
+Canonical Wall -Bounded 
+
+Turbulent Flow 
+
+Data 
+
+Space 
+
+Learned 
+
+Data Space 
+
+Real World 
+
+Model 
+
+Model 
+
+LiDAR 
+
+<latexit sha1_base64="USJCmt16l8KMZQbTyk8kXR8v1Fc=">AAADHnicjVJLS8NAEP4aX7W+9eilWARPJS2iHgs+8CIo2AdYkSTdxti8SLYFLf0PXvXkr/EmXvW/ePDLmgoqWjdsZvabmW9mZ8cMXSeWuv6a0cbGJyanstO5mdm5+YXFpeVaHHQjS1StwA2ihmnEwnV8UZWOdEUjjIThma6om53dxF7viSh2Av9UXofi3DNs32k7liEJ1Zqm17cHF4sFvairlf+plFKlgHQdB0uZDJpoIYCFLjwI+JDUXRiI+Z2hBB0hsXP0iUXUHGUXGCDH2C69BD0Moh3+bZ7OUtTnOeGMVbTFLC53xMg81rkPFKNJ7ySroB5TvnHfKMz+NUNfMScVXlOaZJxWjEfEJS7pMSrSSz2HtfwnchgjeYvkLvEfPeizKm9EjyTa2FG9cXjbUCFJ16zPqvZoiYh1lCWPfeVpk8NU5x7r8CmrzJW82ZAhr/rXojSUFIrFTxkN8kWUyVuyHk5N6fuM/FRq5WJpq7h1slmolNP5yWIVa9jgjGyjgkMcsw4LV7jFHe61B+1Re9KeP1y1TBqzgi9Le3kH9pShlA==</latexit> g
+
+<latexit sha1_base64="pqgo2YHBV/AHLs26QdH+AEuG3RA=">AAADHnicjVJLS8NAEP4aX7U+q0cvxSJ4KmkR9Sj4wIugYB9giyTptsbmRbIVbOl/8Konf4038ar/xYNf1lTQonXDZma/mflmdnbMwLEjqetvKW1icmp6Jj2bmZtfWFxazq5UIr8bWqJs+Y4f1kwjEo7tibK0pSNqQSgM13RE1ezsx/bqjQgj2/fO5W0gGq7R9uyWbRmSUKVuuv3e4HI5rxd0tXKjSjFR8kjWqZ9NpVBHEz4sdOFCwIOk7sBAxO8CRegIiDXQJxZSs5VdYIAMY7v0EvQwiHb4b/N0kaAezzFnpKItZnG4Q0bmsMF9pBhNesdZBfWI8p27p7D2rxn6ijmu8JbSJOOsYjwhLnFFj3GRbuI5rOU/kcMYyVvEd4n+6EGfVbljeiTRwq7qjc3bBgqJu2Z9VXVAS0isoyw5HCrPNjlMdb5hHR5lmbniNxsy5FT/mpSGkkKxeAmjQb6QMn5L1sOpKf6ckVGlUioUtwvbZ1v5vVIyP2msYR2bnJEd7OEYp6zDwjXucI8H7VF70p61l09XLZXErOLb0l4/AColoac=</latexit> z
+
+<latexit sha1_base64="VdnBE3yqXb154pJqRe6+E46biYs=">AAADvXicbVJtS9xAEF69vtj0Tdt+65ehp6ggx0WKLf1Si1RqoWCxp4I5ZbOZeIv7ErITvTTkR/Qf9Gv7j/pvuolX0LsuBGaf2WfmeSYTZ0o66vf/zM137ty9d3/hQfDw0eMnTxeXnh06W+QCB8Iqmx/H3KGSBgckSeFxliPXscKj+GKnyR9dYu6kNd+ozHCo+bmRqRScPHS2+CJbi2JdRSRVglWUjWRdr58tdvu9fntgNggnQZdNzv7Z0vyPKLGi0GhIKO7cSdjPaFjxnKRQWAdR4TDj4oKf44kPDdfohlUrv4YVjySQ2tx/hqBFbzIqrp0rdexfak4jN51rwP/mYj3VmdK3w0qarCA04rpxWiggC81sIJE5ClKlD7jIpdcOYsRzLshP8FZlg1c0JhxTPQu3coJgBQ4QQaZAIwRe0Mj7G3HXXj98OYBVrzx25SpMyCCNI64UJu9gr2WV/v0lbvhKvgVIanRmub2UCUKM5EVBbFUCTUNwRZbZnGDtSvpb1CSamVm13gsir0umkUx3BvuaVKa4NMryBJPgfyBEqBwGANFeuisVfhz7PXTVtd6eo7L2OQC/NH5otqDq9PTzri1M0nqb8WVNi7vSEeoN70Wac++m51n1SlsJpn6op9f/ekwMC6s1N8kNXyfhsIp8MK5asB3CcrcbLteeG6XSL3E4vbKzweFmL9zqbX193d3enKzzAnvJXrE1FrI3bJt9YvtswAT7zn6yX+x3530HO6pjrp/Oz004z9mt07n6Cx7sNYc=</latexit> 𝐿 ( ˜ω)
+
+<latexit sha1_base64="vUEhZIOPcYQS3Vib5HsaMsr1TFw=">AAADK3icjVJLS8NAEP4a3/XV6tFLsQieSiqiHgUfeBEUrBWsSJKudWleJNtKDf0pXvXkr/GkePVfePDLmgoqPjZsZvabmW9mZ8cOXRkr03zMGUPDI6Nj4xP5yanpmdlCce44DjqRI2pO4AbRiW3FwpW+qCmpXHESRsLybFfU7fZWaq93RRTLwD9SvVCceVbLlxfSsRSh80KxYXtJQ0m3KZJGeCn7/fNC2ayYepW+K9VMKSNbB0Exl0MDTQRw0IEHAR+KugsLMb9TVGEiJHaGhFhETWq7QB95xnboJehhEW3z3+LpNEN9nlPOWEc7zOJyR4wsYYl7VzPa9E6zCuox5Sv3tcZaP2ZINHNaYY/SJuOEZtwnrnBJj78ivcxzUMt/IgcxirdI7xL/0oOEVXl/9EjhAhu6N5K3DTWSds35qGqblohYW1tK2NGeLXLY+txlHT5ljbnSNxswlHT/mpSWlkKz+BmjRb6IMn1L1sOpqX6dke/K8UqlulZZO1wtb65k8zOOBSximTOyjk3s4YB1OLjCDW5xZ9wbD8aT8fzuauSymHl8WsbLG+Qrps8=</latexit> ˜ω
+
+<latexit sha1_base64="vUEhZIOPcYQS3Vib5HsaMsr1TFw=">AAADK3icjVJLS8NAEP4a3/XV6tFLsQieSiqiHgUfeBEUrBWsSJKudWleJNtKDf0pXvXkr/GkePVfePDLmgoqPjZsZvabmW9mZ8cOXRkr03zMGUPDI6Nj4xP5yanpmdlCce44DjqRI2pO4AbRiW3FwpW+qCmpXHESRsLybFfU7fZWaq93RRTLwD9SvVCceVbLlxfSsRSh80KxYXtJQ0m3KZJGeCn7/fNC2ayYepW+K9VMKSNbB0Exl0MDTQRw0IEHAR+KugsLMb9TVGEiJHaGhFhETWq7QB95xnboJehhEW3z3+LpNEN9nlPOWEc7zOJyR4wsYYl7VzPa9E6zCuox5Sv3tcZaP2ZINHNaYY/SJuOEZtwnrnBJj78ivcxzUMt/IgcxirdI7xL/0oOEVXl/9EjhAhu6N5K3DTWSds35qGqblohYW1tK2NGeLXLY+txlHT5ljbnSNxswlHT/mpSWlkKz+BmjRb6IMn1L1sOpqX6dke/K8UqlulZZO1wtb65k8zOOBSximTOyjk3s4YB1OLjCDW5xZ9wbD8aT8fzuauSymHl8WsbLG+Qrps8=</latexit> ˜ω
+
+<latexit sha1_base64="VdnBE3yqXb154pJqRe6+E46biYs=">AAADvXicbVJtS9xAEF69vtj0Tdt+65ehp6ggx0WKLf1Si1RqoWCxp4I5ZbOZeIv7ErITvTTkR/Qf9Gv7j/pvuolX0LsuBGaf2WfmeSYTZ0o66vf/zM137ty9d3/hQfDw0eMnTxeXnh06W+QCB8Iqmx/H3KGSBgckSeFxliPXscKj+GKnyR9dYu6kNd+ozHCo+bmRqRScPHS2+CJbi2JdRSRVglWUjWRdr58tdvu9fntgNggnQZdNzv7Z0vyPKLGi0GhIKO7cSdjPaFjxnKRQWAdR4TDj4oKf44kPDdfohlUrv4YVjySQ2tx/hqBFbzIqrp0rdexfak4jN51rwP/mYj3VmdK3w0qarCA04rpxWiggC81sIJE5ClKlD7jIpdcOYsRzLshP8FZlg1c0JhxTPQu3coJgBQ4QQaZAIwRe0Mj7G3HXXj98OYBVrzx25SpMyCCNI64UJu9gr2WV/v0lbvhKvgVIanRmub2UCUKM5EVBbFUCTUNwRZbZnGDtSvpb1CSamVm13gsir0umkUx3BvuaVKa4NMryBJPgfyBEqBwGANFeuisVfhz7PXTVtd6eo7L2OQC/NH5otqDq9PTzri1M0nqb8WVNi7vSEeoN70Wac++m51n1SlsJpn6op9f/ekwMC6s1N8kNXyfhsIp8MK5asB3CcrcbLteeG6XSL3E4vbKzweFmL9zqbX193d3enKzzAnvJXrE1FrI3bJt9YvtswAT7zn6yX+x3530HO6pjrp/Oz004z9mt07n6Cx7sNYc=</latexit> 𝐿 ( ˜ω)
+
+<latexit sha1_base64="vUEhZIOPcYQS3Vib5HsaMsr1TFw=">AAADK3icjVJLS8NAEP4a3/XV6tFLsQieSiqiHgUfeBEUrBWsSJKudWleJNtKDf0pXvXkr/GkePVfePDLmgoqPjZsZvabmW9mZ8cOXRkr03zMGUPDI6Nj4xP5yanpmdlCce44DjqRI2pO4AbRiW3FwpW+qCmpXHESRsLybFfU7fZWaq93RRTLwD9SvVCceVbLlxfSsRSh80KxYXtJQ0m3KZJGeCn7/fNC2ayYepW+K9VMKSNbB0Exl0MDTQRw0IEHAR+KugsLMb9TVGEiJHaGhFhETWq7QB95xnboJehhEW3z3+LpNEN9nlPOWEc7zOJyR4wsYYl7VzPa9E6zCuox5Sv3tcZaP2ZINHNaYY/SJuOEZtwnrnBJj78ivcxzUMt/IgcxirdI7xL/0oOEVXl/9EjhAhu6N5K3DTWSds35qGqblohYW1tK2NGeLXLY+txlHT5ljbnSNxswlHT/mpSWlkKz+BmjRb6IMn1L1sOpqX6dke/K8UqlulZZO1wtb65k8zOOBSximTOyjk3s4YB1OLjCDW5xZ9wbD8aT8fzuauSymHl8WsbLG+Qrps8=</latexit> ˜ω
+
+<latexit sha1_base64="vUEhZIOPcYQS3Vib5HsaMsr1TFw=">AAADK3icjVJLS8NAEP4a3/XV6tFLsQieSiqiHgUfeBEUrBWsSJKudWleJNtKDf0pXvXkr/GkePVfePDLmgoqPjZsZvabmW9mZ8cOXRkr03zMGUPDI6Nj4xP5yanpmdlCce44DjqRI2pO4AbRiW3FwpW+qCmpXHESRsLybFfU7fZWaq93RRTLwD9SvVCceVbLlxfSsRSh80KxYXtJQ0m3KZJGeCn7/fNC2ayYepW+K9VMKSNbB0Exl0MDTQRw0IEHAR+KugsLMb9TVGEiJHaGhFhETWq7QB95xnboJehhEW3z3+LpNEN9nlPOWEc7zOJyR4wsYYl7VzPa9E6zCuox5Sv3tcZaP2ZINHNaYY/SJuOEZtwnrnBJj78ivcxzUMt/IgcxirdI7xL/0oOEVXl/9EjhAhu6N5K3DTWSds35qGqblohYW1tK2NGeLXLY+txlHT5ljbnSNxswlHT/mpSWlkKz+BmjRb6IMn1L1sOpqX6dke/K8UqlulZZO1wtb65k8zOOBSximTOyjk3s4YB1OLjCDW5xZ9wbD8aT8fzuauSymHl8WsbLG+Qrps8=</latexit> ˜ω
+
+<latexit sha1_base64="VlqwYD5UVrwR+Kkm31QNFQIvC6E=">AAADIXicjVJLT8JAEB7qC/AFevRCJCaeSEsMeiTxES8mmMjDADFtWWBDX2kXEmz4FV715K/xZrwZ/4oHv67FRIniNtuZ/Wbmm9nZMTyLB0JVXxPKwuLS8koylV5dW9/YzGS3aoE79E1WNV3L9RuGHjCLO6wquLBYw/OZbhsWqxuD48heHzE/4K5zJcYea9t6z+FdbuoC0HXLsMOW1+eTm0xeLahy5WYVLVbyFK+Km00kqEUdcsmkIdnEyCEB3SKdAnxN0kglD1ibQmA+NC7tjCaURuwQXgweOtAB/j2cmjHq4BxxBjLaRBYL20dkjvawzySjAe8oK4MeQL5j30qs92uGUDJHFY4hDTCmJOMFcEF9eMyLtGPPaS3/iZzGCNwiukvwRw9CVGXP6ZGgLh3J3nDc1pNI1DXzq6oTWHxgA2nJ0an07IHDkOcR6nAgq8gVvdmUISf714HUpWSSxYkZdfD5kNFboh5MjfZzRmaVWrGglQqly4N8uRjPT5J2aJf2MSOHVKZzqqAOE5Xc0T09KI/Kk/KsvHy6Kok4Zpu+LeXtA7jloug=</latexit> ω
+
+<latexit sha1_base64="VlqwYD5UVrwR+Kkm31QNFQIvC6E=">AAADIXicjVJLT8JAEB7qC/AFevRCJCaeSEsMeiTxES8mmMjDADFtWWBDX2kXEmz4FV715K/xZrwZ/4oHv67FRIniNtuZ/Wbmm9nZMTyLB0JVXxPKwuLS8koylV5dW9/YzGS3aoE79E1WNV3L9RuGHjCLO6wquLBYw/OZbhsWqxuD48heHzE/4K5zJcYea9t6z+FdbuoC0HXLsMOW1+eTm0xeLahy5WYVLVbyFK+Km00kqEUdcsmkIdnEyCEB3SKdAnxN0kglD1ibQmA+NC7tjCaURuwQXgweOtAB/j2cmjHq4BxxBjLaRBYL20dkjvawzySjAe8oK4MeQL5j30qs92uGUDJHFY4hDTCmJOMFcEF9eMyLtGPPaS3/iZzGCNwiukvwRw9CVGXP6ZGgLh3J3nDc1pNI1DXzq6oTWHxgA2nJ0an07IHDkOcR6nAgq8gVvdmUISf714HUpWSSxYkZdfD5kNFboh5MjfZzRmaVWrGglQqly4N8uRjPT5J2aJf2MSOHVKZzqqAOE5Xc0T09KI/Kk/KsvHy6Kok4Zpu+LeXtA7jloug=</latexit> ω
+
+Figure 1. Schematic of the proposed three-step data assimilation framework using stochastic generative models. 
+
+(𝑎 ) Our overarching goal is to enable real-world data assimilation of full wind farm flow fields under operating conditions. First, offline high-fidelity simulations of representative operating states are performed to construct a data distribution. Second, a stochastic generative model is trained to learn this distribution, producing statistically consistent flow-field samples from a compact sample space. Third, during deployment and data assimilation , field observations e.g., from unmanned aerial vehicles (UAVs) and light detection and ranging (LiDAR) systems, are collected under conditions not seen during training, and assimilated through conditional generation. These observations guide the generative model toward the true operating state, enabling predictions beyond the original training distribution. (𝑏 ) In this work, we establish the foundation for this vision by indirectly enforcing turbulent statistics. We first construct a data distribution from DNS of four-dimensional turbulent plane Couette flow . A latent diffusion transformer model is then trained to reproduce the associated turbulent statistics. Finally, the model performs data assimilation for the same flow configuration using diffusion posterior sampling with two observation types: scattered observations and a localized rectangular data block. 
+
+Despite the potential benefits, diffusion models have not yet been explored for data assimilation in three-dimensional high-Reynolds-number wall-bounded turbulent flows, which are relevant for wind farm applications. Indeed, their use in turbulence generation has been largely confined to simplified settings, primarily in two dimensions, including two-dimensional Kolmogorov flow snapshots (Shu et al. 2023; Shysheya et al. 2024) and limited three-dimensional spatiotemporal generation (Gao et al. 2024 a). Conditional generation with diffusion posterior sampling (Chung et al. 2023) from sensor data has been demonstrated only in one-dimensional and two-dimensional configurations (Li et al. 
+
+2024 b). In all of these studies, diffusion models are applied directly in physical space without dimensionality reduction. However, in all the other cited works, the lack of dimensionality reduction limits their applicability to simplified scenarios due to the extremely high number of degrees of freedom required to resolve realistic high-Reynolds-number turbulence in four-dimensional spatiotemporal applications. This limitation is addressed by latent diffusion models projecting the data to a low-dimensional latent space using a separate neural network (Rombach et al. 2022). For such a neural network, various architectures have been explored in the literature. One of these architectures is the conventional autoencoder, which can provide rich latent representations and superior reconstruction accuracy. The variational autoencoder (VAE) (Kingma & Welling 2022), on the other hand, regularizes the latent space by imposing a Gaussian 
+
+3F. Steinbrenner, B. Turan, H. Teng and H. Xiao 
+
+prior, leading to a smooth and compact latent space (Solera-Rico et al. 2024). The 𝛽 -VAE offers further improvement on a smooth latent space by encouraging disentangled, i.e., uncorrelated and independent, latent representations (Higgins et al. 2017). Du et al. (2024) introduced a latent diffusion framework based on conditional neural fields capable of generating four-dimensional spatiotemporal trajectories on unstructured grids. Similarly to Li et al. (2024 b), they achieve conditional generation through diffusion posterior sampling. Recently, Amor´ os-Trepat et al. (2026) employed a hybrid convolutional neural network (CNN) –transformer architecture, termed P3D, to reconstruct snapshots of two- and three-dimensional turbulence from sparse measurements. Guided by the overarching goal of using real-time observations and diffusion models for data assimilation, in this work, we aim to lay the groundwork for such a deployment. Specifically, we focus on a simpler problem and propose a conditional latent diffusion model that can efficiently generate four-dimensional (i.e., three spatial dimensions and one time dimension) spatiotemporal trajectories of turbulent plane Couette flow at 𝑅𝑒 ℎ = 1300 from a single direct numerical simulation (DNS). We use a diffusion model coupled with a 𝛽 -VAE as the stochastic generative model. The scope and contributions of this paper are shown in figure 1 (𝑏 ). We first create our high-fidelity dataset from the DNS of a four-dimensional turbulent plane Couette flow simulation. We then train the latent diffusion model on this dataset. The trained model serves as a prior over four-dimensional spatiotemporal turbulent flow fields and is shown to reproduce key turbulent statistics. The same dataset is then used for the data assimilation of time series observations. We adopt the diffusion transformer (DiT) as the neural backbone of the architecture for our diffusion model. DiT is based on the transformer architecture of Vaswani et al. 
+
+(2017), which has been successfully applied to predict temporal dynamics in fluid flows (Solera-Rico et al. 2024; Gao et al. 2024 b). DiT has achieved state-of-the-art results in computer vision tasks (Peebles & Xie 2023). However, it has been scarcely explored in the field of fluid mechanics, where previous works mainly used traditional U-net-based architectures (Du et al. 2024; Gao et al. 2024 a), with notable exception of Zhou et al. 
+
+(2025); Amor´ os-Trepat et al. (2026). The self-attention mechanism of the transformer can capture long-range dependencies more effectively than convolutional U-nets, which is crucial for incompressible flows, where pressure acts as a global Lagrange multiplier enforcing the divergence-free condition globally. We couple the DiT with a 𝛽 -VAE in a two-stage framework, where the 𝛽 -VAE learns a compact latent representation and the DiT models its spatiotemporal evolution. After training, the model enables conditional generation when observation data is available. The original DiT architecture is extended to generate 4D spatiotemporal turbulent flows. We train models with fewer than 96 degrees of freedom and show that all models down to 16 degrees of freedom can capture key turbulent phenomena and statistics with DNS fidelity. The reduction in dimensionality from 𝑂 (10 6) spatial degrees of freedom to 𝑂 (10 )
+
+in the latent space represents a compression ratio of 𝑂 (10 5) and is of an order of magnitude higher than most current data-driven reduced order or latent diffusion models for turbulent flows. (Eivazi et al. 2022; Linot & Graham 2023; Du et al. 2024; Solera-Rico et al. 2024; Vinograd & Di Leoni 2025). We also demonstrate that turbulent statistics can be indirectly imposed using time series observations. In practical scenarios, one can only expect low-order statistics such as mean or Reynolds stress derived from incomplete experimental observations (Mons et al. 2021). These observations define marginal distributions, while the full flow field corresponds to a joint distribution in a high-dimensional state space with unobserved degrees of freedom marginalized implicitly. Current diffusion-based frameworks enforce statistical quantities by retraining and corrector steps during sampling (Jacobsen et al. 2025) or defining the quantity of interest as an observation operator and 
+
+> 4
+
+Turbulence generation and data assimilation with a latent diffusion model 
+
+using automatic differentiation (Gao et al. 2024 a; Liu et al. 2025). In our method, we impose turbulent statistics using only pointwise sensor observations as the observation operator, avoiding potentially costly differentiation through statistical operators. We demonstrate our method on two data assimilation tasks resembling real-world observations. The observations originate from the same DNS used to train the unconditional diffusion model. We demonstrate that, in data assimilation, imposing the turbulent statistics while ensuring agreement with observations and preserving the stochastic nature of the diffusion model represent conflicting objectives and is by no means trivial. Specifically, we show that spatially dense observations, which are therefore strongly correlated, can distort the learned diffusion prior and lead to departures from correct turbulent statistics. This behaviour parallels known challenges in traditional data assimilation methods such as the EnKF, where the analysis update can violate physical constraints, including conservation laws. The methodology for indirectly imposing statistics introduced here can potentially be adapted to generalize the generation process to flow conditions not present in the training data, allowing the framework to be used with real-time observations. Our approach differs from the majority of previous latent-space generative models, which typically validate results only qualitatively or with limited turbulent statistics. In the present work, we quantitatively and comprehensively assess performance according to the same standard as conventional DNS (Kim et al. 1987). We evaluate key turbulent quantities up to fourth-order statistical moments and use these metrics to determine the minimal latent dimension—a challenging task for high-Reynolds-number wall-bounded turbulence often omitted in previous frameworks combining learned encoders and forecasters.In evaluating the conditionally generated turbulence, we focus on turbulent statistics in addition to the root-mean-square error (RMSE) relative to instantaneous trajectories. While conditioning may reduce RMSE compared with the unconditional flow, physical consistency is ultimately assessed through the reproduction of statistical quantities, which are the primary descriptors of turbulent dynamics. Furthermore, to our knowledge, the present work represents the first use of 𝛽 -VAE for reduced-order modelling in latent diffusion models for turbulent flows. Previous work has demonstrated the effectiveness of 𝛽 -VAE to extract a minimal set of latent variables in simpler flow scenarios (Eivazi et al. 2022; Solera-Rico et al. 2024). Such an ability of the 𝛽 -VAE likely underlies the high compression ratio as described above for the fully turbulent wall-bounded flow considered here. The paper is organized as follows. The methodology and the training dataset are described in §2 and §3 respectively. Results on dimension reduction, turbulence generation, and data assimilation are presented in §4. Conclusions and implications are given in §6. 
+
+> 2. Methods
+
+Our generative learning framework aims to construct a reduced-order model of turbulent flows capable of generating temporal sequences of three-dimensional turbulent flow snapshots. We achieve this through a two-stage latent diffusion approach capable of learning the underlying probability distribution of the four-dimensional turbulent flow. An overview of the complete pipeline is shown in figure 2. Given three-dimensional flow-field snapshots in physical space (figure 2 𝑎 ), a 𝛽 -VAE encoder (figure 2 𝑏 ) compresses the input into a compact latent representation (figure 2 𝑐 ), and a diffusion transformer (DiT) models the temporal evolution in this latent space (figure 2 𝑑 ). The decoder of the 𝛽 -VAE (figure 2 𝑒 )then maps these sequences back to the physical domain (figure 2 𝑓 ). We train the two components sequentially. First, the 𝛽 -VAE learns a low-dimensional encoding of the turbulent snapshots (see figures 2 𝑏, 𝑒 ). Next, the DiT learns the distribution of the latent trajectories (see figure 2 𝑐, 𝑑 ). After training, the framework enables data 
+
+> 5
+
+F. Steinbrenner, B. Turan, H. Teng and H. Xiao <latexit sha1_base64="w3Rbdwj7TeGXxFnsNM2ue8Squjc=">AAADJHicjVJLT8JAEJ7WF+AL9OilkZh4Ii0H9Uh8xYMmGOWRADHbsmBDX2kXEiT+Da968td4Mx68+Es8+HUtJkoUt9nO7Dcz38zOjhk4diR0/VVRZ2bn5hdS6czi0vLKaja3Vo38fmjxiuU7flg3WcQd2+MVYQuH14OQM9d0eM3sHcT22oCHke17l2IY8JbLup7dsS0mADVPmeCe0C4CZvGrbF4v6HJpk4qRKHlKVtnPKQo1qU0+WdQnlzh5JKA7xCjC1yCDdAqAtWgELIRmSzunW8ogtg8vDg8GtId/F6dGgno4x5yRjLaQxcEOEanRFvaxZDThHWfl0CPId+wbiXV/zTCSzHGFQ0gTjGnJeAZc0DU8pkW6iee4lv9EjmMEbhHfJfqjByNU5U7pkaAO7cne2LhtIJG4a9ZXVYewhMB60qLRkfTsgsOU5wHq8CAryBW/2ZhBk/1rQzIpuWTxEkYGvhAyfkvUg6kxfs7IpFItFoydws55MV/aT+YnRRu0SduYkV0q0QmVUYeFe9zRPT2oj+qT+qy+fLqqShKzTt+W+vYBIOSjyA==</latexit> 
+
+Latent Space 
+
+<latexit sha1_base64="ylEZj/Fl2AjzpUincaPnAbwqwbg=">AAADJnicjVJLT8JAEB7qC/AFevTSSEw8kcJBPRJf8WKCUR4JotmWBRr6SnchQeL/8Konf403Y7z5Qzz4dS0mShS32c7sNzPfzM6OGTi2kIbxmtBmZufmF5Kp9OLS8spqJrtWFX4/tHjF8h0/rJtMcMf2eEXa0uH1IOTMNR1eM3sHkb024KGwfe9CDgPedFnHs9u2xSSgq3J3KKA7+nnALH6dyRl5Qy19UinESo7iVfaziQRdUot8sqhPLnHySEJ3iJHA16ACGRQAa9IIWAjNVnZOt5RGbB9eHB4MaA//Dk6NGPVwjjiFiraQxcEOEanTFvaxYjThHWXl0AXkO/aNwjq/Zhgp5qjCIaQJxpRiPAUuqQuPaZFu7Dmu5T+R4xiJW0R3EX/0YISq3Ck9ktSmPdUbG7cNFBJ1zfqq6hCWEFhPWXQ6Up4dcJjqPEAdHmQFuaI3GzPoqn8tSKYkVyxezMjAF0JGb4l6MDWFnzMyqVSL+cJOfuesmCvtx/OTpA3apG3MyC6V6ITKqMMC8x3d04P2qD1pz9rLp6uWiGPW6dvS3j4AuIiksQ==</latexit> 
+
+Physical Space <latexit sha1_base64="ylEZj/Fl2AjzpUincaPnAbwqwbg=">AAADJnicjVJLT8JAEB7qC/AFevTSSEw8kcJBPRJf8WKCUR4JotmWBRr6SnchQeL/8Konf403Y7z5Qzz4dS0mShS32c7sNzPfzM6OGTi2kIbxmtBmZufmF5Kp9OLS8spqJrtWFX4/tHjF8h0/rJtMcMf2eEXa0uH1IOTMNR1eM3sHkb024KGwfe9CDgPedFnHs9u2xSSgq3J3KKA7+nnALH6dyRl5Qy19UinESo7iVfaziQRdUot8sqhPLnHySEJ3iJHA16ACGRQAa9IIWAjNVnZOt5RGbB9eHB4MaA//Dk6NGPVwjjiFiraQxcEOEanTFvaxYjThHWXl0AXkO/aNwjq/Zhgp5qjCIaQJxpRiPAUuqQuPaZFu7Dmu5T+R4xiJW0R3EX/0YISq3Ck9ktSmPdUbG7cNFBJ1zfqq6hCWEFhPWXQ6Up4dcJjqPEAdHmQFuaI3GzPoqn8tSKYkVyxezMjAF0JGb4l6MDWFnzMyqVSL+cJOfuesmCvtx/OTpA3apG3MyC6V6ITKqMMC8x3d04P2qD1pz9rLp6uWiGPW6dvS3j4AuIiksQ==</latexit> 
+
+Physical Space 
+
+<latexit sha1_base64="ZyBt2i9vaOExZubVKqJRaxSgsLk=">AAADKnicjVJLSwMxEJ6u7/pq9ehlsQieytaDeiz1gRehgrWFKpJN07p0XyRppRb/iVc9+Wu8iVd/hge/jVtBi48s2Zl8M/PNZDJu7HtKO85zxpqYnJqemZ3Lzi8sLi3n8itnKupJLmo88iPZcJkSvheKmva0LxqxFCxwfVF3u3uJvd4XUnlReKoHsbgIWCf02h5nGtBlLldhvHvNZMuuyogLpS5zBafomGWPK6VUKVC6qlE+k6FzalFEnHoUkKCQNHSfGCl8TSqRQzGwCxoCk9A8Yxd0S1nE9uAl4MGAdvHv4NRM0RDnhFOZaI4sPrZEpE0b2IeG0YV3klVAV5Bv2DcG6/yYYWiYkwoHkC4Y5wzjMXBNV/D4KzJIPUe1/CdyFKNxi+Qu6pceDFFV8EePNLVp1/TGw21jgyRd459V7cMigXWNxaYD49kBh2vOfdQRQtaQK3mzEYNt+teCZEYKwxKmjAx8EjJ5S9SDqSl9n5Fx5WyrWNoubp9sFcqVdH5maY3WaRMzskNlOqIq6uCo6Y7u6cF6tJ6sZ+vlw9XKpDGr9GVZr+/r06XL</latexit> 
+
+Backward Process 
+
+<latexit sha1_base64="1axyFvEPs8aeZPEwbdzSDnZ1TRs=">AAADKXicjVJLSwMxEJ6ur7Y+2urRy2IRPJVtD9Vj8VG8CBVsFVQku4116b5IUkWLv8Srnvw13tSrf8ODX+JWUPGRJTuTb2a+mUzGTQJfKsd5ylhj4xOTU9lcfnpmdq5QLM13ZDwQHm97cRCLA5dJHvgRbytfBfwgEZyFbsD33f6Gtu+fcyH9ONpTlwk/Dlkv8k99jylAJ8VCMxYXTHTtlog9LuVJsexUHLPs70o1VcqUrlZcymToiLoUk0cDColTRAp6QIwkvkOqkkMJsGMaAhPQfGPndE15xA7gxeHBgPbx7+F0mKIRzppTmmgPWQJsgUiblrGbhtGFt87KoUvIV+wrg/V+zDA0zLrCS0gXjDnDuANc0Rk8/ooMU89RLf+JHMUo3ELfRf7SgyGqCv/okaJTWjO98XHbxCC6a95HVZuwCGB9Y7Fpy3j2wOGa8znqiCDbyKXfbMRgm/51IZmR3LBEKSMDn4DUb4l6MDXVrzPyXenUKtV6pb5bKzfW0/nJ0iIt0QpmZJUatE0t1KHn6IZu6c66tx6sR+v53dXKpDEL9GlZL2/4uqV3</latexit> 
+
+Forward Process 
+
+... ... 
+
+<latexit sha1_base64="HUlUGGRuiTb7wa2ksxFvnoTn71Q=">AAADG3icjVJLT8JAEJ7WF+AL9OilkZh4Ii0H9EgUjRcTjCAkSExbFtzQV9qFBIk/waue/DXejFcP/hcPfl2LiRLFbbYz+83MN7OzYwUOj4Suvynq3PzC4lIqnVleWV1bz+Y2LiJ/ENqsbvuOHzYtM2IO91hdcOGwZhAy07Uc1rD6h7G9MWRhxH2vJkYBa7tmz+NdbpsC0HmF166yeb2gy6VNK0ai5ClZVT+nKHRJHfLJpgG5xMgjAd0hkyJ8LTJIpwBYm8bAQmhc2hndUgaxA3gxeJhA+/j3cGolqIdzzBnJaBtZHOwQkRrtYB9LRgvecVYGPYJ8x76RWO/XDGPJHFc4grTAmJaMp8AFXcNjVqSbeE5q+U/kJEbgFvFdoj96MEZV7oweCerSvuwNx20DicRds7+qqsASAutLi0ZH0rMHDkueh6jDg6wjV/xmEwZN9q8DaUrJJIuXMJrgCyHjt0Q9mBrj54xMKxfFglEqlM6K+fJBMj8p2qJt2sWM7FGZTqiKOmxUd0f39KA+qk/qs/ry6aoqScwmfVvq6wdbU5/7</latexit> 
+
+DiT 
+
+<latexit sha1_base64="ur+YTKNEH31yqVd68c60ogrQr2A=">AAADLXicjVJLS8NAEJ7EV+uztUcvwSp4saQ9qEdfFS+Cgn1AK7JJtzU0LzbbQi3+Fq968td4EMSrf8KDX9ZUUNG6YTOz38x8Mzs7Vug6kTTNJ02fmJyankmlZ+fmFxaXMtnlahT0hM0rduAGom6xiLuOzyvSkS6vh4Izz3J5zeoexPZan4vICfxzOQj5hcc6vtN2bCYBXWZya02LS7a2Wd0rG2XfDlpcXGbyZsFUy/ipFBMlT8k6DbKaRk1qUUA29cgjTj5J6C4xivA1qEgmhcAuaAhMQHOUndMNzSK2By8ODwa0i38Hp0aC+jjHnJGKtpHFxRaINGgd+0gxWvCOs3LoEeQb9rXCOr9mGCrmuMIBpAXGtGI8AS7pCh7jIr3Ec1TLfyJHMRK3iO8S/dGDIaryxvRIUpt2VG8c3DZUSNw1+7OqQ1gEsK6yGFRWnh1wWOrcRx0+ZAW54jcbMRiqfy1IpiRXLH7CyMAnIOO3RD2YmuL3GfmpVEuF4lZh66yU391P5idFK7RKG5iRbdqlYzpFHTZe5Jbu6F5/0B/1Z/3lw1XXkpgcfVn66zuEU6X0</latexit> 
+
+ω-VAE Encoder 
+
+<latexit sha1_base64="ur+YTKNEH31yqVd68c60ogrQr2A=">AAADLXicjVJLS8NAEJ7EV+uztUcvwSp4saQ9qEdfFS+Cgn1AK7JJtzU0LzbbQi3+Fq968td4EMSrf8KDX9ZUUNG6YTOz38x8Mzs7Vug6kTTNJ02fmJyankmlZ+fmFxaXMtnlahT0hM0rduAGom6xiLuOzyvSkS6vh4Izz3J5zeoexPZan4vICfxzOQj5hcc6vtN2bCYBXWZya02LS7a2Wd0rG2XfDlpcXGbyZsFUy/ipFBMlT8k6DbKaRk1qUUA29cgjTj5J6C4xivA1qEgmhcAuaAhMQHOUndMNzSK2By8ODwa0i38Hp0aC+jjHnJGKtpHFxRaINGgd+0gxWvCOs3LoEeQb9rXCOr9mGCrmuMIBpAXGtGI8AS7pCh7jIr3Ec1TLfyJHMRK3iO8S/dGDIaryxvRIUpt2VG8c3DZUSNw1+7OqQ1gEsK6yGFRWnh1wWOrcRx0+ZAW54jcbMRiqfy1IpiRXLH7CyMAnIOO3RD2YmuL3GfmpVEuF4lZh66yU391P5idFK7RKG5iRbdqlYzpFHTZe5Jbu6F5/0B/1Z/3lw1XXkpgcfVn66zuEU6X0</latexit> 
+
+ω-VAE Encoder 
+
+<latexit sha1_base64="k8hcA5gys4A1XjHCgqRbRvw/zio=">AAADGXicjVJLS8NAEJ7EV1tfrR69BIvgqSQi1WPxhRehBfsALZKk2xiaF5ttoRZ/gVc9+Wu8iVdP/hcPfllTQYvWDZuZ/Wbmm9nZsSLPjYWuvynqzOzc/EImm1tcWl5ZzRfWGnHY5zar26EX8pZlxsxzA1YXrvBYK+LM9C2PNa3eYWJvDhiP3TA4F8OItX3TCdyua5sCUE1c5Yt6SZdLm1SMVClSuqphQVHokjoUkk198olRQAK6RybF+C7IIJ0iYG0aAePQXGlndEs5xPbhxeBhAu3h7+B0kaIBzglnLKNtZPGwOSI12sI+kYwWvJOsDHoM+Y59IzHn1wwjyZxUOIS0wJiVjGfABV3DY1qkn3qOa/lP5DhG4BbJXeI/ejBCVf6UHgnq0r7sjYvbRhJJumZ/VXUECwfWkxaNjqWnAw5LngeoI4CsI1fyZmMGTfavA2lKySRLkDKa4OOQyVuiHkyN8XNGJpXGTskol8q13WLlIJ2fDG3QJm1jRvaoQqdURR028tzRPT2oj+qT+qy+fLqqShqzTt+W+voBkQefXA==</latexit> 
+
+t
+
+<latexit sha1_base64="k8hcA5gys4A1XjHCgqRbRvw/zio=">AAADGXicjVJLS8NAEJ7EV1tfrR69BIvgqSQi1WPxhRehBfsALZKk2xiaF5ttoRZ/gVc9+Wu8iVdP/hcPfllTQYvWDZuZ/Wbmm9nZsSLPjYWuvynqzOzc/EImm1tcWl5ZzRfWGnHY5zar26EX8pZlxsxzA1YXrvBYK+LM9C2PNa3eYWJvDhiP3TA4F8OItX3TCdyua5sCUE1c5Yt6SZdLm1SMVClSuqphQVHokjoUkk198olRQAK6RybF+C7IIJ0iYG0aAePQXGlndEs5xPbhxeBhAu3h7+B0kaIBzglnLKNtZPGwOSI12sI+kYwWvJOsDHoM+Y59IzHn1wwjyZxUOIS0wJiVjGfABV3DY1qkn3qOa/lP5DhG4BbJXeI/ejBCVf6UHgnq0r7sjYvbRhJJumZ/VXUECwfWkxaNjqWnAw5LngeoI4CsI1fyZmMGTfavA2lKySRLkDKa4OOQyVuiHkyN8XNGJpXGTskol8q13WLlIJ2fDG3QJm1jRvaoQqdURR028tzRPT2oj+qT+qy+fLqqShqzTt+W+voBkQefXA==</latexit> 
+
+t
+
+<latexit sha1_base64="MdBYa7U0SprOYYw6HWBHLRQKeC8=">AAADKnicjVI7T8MwEL6G97vAyBJRITFFSWlL2RAvsSCBoIAECDnBBKuJEzkuElT8E1aY+DVsiJWfwcAXkyIx8HDk3Pm7u+/O5/PTSGTadV9KVl//wODQ8Mjo2PjE5FR5euYwSzoq4K0giRJ17LOMR0LylhY64sep4iz2I37kt9dz+9E1V5lI5IG+SflZzEIpLkXANKDzcvlAMSGFDO19zUJue+flius0Gw2vVrVdp77krdQ8KM2lmldftj3HNatCxdpNpkslOqULSiigDsXESZKGHhGjDN8JeeRSCuyMusAUNGHsnO5oFLEdeHF4MKBt/EOcTgpU4pxzZiY6QJYIWyHSpgXsLcPowzvPyqFnkO/YtwYLf8zQNcx5hTeQPhhHDOMOcE1X8PgrMi48e7X8J7IXo3GL/C7ZLz3ooqr4jx5puqSm6Y3AbVOD5F0LvqragEUBaxuLTZvGMwSHb87XqENCtpArf7Meg236dwHJjOSGRRaMDHwKMn9L1IOp6Y2G/bNyWHW8htPYq1ZW14r5GaY5mqdFzMgyrdI27aKOADXd0wM9Wk/Ws/VivX66WqUiZpa+LevtA2icpZw=</latexit> 
+
+Training Stage 1 
+
+<latexit sha1_base64="dE78aCWhba0k+CSXuTKL+OfBd+Q=">AAADKnicjVJNT9tAEJ24tCXQj6Q9crGIkHqy1mma5hi1gHqpFASBSBShtVncVey1td5ESqP+k17h1F/DDfXKz+iBt4uDxCGla61n9s3Mm9nZiYpUloax65r3ZOXps+er9bX1Fy9fvW403xyW+UTHYhjnaa5HES9FKpUYGmlSMSq04FmUiqNo/Nnaj6ZClzJXB2ZWiJOMJ0qey5gbQKeNxoHmUkmV+PuGJ8JvnzZaLGh3uizs+Sz4wDohs0ov7LzvdvwwYG61qFqDvFmr0Tc6o5ximlBGghQZ6ClxKvEdU0iMCmAnNAemoUlnF/ST1hA7gZeABwc6xj/B6bhCFc6Ws3TRMbKk2BqRPm1h7zrGCN42q4BeQv7F/uGwZGmGuWO2Fc4gIzDWHeNX4Ia+w+OxyKzyXNTyP5GLGINb2LuU/+jBHFVlj/TI0Dn1XG8kbls4xHYtvq9qGxYNbOwsPu04zwQckTtPUYeCHCKXfbMFg+/6dwbJnRSORVWMHHwa0r4l6sHULEbDX64ctoOwG3T32q3+p2p+VmmDNukdZuQj9ekLDVBHjJp+0QVder+9K+/a+3Pn6tWqmLf0YHk3t0i7pZA=</latexit> 
+
+Training Stage 2 
+
+<latexit sha1_base64="Z4epEW+D9JNi8vz+V81tuiTvj8s=">AAADMXicjVI7T8MwEL6GV3lTGBhYIiokpiplKIyI94IEggISIOQEN1hNnMhxK5WKX8MKE7+GDbHyFxj4bFIkQDwcOXf+7u678/n8NBKZ9rzHgtPXPzA4VBweGR0bn5icKk0fZUlLBbweJFGiTnyW8UhIXtdCR/wkVZzFfsSP/ea6sR+3ucpEIg91J+XnMQulaIiAaUAXU7MHLEYeGbqNRLnbXHKVW8pexbPL/a5Uc6VM+dpLSoUCndElJRRQi2LiJElDj4hRhu+UquRRCuycusAUNGHtnG5oBLEteHF4MKBN/EOcTnNU4mw4MxsdIEuErRDp0gL2lmX04W2ycugZ5Cv2tcXCHzN0LbOpsAPpg3HYMu4C13QFj78i49yzV8t/InsxGrcwd8l+6UEXVcV/9EhTg1ZsbwRum1rEdC34qGoDFgWsaS0ubVrPEBy+PbdRh4SsI5d5sx6Da/t3Ccms5JZF5owMfArSvCXqwdRUv87Id+VoqVKtVWr7S+XVtXx+ijRH87SIGVmmVdqhPdRhar+lO7p3HpxH58l5fnd1CnnMDH1azssbceWowQ==</latexit> 
+
+Sampling for Generation 
+
+<latexit sha1_base64="ur+YTKNEH31yqVd68c60ogrQr2A=">AAADLXicjVJLS8NAEJ7EV+uztUcvwSp4saQ9qEdfFS+Cgn1AK7JJtzU0LzbbQi3+Fq968td4EMSrf8KDX9ZUUNG6YTOz38x8Mzs7Vug6kTTNJ02fmJyankmlZ+fmFxaXMtnlahT0hM0rduAGom6xiLuOzyvSkS6vh4Izz3J5zeoexPZan4vICfxzOQj5hcc6vtN2bCYBXWZya02LS7a2Wd0rG2XfDlpcXGbyZsFUy/ipFBMlT8k6DbKaRk1qUUA29cgjTj5J6C4xivA1qEgmhcAuaAhMQHOUndMNzSK2By8ODwa0i38Hp0aC+jjHnJGKtpHFxRaINGgd+0gxWvCOs3LoEeQb9rXCOr9mGCrmuMIBpAXGtGI8AS7pCh7jIr3Ec1TLfyJHMRK3iO8S/dGDIaryxvRIUpt2VG8c3DZUSNw1+7OqQ1gEsK6yGFRWnh1wWOrcRx0+ZAW54jcbMRiqfy1IpiRXLH7CyMAnIOO3RD2YmuL3GfmpVEuF4lZh66yU391P5idFK7RKG5iRbdqlYzpFHTZe5Jbu6F5/0B/1Z/3lw1XXkpgcfVn66zuEU6X0</latexit> 
+
+ω-VAE Encoder 
+
+<latexit sha1_base64="wHxmXEDTmKWOfPlWPQn+dLNXwBA=">AAADH3icjVJLT8JAEJ7WF+AL9OiFSEw8kcJBPRJF48UEE3kkSExbltrQV7YLCRJ/hFc9+Wu8Ga/8Fw9+uxYTJYrbbGf2m5lvZmfHijw3FoYx0fSFxaXllVQ6s7q2vrGZzW014nDAbVa3Qy/kLcuMmecGrC5c4bFWxJnpWx5rWv0TaW8OGY/dMLgSo4h1fNMJ3J5rmwJQs8rssMv4TbZgFA218rNKKVEKlKxamNM0uqYuhWTTgHxiFJCA7pFJMb42lcigCFiHxsA4NFfZGd1TBrEDeDF4mED7+Ds4tRM0wFlyxiraRhYPmyMyT3vYZ4rRgrfMyqDHkO/Ydwpzfs0wVsyywhGkBca0YrwALugWHvMi/cRzWst/IqcxAreQd4n/6MEYVflzeiSoR0eqNy5uGylEds3+qqoKCwfWV5Y8nSpPBxyWOg9RRwBZRy75ZlOGvOpfF9JUkimWIGE0wcch5VuiHkxN6eeMzCqNcrF0UDy4LBcqx8n8pGiHdmkfM3JIFTqnGuqQN3ygR3rSn/UX/VV/+3TVtSRmm74tffIBma2h2A==</latexit> 
+
+Decoder 
+
+<latexit sha1_base64="0QN+djqo4HmCNPaIPmabojQ7S4g=">AAACBHicbVC7TsMwFHXKq5RXgZHFokJiqhKECmMFDIxFog8pjSrHdVqrjhPZN0AVdeUPWOEH2BAr/8HOh+C0GWjLkSwdnXOv7vHxY8E12Pa3VVhZXVvfKG6WtrZ3dvfK+wctHSWKsiaNRKQ6PtFMcMmawEGwTqwYCX3B2v7oOvPbD0xpHsl7GMfMC8lA8oBTAkZyuyGBISUivZn0yhW7ak+Bl4mTkwrK0eiVf7r9iCYhk0AF0dp17Bi8lCjgVLBJqZtoFhM6IgPmGipJyLSXTiNP8IlR+jiIlHkS8FT9u5GSUOtx6JvJLKJe9DLxP89NILj0Ui7jBJiks0NBIjBEOPs/7nPFKIixIYQqbrJiOiSKUDAtzV2R7BGeslqcxRKWSeus6tSqtbvzSv0qL6iIjtAxOkUOukB1dIsaqIkoitALekVv1rP1bn1Yn7PRgpXvHKI5WF+/pkCZdA==</latexit> D
+
+<latexit sha1_base64="JSGgxnd2/uJRP8/2kZWoFLj1aT4=">AAACBHicbVDLSsNAFJ3UV62vqks3g0VwVRKR6rIogssK9gFpKJPppB06mYSZG7WEbv0Dt/oD7sSt/+HeD3HSZmFbDwwczrmXe+b4seAabPvbKqysrq1vFDdLW9s7u3vl/YOWjhJFWZNGIlIdn2gmuGRN4CBYJ1aMhL5gbX90nfntB6Y0j+Q9jGPmhWQgecApASO53ZDAkBKR3kx65YpdtafAy8TJSQXlaPTKP91+RJOQSaCCaO06dgxeShRwKtik1E00iwkdkQFzDZUkZNpLp5En+MQofRxEyjwJeKr+3UhJqPU49M1kFlEvepn4n+cmEFx6KZdxAkzS2aEgERginP0f97liFMTYEEIVN1kxHRJFKJiW5q5I9ghPWS3OYgnLpHVWdWrV2t15pX6VF1RER+gYnSIHXaA6ukUN1EQURegFvaI369l6tz6sz9lowcp3DtEcrK9fp9eZdQ==</latexit> E
+
+Figure 2. Schematic of the latent conditional diffusion framework. (𝑎, 𝑓 ) The input and output of the framework is a four-dimensional spatiotemporal flow field in physical space. ( 𝑏 ) The encoder of a 𝛽 -VAE maps a temporal sequence of DNS snapshots 𝝓 of velocities 𝑢, 𝑣, 𝑤 and pressure 𝑝 into a low-dimensional latent space z (𝑐 ). ( 𝑑 )A diffusion transformer (DiT) learns the latent dynamics and generates new latent trajectories, where z0 denotes the clean latent sample and z𝑇 the fully diffused one. ( 𝑒 ) The decoder then reconstructs four-dimensional spatiotemporal flow fields ˜𝝓 from the generated latents. Training of the 𝛽 -VAE and the DiT is performed in two separate stages. 
+
+assimilation through conditional generation when observation data are available, as described in §2.3. 2.1. Dimensionality Reduction with 𝛽 -VAE 
+
+Let 𝝓 (𝒙 , 𝑡 ) = [𝑢 (𝒙 , 𝑡 ), 𝑣 (𝒙 , 𝑡 ), 𝑤 (𝒙 , 𝑡 ), 𝑝 (𝒙 , 𝑡 )] ∈ R4 be an incompressible turbulent flow field with velocities 𝑢 , 𝑣 , 𝑤 , and pressure 𝑝 , and 𝒙 = [𝑥, 𝑦, 𝑧 ] be the spatial coordinate. We discretize the spatial domain using a structured Cartesian grid of 𝑑 = 𝑑 1 × 𝑑 2 × 𝑑 3 points, with 𝑑 1, 𝑑 2, and 𝑑 3 points in the 𝑥 -, 𝑦 -, and 𝑧 -directions, respectively. We define a snapshot of the flow at time 𝑡 as the array 
+
+𝜱 (𝑡 ) = [𝝓 (𝑥 1, 𝑦 1, 𝑧 1, 𝑡 ), · · · , 𝝓 (𝑥 𝑑 1, 𝑦 𝑑 2, 𝑧 𝑑 3, 𝑡 )] ∈ R𝑑 𝑐 ×𝑑 , (2.1) where 𝑑 𝑐 = 4 is the number of input channels, corresponding to each of the four field variables. We reduce the dimensionality of the turbulent flow fields using a 𝛽 -variational autoen-coder ( 𝛽 -VAE) (Higgins et al. 2017). The 𝛽 -VAE is essentially a variational autoencoder (VAE) with an additional regularization in the loss function, whose strength is controlled by a hyperparameter 𝛽 ∈ R (see equation 2.2 later). A schematic of the VAE architecture used in the first training stage is shown in figure 3. A VAE consists of an encoder and a decoder, each composed of multiple nonlinear blocks, which together learn a probabilistic latent-variable representation of the data in the bottleneck. Specifically, given an input snapshot 𝝓 ∈ R𝑑 𝑐 ×𝑑 at time 𝑡 over all spatial locations, the encoder E maps the snapshot to a low-dimensional latent representation z ∈ R ˜𝑑 𝑐 × ˜𝑑 , where z = E ( 𝝓 ; 𝛩 ⊲) defines a function E : R𝑑 𝑐 ×𝑑 → R ˜𝑑 𝑐 × ˜𝑑 with the reduced physical dimension ˜𝑑 = ˜𝑑 1 ˜𝑑 2 ˜𝑑 3 and the number of latent channels ˜𝑑 𝑐 . The decoder D reconstructs the input field 𝝓 from the latent bottleneck according to the mapping D : R ˜𝑑 𝑐 × ˜𝑑 → R𝑑 𝑐 ×𝑑 , ˜𝝓 = D ( z; 𝛩 ⊳). The dimensionality of the latent space ˜ 𝑑 𝑐 × ˜𝑑 is typically much smaller than that of the input space, 𝑑 𝑐 × 𝑑 , by a factor of 10 5 as will be shown later. Since the spatial dimensionality of the data is significantly higher than the temporal dimensionality, we apply the encoder and decoder exclusively along the spatial dimensions, treating each time instance 𝝓 (𝒙 , 𝑡 ) as an independent snapshot, following common practice in the literature (Eivazi et al. 2022; Du 
+
+et al. 2024; Solera-Rico et al. 2024). In general, the temporal dimension should also be 
+
+6Turbulence generation and data assimilation with a latent diffusion model      
+
+> Figure 3. Schematic of a VAE architecture. The encoder takes a DNS flow field sample and predicts the mean 𝝁
+> and variance 𝜮 of the variational distribution. In the bottleneck, a sample is drawn from a normal distribution and the latent representation is constructed as a sample from the variational distribution. The decoder reconstructs the input data. The training is conducted by minimizing the loss function in equation 2.2. The detailed 𝛽 -VAE architecture is given in appendix A.1.
+
+incorporated into autoencoder-based dimensionality reduction to achieve a more efficient representation. The encoder and decoder mappings are represented by neural networks with trainable parameters 𝛩 ⊲ and 𝛩 ⊳, respectively. A detailed description of the encoder and decoder model architectures and the choice of hyperparameters is provided in appendix A.1. The VAEs model the data distribution p(𝝓 ) indirectly through the joint distribution p(𝝓 , z) =
+
+p(𝝓 | z) p(z) and obtain p(𝝓 ) through marginalization. This formulation enables nonlinear dimensionality reduction because simple low-dimensional expressions for the conditional distribution p(𝝓 | z) and the prior p(z) can describe complex high-dimensional data. The encoder and decoder are trained jointly by minimizing the following loss function 
+
+ℓVAE (𝛩 ⊲, 𝛩 ⊳) = ∥𝝓 − ˜𝝓 ∥2 − 𝛽 12
+
+ tr (𝜮 ) + 𝝁 ⊤ 𝝁 − 𝑑 z − log (det (𝜮 ))  , (2.2) where tr and det indicate trace and determinant, respectively; 𝝁 and 𝜮 denote the mean and covariance of the variational normal distribution q(z | 𝝓 ; 𝛩 ⊲) = N ( 𝝁 , 𝜮 ), and the prior is 
+
+p(z) = N ( 0, I). Here, 𝑑 z ≡ ˜𝑑 𝑐 ˜𝑑 denotes the total number of degrees of freedom in the latent space. The loss is commonly known as negative evidence lower bound (ELBO). The first term in the loss enforces reconstruction accuracy by minimizing the 𝐿 2-norm ∥·∥ between the reconstructed and input samples. The second term is the Kullback-Leibler divergence 
+
+𝐷 KL (q(z|𝝓 ; 𝛩 ⊲) ∥ p(z)) and measures how similar the variational distribution q(z|𝝓 ; 𝛩 ⊲)
+
+is to the prior p(z). During training, the encoder computes the mean 𝝁 and the covariance 
+
+𝜮 from the input snapshot, as shown in figure 3. Then, we draw a sample 𝝐 ∼ N ( 0, I)
+
+and construct the latent variable as z = 𝝁 + 𝜮 1/2𝝐 to draw from the intended variational distribution. The latent sample z is then fed to the decoder, which reconstructs the input snapshot ˜𝝓 . The reconstructed snapshot is used to compute the loss, and an optimization algorithm updates the parameters of the encoder and decoder through backpropagation and autodifferentiation of the gradients. The number of latent channels ˜ 𝑑 𝑐 (ranging from 1 to 4; see table 3 in appendix A.1) and the reduced physical dimension ˜𝑑 are design choices that determine the capacity of the bottleneck and consequently the efficiency of the latent representation. The latent channels are not restricted to any of the 𝑑 𝑐 = 4 channels for the physical variables (velocities 𝑢, 𝑣, 𝑤 ,or pressure 𝑝 ); instead, they jointly encode the whole flow information. Restricting the latent dimensionality imposes a bottleneck on the information that can pass through the network, leading to a trade-off between reconstruction fidelity and dimensional reduction. In combination with an appropriate choice of the hyperparameter 𝛽 , this trade-off can yield efficient latent representations that balance information preservation against channel 
+
+7F. Steinbrenner, B. Turan, H. Teng and H. Xiao 
+
+capacity limitations. Ideally, each latent channel would correspond to an interpretable flow factor, a property associated with a high degree of disentanglement in the latent space (Higgins et al. 2017). Achieving such interpretability for flows, however, remains challenging and has so far only been demonstrated for low-Reynolds-number regimes (Solera-Rico et al. 2024) or two-dimensional cases (Eivazi et al. 2022). 2.2. Diffusion Transformer (DiT) 
+
+We use a Denoising Diffusion Probabilistic Model (DDPM) (Ho et al. 2020) to generate samples from the latent distribution. In DDPMs, a sample z0 from the learned latent distribution of the 𝛽 -VAE is progressively noised in a forward process. This process is defined by the transition kernel 
+
+q(z𝜏 |z𝜏 −1) = N
+
+
+
+z𝜏 ;√︁ 1 − 𝛽 𝜏 z𝜏 , 𝛽 𝜏 I
+
+
+
+. (2.3) Here, z𝜏 denotes the intermediate noised sample at diffusion time 𝜏 = 1, . . . , 𝑇 and 𝛽 𝜏 is the variance of the added noise at each step. The forward process can be reparametrized as 
+
+z𝜏 = √ ¯𝛼 𝜏 z0 +√︁ 1 − ¯𝛼 𝜏 𝝐 𝜏 , (2.4) where 𝛼 𝜏 = 1 − 𝛽 𝜏 , ¯ 𝛼 𝜏 = Î𝜏 𝑖 =0 𝛼 𝜏 and noise 𝝐 𝜏 ∼ N( 0, I). A neural network is trained to reverse this process by predicting the noise 𝜖 𝜏 from the input z𝜏 at each diffusion step, yielding the reverse transition 
+
+p(z𝜏 −1 |z𝜏 ; 𝜃 ) = N
+
+
+
+z𝜏 −1; 1√𝛼 𝜏 
+
+
+
+z𝜏 − 1− 𝛼 𝜏 √1− ¯𝛼 𝜏 
+
+ˆ𝝐 (z𝜏 , 𝜏 ; 𝜃 )
+
+
+
+, 𝛽 𝜏 I
+
+
+
+, (2.5) where 𝜃 denotes the trainable parameters of the network for noise prediction. The model is trained by minimizing the mean squared error 
+
+ℓDDPM = Ez0 ,𝝐 𝜏 
+
+∥𝝐 𝜏 − ˆ𝝐 (z𝜏 , 𝜏 ; 𝜃 )∥ 2 (2.6) between true noise 𝝐 𝜏 and predicted noise ˆ 𝝐 by the denoising network parameterized by 𝜃 .The reverse process can also be expressed by a stochastic differential equation using the score 𝒔 𝜏 (z𝜏 , 𝜏 ) = ∇z𝜏 log q(z𝜏 ) of the data distribution q(z𝜏 ). The score function is the vector pointing towards the direction in this state space where the rate of change q(z𝜏 )
+
+is highest. This formulation forms the basis for score-based diffusion models (Song & Ermon 2019; Song et al. 2021), where the neural network approximates the score function ˆ𝒔 (z𝜏 , 𝜏 ; 𝜃 ) ≈ 𝒔 𝜏 (z𝜏 , 𝜏 ) instead of the noise. However, the marginal score ∇z𝜏 log q(z𝜏 ) is usually intractable. Instead, denoising score matching exploits the identity ∇z𝜏 log p(z𝜏 ) =
+
+Ez0 |z𝜏 
+
+∇z𝜏 log p(z𝜏 | z0) , and trains the network using the tractable conditional score. Since q(z𝜏 |z0) is Gaussian, its score has a closed-form expression given by 
+
+∇z𝜏 log q(z𝜏 |z0) = − 𝝐 𝜏 
+
+√1 − ¯𝛼 𝜏 
+
+. (2.7) Since the conditional score is linearly proportional to the noise, we parameterize the score network via noise prediction as ˆ𝒔 (z𝜏 , 𝜏 ; 𝜃 ) = − ˆ𝝐 (z𝜏 , 𝜏 ; 𝜃 )√1 − ¯𝛼 𝜏 
+
+, (2.8) which clearly indicates that estimating the noise added to the latent sample at diffusion time 𝜏 is equivalent to estimating the score function 𝒔 . In both DDPMs and score-based frameworks, the neural network serves as a mapping from an i.i.d. Gaussian distribution to a complex joint distribution in a high-dimensional space of the flow state. In this sense, the 
+
+8Turbulence generation and data assimilation with a latent diffusion model 
+
+reverse process can be viewed as a typical regression problem, and DDPMs and score-based models are merely two different parameterizations of this problem. We use the diffusion transformer (DiT) as the neural backbone of our diffusion model. DiT is based on the transformer architecture of Vaswani et al. (2017). In a transformer, the input is first embedded into a sequence of tokens. The sequence is then fed to the attention layer, which forms the key component of the transformer. For flow problems, attention allows a model to focus on the most relevant spatial and temporal regions of a flow, enabling it to capture long-range interactions and coherent structures effectively. Additional details about the DiT and hyperparameters used in this work are provided in appendix A.2. 2.3. Data Assimilation by Conditional Generation 
+
+Conditional generation enables diffusion models to generate samples adhering to prescribed conditions 𝛹 , allowing them to be used for data assimilation. In the context of data assimilation, conditions describe observations of the system such as scattered sensor observations. These observations can be formally described as 𝛹 = F ( z)+ 𝜺 , where F is the observation operator and 𝜺 ∼ N ( 0, 𝜎 2I) is the observation noise. The observation operator 
+
+F : R ˜𝑑 𝑐 × ˜𝑑 → R𝑑 𝑐 ×𝑑 maps noised latent samples z𝜏 in latent space to observations 𝛹 in the physical space. In our case the observation operator F ≡ H ◦ D is a composition of the decoder D of the 𝛽 -VAE and the operator H (e.g., extraction of velocities at a location or a Fourier transform of velocity field to energy spectrum). Conditional generation builds on the score-based diffusion model, which requires an estimate of the conditional score 
+
+∇z𝜏 log p(z𝜏 |𝛹 ) = ∇z𝜏 log p(z𝜏 ) + ∇ z𝜏 log p(𝛹 |z𝜏 ). (2.9) This identity follows directly from Bayes’ rule. The first term corresponds to the prior (unconditional) score, which is learned by the trained unconditional diffusion model. The second term is the gradient of the log-likelihood and acts as a correction to the prior score. In the reverse-time formulation of the diffusion process, this likelihood term modifies the drift of the reverse-time stochastic differential equation (SDE), effectively performing posterior sampling in latent space by biasing the dynamics toward regions consistent with the imposed conditions. As the likelihood term is intractable, we approximate using diffusion posterior sampling (Chung et al. 2023) as 
+
+∇z𝜏 log p(𝛹 |z𝜏 ) ≃ − 1
+
+𝜎 2 ∇z𝜏 ∥𝛹 − F ( ˆz0)∥ 2, (2.10) where ˆ z0 = E[z0 |z𝜏 ] is the posterior mean estimate of the clean latent variable z0. It can be obtained in DDPM as ˆz0 = 1
+
+√ ¯𝛼 𝜏 
+
+ 
+
+> z𝜏
+
+−√︁ 1 − ¯𝛼 𝜏 ˆ𝝐 (z𝜏 , 𝜏 ; 𝜃 )
+
+
+
+, (2.11) following the proposition 1 of Chung et al. (2023), where ˆ𝝐 (𝜃 ) is the denoising network in DDPM as described above.The conditioning strength ˜ 𝜌 = 1/𝜎 2 controls the influence of conditioning on the generation process, which is essentially the weighting between the physical prior and the data. The gradient of the data–model discrepancy term is computed by automatic differentiation. Chung et al. (2023) report that directly using equation 2.10 leads to unstable generation. They suggest a normalization of the conditioning strength 
+
+9F. Steinbrenner, B. Turan, H. Teng and H. Xiao 
+
+that effectively amounts a normalization factor of 
+
+𝜌 ★ = 2
+
+𝜎 2 ∥𝛹 − F ( ˆz0)∥ . (2.12) Such a normalization leads to 
+
+∇z𝜏 log p(𝛹 |z𝜏 ) ≃ − 𝜌 ∇z𝜏 ∥𝛹 − F ( ˆz0)∥ , (2.13) where a hyperparameter 𝜌 is introduced, ranging from 0.3 to 1.0, which is independent of the observation noise variance 𝜎 2. In the implementation we update latent variable as z𝜏 ← z𝜏 − 𝜌 ∇z𝜏 ∥𝛹 − F ( ˆz0)∥ at each diffusion step . Note that equation 2.13 replaces the gradient of the squared 𝐿 2 norm in equation 2.10 with the gradient of the norm itself. While both forms reduce the residual, the squared norm produces a correction proportional to the discrepancy magnitude, whereas the norm yields a directionally similar but rescaled update controlled by 𝜌 . Because the gradient of the 𝐿 2 norm involves division by the discrepancy magnitude, it is not differentiable at zero residual and becomes increasingly sensitive as the discrepancy decreases. In sparse data settings, where only a few observations determine the correction direction, this normalization can overweight those measurements and amplify the influence of observational noise, as reflected in the assimilation behaviour presented later. In principle, diffusion posterior sampling can handle any observational data as long as it can be expressed as a differentiable function, whether it be scattered velocity observations or energy spectra. However, using it to directly impose statistical quantities of interest in turbulence can be challenging. While simpler functions such as mean velocities and Reynolds stresses (from variances) are straightforward, matching more complicated observational data such as energy spectra requires backpropagation through functions like Fourier transforms. We propose to overcome this limitation by imposing statistical quantities indirectly via sampling from the underlying distribution instead. We generate samples using synchronous time series observations of the flow field 𝝓 𝑖 ≡ 𝝓 (𝒙 𝑖 , 𝑡 ) ∈ R𝑑 𝑐 , 𝑖 = 1, . . . , 𝑑 at 𝑁 obs 
+
+locations. We divide the time series into 𝑀 segments of length 𝑑 𝑡 as shown in figure 4. We impose one of these 𝑀 segments 𝛹 𝑖 ∈ R𝑑 𝑐 × 𝑁 obs ×𝑑 𝑡 , 𝑖 = 1, . . . , 𝑀 (consisting of 𝑁 obs × 𝑑 𝑡 
+
+observations in total) on each generated sample as conditions through equation 2.13. In our work, the full field is in a space R𝑑 𝑐 ×𝑑 ×𝑑 𝑡 with 𝑑 = 128 × 64 × 128 for the generation domain and a segment time length 𝑑 𝑡 = 10. The samples 𝛹 𝑖 reside in an observation space 
+
+R𝑑 𝑐 × 𝑁 obs ×𝑑 𝑡 with, e.g., 𝑁 obs = 10000 for a task with this number of sensor observations. At a given location, each of the 𝑑 𝑡 observations in a segment constitutes a realization of the distribution of the flow field at that location. The combination of the 𝑁 obs × 𝑑 𝑡 observations then becomes a realization 𝛹 𝑖 of the marginal distribution of the entire four-dimensional flow field. Diffusion posterior sampling then combines this marginal distribution with the prior obtained from the unconditional model to guide the diffusion process towards a joint distribution consistent with both the learned prior and the imposed observations. Since the flow is statistically stationary, any statistics of the ensemble of 𝑀 observation samples {𝛹 𝑖 }𝑀 𝑖 =1 conform to the statistics of the flow field and shall be imposed on the generated full-field samples. Hence, arbitrarily complicated statistical quantities such as two-point correlations or energy spectra can be imposed without backpropagating through the observation operators, as long as they can be faithfully represented by the samples. In the conditional generation, each generated sample sees a different realization in the observation space (marginal distribution). This ensemble-based sampling procedure admits a natural interpretation within probabilistic data assimilation and is conceptually analogous to the ensemble Kalman filter (EnKF) (Evensen 2009; Zhang et al. 2022). In the EnKF, an 
+
+10 Turbulence generation and data assimilation with a latent diffusion model Time 
+
+Sample 
+
+Sample 1
+
+> <latexit  sha1_base64="Z53GWiuKO35oO6kafpSQ1P+susM=">AAAB7nicbVBNS8NAEJ3Ur1q/qh69LBbBU0lEqseCF48V7Ae0oWw2m3bpJht2J0Ip/RFePCji1d/jzX/jps1BWx8MPN6bYWZekEph0HW/ndLG5tb2Tnm3srd/cHhUPT7pGJVpxttMSaV7ATVcioS3UaDkvVRzGgeSd4PJXe53n7g2QiWPOE25H9NRIiLBKFqpO2ChQlMZVmtu3V2ArBOvIDUo0BpWvwahYlnME2SSGtP33BT9GdUomOTzyiAzPKVsQke8b2lCY2782eLcObmwSkgipW0lSBbq74kZjY2ZxoHtjCmOzaqXi/95/QyjW38mkjRDnrDloiiTBBXJfyeh0JyhnFpCmRb2VsLGVFOGNqE8BG/15XXSuap7jXrj4brWvC7iKMMZnMMleHADTbiHFrSBwQSe4RXenNR5cd6dj2VrySlmTuEPnM8f5EKPQA==</latexit>
+> · · ·
+
+<latexit sha1_base64="bbI3KIlbY8Hr9IEb5hOiOHmviig=">AAACQHicbVDLSsNAFJ34rPVZXboZLIJuSlKkuiy4calgW6ENZTK51aGTSZi5UUvoF7jVH/Iv/AN34taVkzYLbXth4HDOudwzJ0ikMOi6H87S8srq2nppo7y5tb2zu1fZb5s41RxaPJaxvguYASkUtFCghLtEA4sCCZ1geJnrnUfQRsTqFkcJ+BG7V2IgOENL3WB/r+rW3MnQeeAVoEqKue5XnNNeGPM0AoVcMmO6npugnzGNgksYl3upgYTxIbuHroWKRWD8bJJ0TI8tE9JBrO1TSCfs342MRcaMosA6I4YPZlbLyUVaN8XBhZ8JlaQIik8PDVJJMab5t2koNHCUIwsY18JmpfyBacbRlvPvioInfC7uTFPmcRGekTIVzltzZbG1bMv1ZqucB+16zWvUGjdn1Wa9qLlEDskROSEeOSdNckWuSYtwAuSFvJI35935dL6c76l1ySl2Dsi/cX5+AfJxrk0=</latexit> 
+
+𝐿 
+
+<latexit sha1_base64="CspVFVwhMM+EroiEAFBzrwHA4Jk=">AAACQHicbVDLSgMxFM34rPXV6tJNsAi6KTMi1aXgxo2gYFuhLSWTudOGZjJDckdbil/gVn/Iv/AP3IlbV2baWdjWC4HDOedyT46fSGHQdT+cpeWV1bX1wkZxc2t7Z7dU3muYONUc6jyWsX7wmQEpFNRRoISHRAOLfAlNf3CV6c1H0EbE6h5HCXQi1lMiFJyhpe5uuqWKW3UnQxeBl4MKyee2W3ZO2kHM0wgUcsmMaXlugp0x0yi4hOdiOzWQMD5gPWhZqFgEpjOeJH2mR5YJaBhr+xTSCft3Y8wiY0aRb50Rw76Z1zLyP62VYnjRGQuVpAiKTw+FqaQY0+zbNBAaOMqRBYxrYbNS3meacbTlzFxR8ITD/M40ZRYXYYiUqWDRmin/W4u2XG++ykXQOK16tWrt7qxyeZrXXCAH5JAcE4+ck0tyTW5JnXAC5IW8kjfn3fl0vpzvqXXJyXf2ycw4P7+p7a4m</latexit> 
+
+𝐿 
+
+Sample 2
+
+Measurements 
+
+<latexit sha1_base64="h6IH9x9n+BLSwauwLii5zGD00hk=">AAACS3icbVBNS8NAFNxUq7V+69HLYhH0UhKR6lHw4kkqWC20pWw2L+3SzSbsvqgl9G941T/kD/B3eBMPbtocrPXBg2FmHm8YP5HCoOt+OKWl5fLKamWtur6xubW9s7t3b+JUc2jxWMa67TMDUihooUAJ7UQDi3wJD/7oKtcfHkEbEas7HCfQi9hAiVBwhpbq3vS7CM+Yxb6Z9Hdqbt2dDl0EXgFqpJhmf9c56QYxTyNQyCUzpuO5CfYyplFwCZNqNzWQMD5iA+hYqFgEppdNQ0/okWUCGsbarkI6ZX9fZCwyZhz51hkxHJq/Wk7+p3VSDC96mVBJiqD47FGYSooxzRuggdDAUY4tYFwLm5XyIdOMo+1p7ouCJ3wu/sxS5nHzwihTwaI1V/63Vm253t8qF8H9ad1r1Bu3Z7XL06LmCjkgh+SYeOScXJJr0iQtwklCXsgreXPenU/ny/meWUtOcbNP5qZU/gEtNbJS</latexit> 
+
+𝐿 obs 
+
+<latexit sha1_base64="/WNCCENm2MD1Uxant79UGq+gluc=">AAACRXicbVDLSgMxFM34rPXV6tJNsAi6KTNFqsuCG5cV7APaUjLprcZmMkNyR1tK/8Gt/pDf4Ee4E7eaaWdhHxcCh3PO5Z4cP5LCoOt+OmvrG5tb25md7O7e/sFhLn9UN2GsOdR4KEPd9JkBKRTUUKCEZqSBBb6Ehj+4SfTGM2gjQnWPowg6AXtQoi84Q0vV21Ujul43V3CL7nToMvBSUCDpVLt556LdC3kcgEIumTEtz42wM2YaBZcwybZjAxHjA/YALQsVC8B0xtO4E3pmmR7th9o+hXTK/t8Ys8CYUeBbZ8Dw0SxqCblKa8XYv+6MhYpiBMVnh/qxpBjS5O+0JzRwlCMLGNfCZqX8kWnG0TY0d0XBCw7TO7OUSVyEIVKmesvWRFltzdpyvcUql0G9VPTKxfLdZaFSSmvOkBNySs6JR65IhdySKqkRTp7IK3kj786H8+V8Oz8z65qT7hyTuXF+/wC/c7Aj</latexit> 
+
+ω1
+
+<latexit sha1_base64="atzyMIpdTZC7gKFVqOtYSdxgawg=">AAACRXicbVDLSgMxFM34rPVZXboJFkE3ZaZIdSm4cVnBPqAtJZO5U6OZzJDc0ZbSf3CrP+Q3+BHuxK1m2llY64XA4ZxzuSfHT6Qw6LrvztLyyuraemGjuLm1vbO7V9pvmjjVHBo8lrFu+8yAFAoaKFBCO9HAIl9Cy3+4yvTWI2gjYnWLowR6ERsoEQrO0FLNbt2IfrW/V3Yr7nToIvByUCb51Psl57QbxDyNQCGXzJiO5ybYGzONgkuYFLupgYTxBzaAjoWKRWB642ncCT22TEDDWNunkE7Z3xtjFhkzinzrjBjemb9aRv6ndVIML3pjoZIUQfHZoTCVFGOa/Z0GQgNHObKAcS1sVsrvmGYcbUNzVxQ84TC/M0uZxUUYImUqWLRmyv/Woi3X+1vlImhWK16tUrs5K19W85oL5JAckRPikXNySa5JnTQIJ/fkmbyQV+fN+XA+na+ZdcnJdw7I3DjfP8FPsCQ=</latexit> 
+
+ω2
+
+<latexit sha1_base64="UbUmrocKHSHfsNjyYk+fYvwqvDc=">AAACRXicbVDLSgMxFM34rPXV6tJNsAi6KTMi1WXBjRuhgm2FtpRMekejmcyQ3NGWof/gVn/Ib/Aj3IlbzbSzsNYLgcM553JPjh9LYdB1352FxaXlldXCWnF9Y3Nru1TeaZko0RyaPJKRvvGZASkUNFGghJtYAwt9CW3/4TzT24+gjYjUNY5i6IXsVolAcIaWanUbRvQv+6WKW3UnQ+eBl4MKyafRLztH3UHEkxAUcsmM6XhujL2UaRRcwrjYTQzEjD+wW+hYqFgIppdO4o7pgWUGNIi0fQrphP29kbLQmFHoW2fI8M781TLyP62TYHDWS4WKEwTFp4eCRFKMaPZ3OhAaOMqRBYxrYbNSfsc042gbmrmi4AmH+Z1pyiwuwhApU4N5a6b8by3acr2/Vc6D1nHVq1VrVyeV+nFec4HskX1ySDxySurkgjRIk3ByT57JC3l13pwP59P5mloXnHxnl8yM8/0D84OwPw==</latexit> 
+
+ω𝐿 
+
+Figure 4. Schematic of the sampling strategy used to impose statistical quantities. The time series is divided into 𝑀 segments 𝛹 1,𝛹 2, · · · ,𝛹 𝑀 . Each generated sample sees one of the segments 𝑀 segments. 
+
+ensemble of model states represents possible realizations of the system, and its mean and covariance approximate the posterior distribution after assimilating observations. Similarly, the present framework generates an ensemble of samples from a learned diffusion-based prior, and each realization represents a draw from the posterior distribution conditioned on the observations. The ensemble thus embodies uncertainty and statistical structure, with correlations implicitly encoded in the learned diffusion prior rather than propagated explicitly through covariance updates.A key distinction is that EnKF ensembles evolve in physical time according to governing equations, whereas here the evolution occurs in algorithmic diffusion time, beginning from noise and converging toward data-consistent realizations. The diffusion prior therefore plays a role analogous to the forecast model in ensemble data assimilation, while the conditioning step acts as a probabilistic update. It should be noted that matching marginal statistics alone does not guarantee faithful reproduction of the full joint distribution, and systematic validation of correlation structure remains an important direction for future work. From a broader perspective, the unconditional generator represents a prior distribution learned from high-fidelity simulations under nominal operating conditions. When obser-vations exhibit statistical characteristics that differ from those of the training data such as modified mean profiles, Reynolds stresses, or two-point correlations, the conditional sampling process effectively steers the distribution toward a new posterior consistent with the measured flow. In this sense, the method performs distribution-level correction rather than deterministic trajectory matching. This capability aligns with the vision outlined in §1for wind-farm data assimilation: a generative model trained on a baseline set of simulations can be adaptively shifted toward flow regimes implied by field observations. Such distributional steering opens a pathway toward interpolation across operating conditions and, potentially, controlled extrapolation beyond the original training manifold. 
+
+3. Dataset and Training Description 
+
+We evaluate our framework on turbulent incompressible plane Couette flow. We train the 
+
+𝛽 -VAE in the first stage of the training on instantaneous flow-field snapshots 𝝓 of three-dimensional subdomains that are 1/32 of the size of the computational domain of the DNS. The subsequent DiT is trained on sequences of 10 snapshots. The snapshots in these sequences are the encoded latent instantaneous flow fields by the fixed 𝛽 -VAE, which is frozen at this stage. After the entire model is trained, new samples can be generated from 
+
+11 F. Steinbrenner, B. Turan, H. Teng and H. Xiao  <latexit sha1_base64="VI1gF6LqcwoXS2Zde5A6U2yuXKQ=">AAADXHicjVJdbxJBFD2wrW1BlNYEH3whEhP6QhY1rY+NX/HFpCalkAAhu8uUTtiv7AxNkPbP+Nr+IV/8JT54ZlxMlBSczey9c+becz/m+mkolXbd74Wis7X9YGd3r1R+WHn0uLp/cK6SWRaITpCESdbzPSVCGYuOljoUvTQTXuSHoutP35n77pXIlEziMz1PxTDyJrG8kIGnCY2qtYGfhGM1jygWg/RS3jT16NXhqNpwW65d9VWlnSsN5Os02S88xQBjJAgwQwSBGJp6CA+KXx9tuEiJDbEgllGT9l7gBiX6zmglaOERnfI/4amfozHPhlNZ74BRQu6MnnW84P5oGX1am6iCuqL8yf3VYpN7Iywss8lwTumTcc8yfiaucUmLTZ5RbrnM5X88lz6aVZha1JoeLJhVtKFHGhd4Y3sjWW1qEdO14E9W73mTEZvamzo+WMsJOXx7vmIeMWWHscybLRnqtn9jSs9KYVninNEjX0Zp3tLks64GU6mJbiKyXk5Y+995WlXOX7baR62jL68bJ2/zWdvFMzxHk/N0jBN8wilzDnCNb7jFXfGHs+WUncpv02Ih93mCv5ZT+wUlza4s</latexit>  <latexit sha1_base64="36p2ddoVQ+NMZREk/afd+Vq6mPo=">AAADXHicjVJdbxJBFD2w1FJqldYEH3whEpP2hSymaesb8Su+mGBSWhIgZHeZ0gn7lZ2hCdL+GV/1D/niL/HBM+NioqTgbGbvnTP3nvsx109DqbTrfi8UndLWg+3yTmX34d6jx9X9gwuVzLJAdIMkTLKe7ykRylh0tdSh6KWZ8CI/FJf+9I25v7wRmZJJfK7nqRhG3iSWVzLwNKFRtTbwk3Cs5hHFYpBey7tDPXp1NKo23KZrV31VaeVKA/nqJPuFpxhgjAQBZoggEENTD+FB8eujBRcpsSEWxDJq0t4L3KFC3xmtBC08olP+Jzz1czTm2XAq6x0wSsid0bOOF9zvLaNPaxNVUFeUP7k/W2xyb4SFZTYZzil9Mu5Yxo/ENa5psckzyi2XufyP59JHswpTi1rTgwWzijb0SOMKZ7Y3ktWmFjFdC/5k9ZY3GbGpvanjnbWckMO35xvmEVN2Gcu82ZKhbvs3pvSsFJYlzhk98mWU5i1NPutqMJWa6CYi6+WEtf6dp1Xl4mWzddI8+XTcaL/OZ62MZ3iOQ87TKdr4gA5zDnCLL/iKb8UfTsnZdfZ+mxYLuc8T/LWc2i83Ga4y</latexit>  <latexit sha1_base64="+wOTJRejkQCCPWyN5iGlZ6eoSnI=">AAADX3icjVJbSxtBFP6StfXWatQHEV+CoWBfwkaKtW/iDV8EhUYFI2F3MyZD9sbOREiX0F/TV/09Pvo/fPCbcSNYqXaW2XPmm3O+c5njp6FU2nXvSmVn4sPHyanpmdlPn+fmKwuLpyoZZIFoBkmYZOe+p0QoY9HUUofiPM2EF/mhOPP7u+b+7FpkSibxTz1MxWXkdWN5JQNPE2pXVlp+EnbUMKLIW2lPjtZ1O9/6MfrartTcumtX9bXSKJQainWcLJSW0UIHCQIMEEEghqYewoPid4EGXKTELpETy6hJey8wwgx9B7QStPCI9vnv8nRRoDHPhlNZ74BRQu6MnlV84T6wjD6tTVRBXVE+cP+yWPefEXLLbDIcUvpknLaMR8Q1erR4zzMqLMe5/I/n2EezClOLeqMHObOK3umRxhW2bG8kq00tYroWPGe1x5uMWN/eVLFvLbvk8O35mnnElE3GMm82Zqja/nUoPSuFZYkLRo98GaV5S5PPWzWYSk10E5H1csIaf8/Ta+V0o97YrG+efKtt7xSzNoVVrGGd8/Qd2zjEMXMO8Bt/cIPb8r0z6cw5lSfTcqnwWcKL5aw8AjHcr4A=</latexit>  <latexit sha1_base64="hg9Ezsm0xsfGPM7FyQI+7N6IAyQ=">AAADYXicjVLLTttAFD2JoRBKS4BFF9lEjSrRTWRXFY8d4qVuKoHUABJBke0MYRS/5JkgBSsLvoYtfA5rfoNFz0ydSi0qdKzxvXPm3nMfc4Mskkq77kOl6szMvpmbry28XXz3fqm+vHKs0lEeik6YRml+GvhKRDIRHS11JE6zXPhxEImTYLhr7k+uRK5kmvzQ40ycx/4gkRcy9DWhXr3RDdKor8YxRdHNLuVkTfcKb8vdnHzu1Vtu27Wr+VzxSqWFch2my5UP6KKPFCFGiCGQQFOP4EPxO4MHFxmxcxTEcmrS3gtMsEDfEa0ELXyiQ/4HPJ2VaMKz4VTWO2SUiDunZxOfuA8sY0BrE1VQV5RP3NcWG/wzQmGZTYZjyoCMNcv4nbjGJS1e84xLy2ku/+M59dGswtSiXuhBwaziV3qkcYFN2xvJajOLmK6Fv7Pa401ObGhvmti3lgNyBPZ8xTwSyg5jmTebMjRt//qUvpXCsiQlo0++nNK8pcnnpRpMpSa6ich6OWHe3/P0XDn+0vbW2+tHX1vbO+WszaOBj1jjPG1gG99wyJxD3OAWd7ivPjo1p+6s/DKtVkqfVfyxnMZPqUmv9Q==</latexit>  <latexit sha1_base64="5Stg50Q5ohxisUbf3lhJs1LlLbI=">AAADYXicjVLPTxNBFP7aFaUVpZSDh14aGhO8NLuEINwaBePFBBMLJJQ0u9uhTLq/sjMlqZse/Gu44p/jmX/Dg9+MWxNtBGYz+9588973fswLskgq7bo/KlXnycrTZ6u1+vO1Fy/XGxvNE5VO81D0wzRK87PAVyKSiehrqSNxluXCj4NInAaT9+b+9FrkSqbJFz3LxEXsjxN5KUNfExo2WoMgjUZqFlMUg+xKzrf1sPAODvbnb4aNjtt17WovK16pdFCu43Sj8goDjJAixBQxBBJo6hF8KH7n8OAiI3aBglhOTdp7gTnq9J3SStDCJzrhf8zTeYkmPBtOZb1DRom4c3q28Zr7g2UMaG2iCuqK8if3V4uN/xuhsMwmwxllQMaaZfxEXOOKFg95xqXlIpfHeC58NKswtah7elAwq/iBHmlcYt/2RrLazCKma+GfrA55kxOb2Js2jqzlmByBPV8zj4Syz1jmzRYMbdu/EaVvpbAsScnoky+nNG9p8rmvBlOpiW4isl5OmPfvPC0rJztdb6+793m303tXztoqWtjCNufpLXr4iGPmHOIbbnCL79U7p+Y0nOZv02ql9NnEX8tp/QLDTa/+</latexit>      <latexit sha1_base64="ZE/rRzh2OpptVYfV0gfAu6m2hCU=">AAADX3icjVLLSiNBFD1Jj+NjHCfqYhA3YYKgm9CRwcdOfOFGcGCigpHQ3SljkX7RVRFiE/wat/o9Lv2PWXiq7AzMiI9qqu+tU/ee+6jrp6FU2nUfSmXn09jn8YnJqS/TX2e+VWbnjlXSzwLRDJIwyU59T4lQxqKppQ7FaZoJL/JDceL3dsz9yZXIlEzi33qQivPI68byQgaeJtSuLLT8JOyoQUSRt9JLOVzW7XxzdbjSrtTcumtX9aXSKJQainWUzJa+o4UOEgToI4JADE09hAfF7wwNuEiJnSMnllGT9l5giCn69mklaOER7fHf5emsQGOeDaey3gGjhNwZPatY4t63jD6tTVRBXVH+4b62WPfVCLllNhkOKH0yTlrGQ+Ial7R4zzMqLEe5fMRz5KNZhalFvdGDnFlF7/RI4wIbtjeS1aYWMV0L/ma1y5uMWM/eVLFnLbvk8O35innElE3GMm82Yqja/nUoPSuFZYkLRo98GaV5S5PPWzWYSk10E5H1csIa/8/TS+V4td5Yq6/9+lnb2i5mbQKL+IFlztM6tnCAI+Yc4Aa3uMN9+dEZd2acyrNpuVT4zOOf5Sw8ASCLr3o=</latexit>  <latexit sha1_base64="B7H7l5TA74w/QH+OADBkFPU6Qfo=">AAADX3icjVJbSxtBFP6SrddWjfpQxJfQUNCXsCuiPoqX4oug0KhgJOxuxjhkb+xMhLgEf01f6+/x0f/Rh34zboRWqp1l9pz55pzvXOYEWSSVdt3HStX5MDE5NT0z+/HT3PxCbXHpTKWDPBStMI3S/CLwlYhkIlpa6khcZLnw4yAS50F/39yf34pcyTT5roeZuIr9XiKvZehrQp3aSjtIo64axhRFO7uRozXdKbyN0Xqn1nCbrl3114pXKg2U6yRdrHxGG12kCDFADIEEmnoEH4rfJTy4yIhdoSCWU5P2XmCEWfoOaCVo4RPt89/j6bJEE54Np7LeIaNE3Dk96/jK/c0yBrQ2UQV1RfmL+85ivX9GKCyzyXBIGZBxxjIeE9e4ocV7nnFpOc7lfzzHPppVmFrUGz0omFX8To80rrFjeyNZbWYR07XwJasD3uTE+vamjkNr2SNHYM+3zCOhbDGWebMxQ932r0vpWyksS1Iy+uTLKc1bmnzeqsFUaqKbiKyXE+b9PU+vlbONprfV3DrdbOzulbM2jVV8wRrnaRu7OMIJcw5xjx/4iYfqkzPlzDu1Z9NqpfRZxh/LWfkNCWuvcg==</latexit>  <latexit sha1_base64="pD92+zxLwWJH9edPCFBsb3Fg06I=">AAADRXicjVLLSsNAFL2Nr7a+Wl24cBMsgquSiNQuCz5wI7RgH1CLJOk0huZFMi3U4he41W/yG/wId+JK0DNjKmixOmFy75y599zHXDN0nZhr2lNKmZtfWFxKZ7LLK6tr67n8RiMOBpHF6lbgBlHLNGLmOj6rc4e7rBVGzPBMlzXN/pG4bw5ZFDuBf8FHIet4hu07PccyOKCadpUraEVNLnVa0ROlQMmqBvnUFl1SlwKyaEAeMfKJQ3fJoBhfm3TSKATWoTGwCJoj7xndUha+A1gxWBhA+/jbOLUT1MdZcMbS20IUFzuCp0q72KeS0YS1iMqgx5Bv2DcSs3+NMJbMIsMRpAnGjGQ8B87pGhZ/eXqJ5SSX/3hOfDiqELXEM3owRlbeHz3i1KOy7I2DakOJiK5ZX1kd4yYC1pc3Kp1ISxscpjwPkYcPWUcs8WYTBlX2rwtpSMkki58wGuCLIMVbinxm1SAqFdFFRNSLCdN/ztO00tgv6qViqXZQqJSTWUvTNu3QHubpkCp0RlXkbCHGHd3Tg/KoPCsvyuunqZJKfDbp21LePwB4jqjM</latexit>  <latexit sha1_base64="B4CqGrWIwnZ69K1WuV9cGCbcEeM=">AAADRXicjVLLSsNAFL2Nr7a+Wl24cBMsgquSitQuCz5wI7RgH1CLJOk0huZFMi3W4he41W/yG/wId+JK0DNjKmixdcLk3jlz77mPuUbg2BHXtOeEMje/sLiUTKWXV1bX1jPZjXrk90OT1Uzf8cOmoUfMsT1W4zZ3WDMIme4aDmsYvSNx3xiwMLJ974IPA9Z2dcuzu7apc0DVm6tMTstrcqmTSiFWchSvip9NbNEldcgnk/rkEiOPOHSHdIrwtahAGgXA2jQCFkKz5T2jO0rDtw8rBgsdaA9/C6dWjHo4C85IepuI4mCH8FRpF/tUMhqwFlEZ9AjyHftWYtafEUaSWWQ4hDTAmJKM58A5XcNilqcbW45z+Y/n2IejClFLNKUHI2TlzugRpy6VZG9sVBtIRHTN/M7qGDchsJ68UelEWlrgMOR5gDw8yBpiiTcbM6iyfx1IXUomWbyYUQdfCCneUuQzrQZRqYguIqJeTFjh9zxNKvX9fKGYL1YPcuVSPGtJ2qYd2sM8HVKZzqiCnE3EuKcHelSelBflVXn7MlUSsc8m/VjKxydH5akU</latexit>  <latexit sha1_base64="N5yZ2f4YsczMbWcbv8PZoa2xb54=">AAADRXicjVLLSsNAFL2Nr7a+Wl24cBMsgquSiNQuCz5wI7RgH1CLJOk0huZFMi3U4he41W/yG/wId+JK0DNjKmixOmFy75y599zHXDN0nZhr2lNKmZtfWFxKZ7LLK6tr67n8RiMOBpHF6lbgBlHLNGLmOj6rc4e7rBVGzPBMlzXN/pG4bw5ZFDuBf8FHIet4hu07PccyOKDa6CpX0IqaXOq0oidKgZJVDfKpLbqkLgVk0YA8YuQTh+6SQTG+NumkUQisQ2NgETRH3jO6pSx8B7BisDCA9vG3cWonqI+z4Iylt4UoLnYET5V2sU8lowlrEZVBjyHfsG8kZv8aYSyZRYYjSBOMGcl4DpzTNSz+8vQSy0ku//Gc+HBUIWqJZ/RgjKy8P3rEqUdl2RsH1YYSEV2zvrI6xk0ErC9vVDqRljY4THkeIg8fso5Y4s0mDKrsXxfSkJJJFj9hNMAXQYq3FPnMqkFUKqKLiKgXE6b/nKdppbFf1EvFUu2gUCkns5ambdqhPczTIVXojKrI2UKMO7qnB+VReVZelNdPUyWV+GzSt6W8fwBKxqkV</latexit>  <latexit sha1_base64="nCqsZCQtlKJmL3R1a2bBkw+IMuI=">AAADRXicjVLLSsNAFL2Nr7a+Wl24cBMsgquSitQuCz5wI7RgH1CLJOk0huZFMi20xS9wq9/kN/gR7sSVoGfGVNBi64TJvXPm3nMfc43AsSOuac8JZWFxaXklmUqvrq1vbGayW/XI74cmq5m+44dNQ4+YY3usxm3usGYQMt01HNYweifivjFgYWT73hUfBqzt6pZnd21T54Cqo5tMTstrcqnTSiFWchSvip9N7NA1dcgnk/rkEiOPOHSHdIrwtahAGgXA2jQGFkKz5T2jO0rDtw8rBgsdaA9/C6dWjHo4C85IepuI4mCH8FRpH/tcMhqwFlEZ9AjyHXskMevPCGPJLDIcQhpgTEnGS+CcbmExz9ONLSe5/Mdz4sNRhaglmtGDMbJy5/SIU5dKsjc2qg0kIrpmfmd1ipsQWE/eqHQmLS1wGPI8QB4eZA2xxJtNGFTZvw6kLiWTLF7MqIMvhBRvKfKZVYOoVEQXEVEvJqzwe56mlfphvlDMF6tHuXIpnrUk7dIeHWCejqlMF1RBziZi3NMDPSpPyovyqrx9mSqJ2Gebfizl4xNNp6kW</latexit>  <latexit sha1_base64="IPKgolW/7JVgXUOd+7yI9hTIq3M=">AAADRnicjVLLSsNAFD1NfT9bXbhwUyyCq5KI1C4FH7gRVKwKWiSJYwzNi2QqaPEP3Oo3+Qv+hDtx48IzYyqoWJ0wuXfO3HvuY66TBH4mTfOpYBQHBoeGR0bHxicmp6ZL5ZnDLO6krmi6cRCnx46dicCPRFP6MhDHSSrs0AnEkdNeV/dHVyLN/Dg6kNeJaIW2F/kXvmtLQvvLl2elqlkz9ar8VKxcqSJfu3G5MIdTnCOGiw5CCESQ1APYyPidwIKJhFgLXWIpNV/fC9xijL4dWgla2ETb/Hs8neRoxLPizLS3yygBd0rPCha5tzSjQ2sVVVDPKN+4bzTm/Rqhq5lVhteUDhlHNeMOcYlLWvzlGeaWvVz+49nzkaxC1ZL16UGXWYV/9EjiAg3dG5/VJhpRXXM/s9rgTUqsrW8q2NSWHjkcfb5iHhFlk7HUm/UYKrp/55S2lkKzRDmjTb6UUr2lyqdfDapSFV1FZL2cMOv7PP1UDpdrVr1W31uprjXyWRvBPBawxHlaxRq2scucXdZ/h3s8GI/Gs/FivH6YGoXcZxZfVhHvzzyoQQ==</latexit>  <latexit sha1_base64="HAEAAPKR5iZR2aUvfyCMIc/WEJ4=">AAADR3icjVLJTgJBEC0GF8AN9ODBC5GY4IUMxqBH4hYvJhhlSZCYnqHBCbNlpiFB4id41W/yE/wKb8aDB1+3g4kS0Z70VPXrqldLl+HbVih0/TmmxWdm5+YTydTC4tLySjqzWgu9fmDyqunZXtAwWMhty+VVYQmbN/yAM8ewed3oHcr7+oAHoeW5l2Lo85bDuq7VsUwmAF3k2fZ1OqcXdLWyk0oxUnIUrYqXia3TFbXJI5P65BAnlwR0mxiF+JpUJJ18YC0aAQugWeqe0x2l4NuHFYcFA9rDv4tTM0JdnCVnqLxNRLGxA3hmaQv7RDEasJZROfQQ8h37VmHdXyOMFLPMcAhpgDGpGM+AC7qBxV+eTmQ5zuU/nmMfgSpkLeGUHoyQlfNHjwR1aF/1xkK1vkJk18yvrI5wEwDrqZssHSvLLjgMdR4gDxeyiljyzcYMWdW/NiRTkisWN2Jk4Asg5VvKfKbVICuV0WVE1IsJK/6cp0mltlMolgql891c+SCatQRt0CblMU97VKZTqiBnE1Hu6YEetSftRXvV3j5NtVjks0bfVjz2AT4nqG0=</latexit> 
+
+> ω(t0)
+> ω(t3)
+> ω(t9)
+> ω(t89 )
+> ω(t1908 )
+> ω(t1998 )
+> ... ... ... ... ...
+> ω(t92 )
+> ...
+> ω(t12 )
+> 0
+> x
+> y
+> z
+> 2h
+
+(a) <latexit sha1_base64="oRQQ+Lp9c8nUM2gQtnIrkXBKc28=">AAADR3icjVLLTsJAFL0tPgBfoAsXbhqJCW5IMQZdEl9xY4JRHgkS05YBG/pKO5Ag8RPc6jf5CX6FO+PChWfGYqJEdJrpvXPm3nMfc83AsSOu68+KmpiZnZtPptILi0vLK5nsai3y+6HFqpbv+GHDNCLm2B6rcps7rBGEzHBNh9XN3qG4rw9YGNm+d8mHAWu5RtezO7ZlcEAXeXP7OpPTC7pc2qRSjJUcxaviZ5V1uqI2+WRRn1xi5BGH7pBBEb4mFUmnAFiLRsBCaLa8Z3RHafj2YcVgYQDt4d/FqRmjHs6CM5LeFqI42CE8NdrCPpGMJqxFVAY9gnzHvpVY99cII8ksMhxCmmBMScYz4JxuYPGXpxtbjnP5j+fYh6MKUUs0pQcjZOX+0SNOHdqXvbFRbSAR0TXrK6sj3ITAevJGo2Np2QWHKc8D5OFBVhFLvNmYQZP9a0MaUjLJ4sWMBvhCSPGWIp9pNYhKRXQREfViwoo/52lSqe0UiqVC6Xw3Vz6IZy1JG7RJeczTHpXplCrI2UKUe3qgR/VJfVFf1bdPU1WJfdbo20ooH0EJqG4=</latexit> 
+
+(b) <latexit sha1_base64="xr76HmzYP5GtLmPkF7gGf+K8PxM=">AAADeHicjVLLbtNAFD2JebTl0bQsWLCxSBCwiewsSmFVUUBsQEEibaWmRLYzTUYZP2RPqgbL/8HXsIVf4FdQFz0zOEhQ0TLW+N45c++5j7lhpmShPe9Ho+lcu37j5srq2q3bd+6utzY294p0nkdiEKUqzQ/CoBBKJmKgpVbiIMtFEIdK7IezXXO/fyLyQqbJR73IxFEcTBJ5LKNAExq1ep33o+hTOdTiVJd6WlUdd1fJ7IXbGYapGheLmKIc9qeyGpX+c2+76oxaba/r2eVeVPxaaaNe/XSjcR9DjJEiwhwxBBJo6goBCn6H8OEhI3aEklhOTdp7gQpr9J3TStAiIDrjf8LTYY0mPBvOwnpHjKK4c3q6eMT9xjKGtDZRBfWC8oz7s8Um/4xQWmaT4YIyJOOqZXxHXGNKi6s849pymcv/eC59NKswtRSX9KBkVvEVPdI4xrbtjWS1mUVM16LfWb3iTU5sZm9cvLaWE3KE9nzCPBLKAWOZN1syuLZ/Y8rASmFZkpoxIF9Oad7S5HNZDaZSE91EZL2cMP/vebqo7PW6/lZ360OvvfOynrUVPMBDPOE8PcMO3qLPnCN8wVd8w/fmT8d1HjtPf5k2G7XPPfyxnN45eSi44Q==</latexit> N th    <latexit sha1_base64="ackbPd/WtXKwW8a3b4uwfGRiR+c=">AAADTHicjVJLSwMxEJ5ufdR31YMHL4ut4Klse6geiy+8CApWC1pkdxtr6L5IUkGLf8Kr/ibv/g9vKvglbgUttmbJzuTLzDePjJcEXCrHeclY2bHxicnc1PTM7Nz8Qn5x6VTGXeGzuh8HsWh4rmQBj1hdcRWwRiKYG3oBO/M6O/r+7IYJyePoRN0mrBm67Yhfcd9VgBonPGR2URUv8wWn5JhlDyrlVClQuo7ixcwKXVCLYvKpSyExikhBD8glie+cyuRQAqxJPWACGjf3jO5pGr5dWDFYuEA7+LdxOk/RCGfNKY23jygBtoCnTevY+4bRg7WOyqBLyHfsO4O1/4zQM8w6w1tID4xThvEQuKJrWIzyDFPLfi7/8ez7KFSha5FDetBDVuGIHim6oi3TG45qE4PorvnfWe3iRgDrmBub9oxlGxyeOd8gjwiyjlj6zfoMtulfC9I1khmWKGV0wScg9VvqfIbVoCvV0XVE1IsJK/+ep0HltFIqV0vV40qhtp3OWo5WaY02ME+bVKMDOkLOeo4e6JGerGfr1XqzPr5MrUzqs0w/VnbiE/u6qlY=</latexit>  <latexit sha1_base64="6mnnyQHltJmeZvRmIMar2K8p+f0=">AAADUHicjVLJSgNBEH2ZuMYt6sGDl2AQPIWJSMxRcMGLoGCMYERmxjYOmY2ZjtuQ3/Cq3+TNP/Eg6Ot2Imhw6aGnql9XvVq67MhzE2mazzkjPzQ8Mjo2XpiYnJqeKc7OHSVhN3ZEwwm9MD62rUR4biAa0pWeOI5iYfm2J5p2Z1PdN69EnLhhcChvI3HqW+3AvXAdSxJqNc7SlhQ3Mr3u9c6KZbNi6lUaVKqZUka29sPZ3AJaOEcIB134EAggqXuwkPA7QRUmImKnSInF1Fx9L9BDgb5dWglaWEQ7/Ld5OsnQgGfFmWhvh1E87pieJSxz72hGm9YqqqCeUL5y32ms/WOEVDOrDG8pbTKOa8Y94hKXtPjL088s+7n8x7PvI1mFqiX5pQcps/L/6JHEBeq6Ny6rjTSiuuZ8ZrXFm5hYR9+UsK0t2+Sw9fmKeQSUDcZSb9ZnKOn+nVNaWgrNEmSMFvliSvWWKp/falCVqugqIuvlhFW/z9OgcrRaqdYqtYO18kY9m7UxLGIJK5yndWxgF/vM2WG8ezzg0XgyXoy3fO7D1Mgk5vFl5Qvvn4WsSA==</latexit> <latexit sha1_base64="6mnnyQHltJmeZvRmIMar2K8p+f0=">AAADUHicjVLJSgNBEH2ZuMYt6sGDl2AQPIWJSMxRcMGLoGCMYERmxjYOmY2ZjtuQ3/Cq3+TNP/Eg6Ot2Imhw6aGnql9XvVq67MhzE2mazzkjPzQ8Mjo2XpiYnJqeKc7OHSVhN3ZEwwm9MD62rUR4biAa0pWeOI5iYfm2J5p2Z1PdN69EnLhhcChvI3HqW+3AvXAdSxJqNc7SlhQ3Mr3u9c6KZbNi6lUaVKqZUka29sPZ3AJaOEcIB134EAggqXuwkPA7QRUmImKnSInF1Fx9L9BDgb5dWglaWEQ7/Ld5OsnQgGfFmWhvh1E87pieJSxz72hGm9YqqqCeUL5y32ms/WOEVDOrDG8pbTKOa8Y94hKXtPjL088s+7n8x7PvI1mFqiX5pQcps/L/6JHEBeq6Ny6rjTSiuuZ8ZrXFm5hYR9+UsK0t2+Sw9fmKeQSUDcZSb9ZnKOn+nVNaWgrNEmSMFvliSvWWKp/falCVqugqIuvlhFW/z9OgcrRaqdYqtYO18kY9m7UxLGIJK5yndWxgF/vM2WG8ezzg0XgyXoy3fO7D1Mgk5vFl5Qvvn4WsSA==</latexit> 
+
+> cClip: !1908 Time tUwUw
+
+Figure 5. DNS of turbulent plane Couette flow is used to construct the spatiotemporal dataset used for training. 
+
+(𝑎 ) First, The computational domain of the DNS is divided at the channel centreline. We use the top half with 16 subdomains (grey) and generate one subdomain (one snapshot) with 1/32 size of the computational domain of the DNS (blue). Depicted is the plane Couette flow domain with channel half-height ℎ; both walls move in streamwise direction 𝑥 with wall velocity 𝑈 w. (𝑏 ) Second, for the training of the Diffusion Transformer (DiT) each trajectory is segmented into clips. Illustrated is the segmentation of the 2000-snapshot trajectory of the DNS for one subdomain 𝝓 (𝑡 𝑖 ) with 𝑡 𝑖 = 𝑖 × 10 ∆𝑡 . Each snapshot is a three-dimensional image (grey box). Every 𝜱 𝑖 is a clip including 10 snapshots with timestep ∆𝑡 gen starting at 𝑡 𝑖 . A stride of 30 ∆𝑡 produces 𝑁 c = 637 clips for one subdomain and 10 ,192 clips in total for all 16 subdomains in the top half of the simulation domain. 
+
+the model through inference, with each inference generating a sequence of 10 snapshots of one single subdomain. The incompressible plane Couette flow has a Reynolds number of 𝑅𝑒 ℎ = 1300, based on the channel half-height ℎ. The dataset is obtained from a spectral DNS of Teng et al. (2018) in a domain 40 𝜋 × 2 × 6𝜋 on a 1024 × 129 × 256 grid and with time step ∆𝑡 = 0.01 ℎ/𝑈 w,where 𝑈 w is the wall velocity at 𝑦 = 0 and 2. Periodic boundary conditions were applied in the streamwise and spanwise direction using the homogeneity of plane Couette flow in these directions. After reaching statistical stationarity, the spatiotemporal flow fields consisting of the velocity fields 𝒖 = (𝑢, 𝑣, 𝑤 ) and pressure field 𝑝 are sampled over 20 ,000 ∆𝑡 at intervals of 10 ∆𝑡 , yielding 2000 snapshots of the field 𝝓 . We generate only 1/32 of DNS domain by exploiting the top–bottom symmetry as well as streamwise ( 𝑥 )and spanwise ( 𝑧 ) homogeneity of the turbulent statistics in plane Couette flows. To train such a generator, we divide the top half of the the computational domain of the DNS into 16 subdomains with 1 /32 of the size of the original DNS domain (figure 5 𝑎 ). This reduced subdomain size reduces GPU memory usage and increases the number of training samples. The number of training samples could be further increased by also incorporating the bottom half of the DNS domain and changing the direction of the velocity. As we show in §4 our models successfully learn the dynamics of the plane Couette flow by using the top half for training. Each subdomain has the size of 𝐿 𝑥 × 𝐿 𝑦 × 𝐿 𝑧 = 5𝜋 × 1 × 3𝜋 
+
+with 𝑑 = 128 ×64 ×128 grid points. The subdomains are decorrelated across the streamwise and spanwise direction (refer to §4.1), allowing each to serve as an independent sample and enabling the extraction of many training trajectories from a single DNS. The use of a 
+
+12 Turbulence generation and data assimilation with a latent diffusion model Generated             
+
+> 03∆tgen 6∆tgen 9∆tgen
+> DNS
+> Time t
+> −0.10.00.10.20.30.40.50.60.70.8Streamwise Velocity  u
+> Figure 6. Unconditional generation of plane Couette flow. Streamwise velocity 𝑢 at 𝑦 +=15 for a sequence generated with 16 latent degrees of freedom (top) compared to DNS data (bottom) at four selected time steps.
+
+reduced physical domain reflects a conceptual distinction between probabilistic generative modelling and conventional DNS requirements. As this difference is central to interpreting the training and generation strategy adopted here, we provide a detailed discussion in §5.1. The trained model generates sequences of 10 snapshots (clips) with timestep ∆𝑡 gen =
+
+100 ∆𝑡 ,
+
+𝜱 𝑖 = 𝝓 (𝑡 𝑖 ), 𝝓 (𝑡 𝑖 + ∆𝑡 gen ), . . . , 𝝓 (𝑡 𝑖 + 9 ∆𝑡 gen ),
+
+with 𝑡 𝑖 = 𝑖 × 10 ∆𝑡 . The resulting generation window is approximately half of the integral timescale of the flow. To create training samples, we divide the 2,000-snapshot trajectory obtained from the DNS into sequences of 𝑑 𝑡 = 10 snapshots as shown in figure 5 (𝑏 ). This procedure yields a total of 10 ,192 clips, which constitute our dataset { 𝜱 𝑖 }10 ,191  
+
+> 𝑖 =0
+
+used to train the models described in §4.1. For conditional generation in §4.2, the dataset is split in half along the streamwise direction. The model is then trained with the first half and tested with samples chosen from the second half. To ensure that training and test samples are fully decorrelated, test samples are chosen sufficiently far away in the streamwise direction from the training dataset. 
+
+4. Results 
+
+4.1. Dimensionality Reduction and Turbulence Generation 
+
+We first evaluate the performance of our model in unconditional generation of plane Couette flow, focusing especially on dimensionality reduction. We train multiple 𝛽 -VAEs with different numbers of latent degrees of freedom 𝑑 z. For each configuration, a corresponding DiT is trained in the latent space. We evaluate six latent configurations with degrees of freedom of 4, 8, 16, 32, 64, and 96. The detailed shapes of the trained latent representations are provided in table 2 of appendix A.1. Higher-dimensional latent spaces ( 𝑑 z > 96) were found to be difficult to train, likely due to the increasing complexity of the represented dynamics, and are not pursued further. Identifying an efficient latent representation is essential for dimensionality reduction (Eivazi et al. 2022). However, determining the minimal latent dimension for complex, multiscale flows remains challenging, and no universal criterion exists. Prior work has used various indicators (Linot & Graham 2022; Vinograd & Di Leoni 2025; Zeng et al. 2024). Here, we select the latent dimension at which errors in the statistics level off, following the strategy of Linot & Graham (2023). The reconstructed velocity fields resemble the DNS in terms of both vortical structures and mean quantities. The unconditionally generated fields reproduce the long streamwise streaks characteristic of plane Couette flow. These streaks undergo waviness and subsequent 
+
+13 F. Steinbrenner, B. Turan, H. Teng and H. Xiao <latexit sha1_base64="MwFX4+ylurRVzG6v3JtPBibEgoA=">AAADqHicbVJta9RAEN72fKnxrdWPfhm8llYpx0W0ip8qxWIF4Uq9ttJcy2YzuVu62Q3ZyfVCyC/wk6A/zn/jJndCe9eFwOwz+8w8z2TCVElL3e7fpeXWnbv37q888B4+evzk6eras2Nr8kxgXxhlstOQW1RSY58kKTxNM+RJqPAkvNyr8ydjzKw0+jsVKQ4SPtQyloKTgw4nF6vtbqfbHFgM/FnQZrPTu1hb/hVERuQJahKKW3vmd1MalDwjKRRWXpBbTLm45EM8c6HmCdpB2SitYMMhEcQmc58maNDrjJIn1hZJ6F4mnEZ2PleDt+bCZK4zxR8GpdRpTqjFtHGcKyAD9RggkhkKUoULuMik0w5ixDMuyA3rRmWNVzQhnFC1CDdyPG8DjhBBxkAjBJ7TyPkbcdtcP307gk2nPLTFJszIILUlrhRGH+GgYRXu/Ri3XSXXAiTVOtPMjGWEECI5URAaFUHdEGyepiYj2LqS7hbUiXpmRr3qeIHTJeNAxnv9XkIqVVxqZXiEkXcbCAEqix5AcBDvS4WfJ27lbDnV27FUVC4HUAb10ExO5fn5132T66jxtuDL6Aa3hSVMtp0XqYfOTcexqo2mEsz9UEev/veYGRYmSbiOrvk68wdl4IJJ2YDNENbbbX+9ctwglm6J/fmVXQyO33T8nc7O4dv27rvZOq+wF+wl22I+e8922RfWY30mGLKf7Df703rd6rVOWj+mT5eXZpzn7MZphf8A/48tLA==</latexit> 𝐿 
+
+<latexit sha1_base64="bjKYAdRO+0ZTKNpYyiXNSiPEEzs=">AAADqHicbVJta9RAEN72fKnxrdWPfhm8llYpx0W0ip8qxWIF4Uq9ttJcy2YzuVu62Q3ZyfVCyC/wk6A/zn/jJndCe9eFwOwz+8w8z2TCVElL3e7fpeXWnbv37q888B4+evzk6eras2Nr8kxgXxhlstOQW1RSY58kKTxNM+RJqPAkvNyr8ydjzKw0+jsVKQ4SPtQyloKTgw6Li9V2t9NtDiwG/ixos9npXawt/woiI/IENQnFrT3zuykNSp6RFAorL8gtplxc8iGeuVDzBO2gbJRWsOGQCGKTuU8TNOh1RskTa4skdC8TTiM7n6vBW3NhMteZ4g+DUuo0J9Ri2jjOFZCBegwQyQwFqcIFXGTSaQcx4hkX5IZ1o7LGK5oQTqhahBs5nrcBR4ggY6ARAs9p5PyNuG2un74dwaZTHtpiE2ZkkNoSVwqjj3DQsAr3fozbrpJrAZJqnWlmxjJCCJGcKAiNiqBuCDZPU5MRbF1JdwvqRD0zo151vMDpknEg471+LyGVKi61MjzCyLsNhACVRQ8gOIj3pcLPE7dytpzq7VgqKpcDKIN6aCan8vz8677JddR4W/BldIPbwhIm286L1EPnpuNY1UZTCeZ+qKNX/3vMDAuTJFxH13yd+YMycMGkbMBmCOvttr9eOW4QS7fE/vzKLgbHbzr+Tmfn8G17991snVfYC/aSbTGfvWe77AvrsT4TDNlP9pv9ab1u9VonrR/Tp8tLM85zduO0wn8C4i0t</latexit> 𝐿 
+
+<latexit sha1_base64="7Kj+qYVof+XBaJlTo6xm2TclXUQ=">AAADqHicbVJtT9RAEF44X7C+APrRLxMPAhpyuRpF4ycMkYiJyRE8DkMPst1OuQ3b3aY7Pa42/QV+MtEf579xW84E7tikyewz+8w8z3TCVElL3e7fhcXWnbv37i898B4+evxkeWX16ZE1eSawL4wy2XHILSqpsU+SFB6nGfIkVDgIL3br/GCMmZVGf6MixWHCz7WMpeDkoIMfZyvtbqfbHJgP/GnQZtPTO1td/BVERuQJahKKW3vid1MaljwjKRRWXpBbTLm44Od44kLNE7TDslFawbpDIohN5j5N0KDXGSVPrC2S0L1MOI3sbK4Gb82FyUxnit8PS6nTnFCLq8ZxroAM1GOASGYoSBUu4CKTTjuIEc+4IDesG5U1XtKEcELVPNzI8bx1OEQEGQONEHhOI+dvxG1z/fj1EDac8tAWGzAlg9SWuFIYfYD9hlW492PccpVcC5BU60wzM5YRQojkREFoVAR1Q7B5mpqMYPNSultQJ+qZGfWy4wVOl4wDGe/2ewmpVHGpleERRt5tIASoLHoAwX68JxV+mriVs+WV3o6lonI5gDKoh2ZyKk9Pv+yZXEeNtzlfRje4LSxhsuW8SH3u3HQcq1pvKsHMD3X06n+PqWFhkoTr6JqvE39YBi6YlA3YDGGt3fbXKscNYumW2J9d2fng6HXH3+5sH7xp77ydrvMSe85esE3ms3dsh31mPdZngiH7yX6zP61XrV5r0Pp+9XRxYcp5xm6cVvgPBiYtLg==</latexit> 𝐿 
+
+<latexit sha1_base64="MwFX4+ylurRVzG6v3JtPBibEgoA=">AAADqHicbVJta9RAEN72fKnxrdWPfhm8llYpx0W0ip8qxWIF4Uq9ttJcy2YzuVu62Q3ZyfVCyC/wk6A/zn/jJndCe9eFwOwz+8w8z2TCVElL3e7fpeXWnbv37q888B4+evzk6eras2Nr8kxgXxhlstOQW1RSY58kKTxNM+RJqPAkvNyr8ydjzKw0+jsVKQ4SPtQyloKTgw4nF6vtbqfbHFgM/FnQZrPTu1hb/hVERuQJahKKW3vmd1MalDwjKRRWXpBbTLm45EM8c6HmCdpB2SitYMMhEcQmc58maNDrjJIn1hZJ6F4mnEZ2PleDt+bCZK4zxR8GpdRpTqjFtHGcKyAD9RggkhkKUoULuMik0w5ixDMuyA3rRmWNVzQhnFC1CDdyPG8DjhBBxkAjBJ7TyPkbcdtcP307gk2nPLTFJszIILUlrhRGH+GgYRXu/Ri3XSXXAiTVOtPMjGWEECI5URAaFUHdEGyepiYj2LqS7hbUiXpmRr3qeIHTJeNAxnv9XkIqVVxqZXiEkXcbCAEqix5AcBDvS4WfJ27lbDnV27FUVC4HUAb10ExO5fn5132T66jxtuDL6Aa3hSVMtp0XqYfOTcexqo2mEsz9UEev/veYGRYmSbiOrvk68wdl4IJJ2YDNENbbbX+9ctwglm6J/fmVXQyO33T8nc7O4dv27rvZOq+wF+wl22I+e8922RfWY30mGLKf7Df703rd6rVOWj+mT5eXZpzn7MZphf8A/48tLA==</latexit> 𝐿 
+
+<latexit sha1_base64="bjKYAdRO+0ZTKNpYyiXNSiPEEzs=">AAADqHicbVJta9RAEN72fKnxrdWPfhm8llYpx0W0ip8qxWIF4Uq9ttJcy2YzuVu62Q3ZyfVCyC/wk6A/zn/jJndCe9eFwOwz+8w8z2TCVElL3e7fpeXWnbv37q888B4+evzk6eras2Nr8kxgXxhlstOQW1RSY58kKTxNM+RJqPAkvNyr8ydjzKw0+jsVKQ4SPtQyloKTgw6Li9V2t9NtDiwG/ixos9npXawt/woiI/IENQnFrT3zuykNSp6RFAorL8gtplxc8iGeuVDzBO2gbJRWsOGQCGKTuU8TNOh1RskTa4skdC8TTiM7n6vBW3NhMteZ4g+DUuo0J9Ri2jjOFZCBegwQyQwFqcIFXGTSaQcx4hkX5IZ1o7LGK5oQTqhahBs5nrcBR4ggY6ARAs9p5PyNuG2un74dwaZTHtpiE2ZkkNoSVwqjj3DQsAr3fozbrpJrAZJqnWlmxjJCCJGcKAiNiqBuCDZPU5MRbF1JdwvqRD0zo151vMDpknEg471+LyGVKi61MjzCyLsNhACVRQ8gOIj3pcLPE7dytpzq7VgqKpcDKIN6aCan8vz8677JddR4W/BldIPbwhIm286L1EPnpuNY1UZTCeZ+qKNX/3vMDAuTJFxH13yd+YMycMGkbMBmCOvttr9eOW4QS7fE/vzKLgbHbzr+Tmfn8G17991snVfYC/aSbTGfvWe77AvrsT4TDNlP9pv9ab1u9VonrR/Tp8tLM85zduO0wn8C4i0t</latexit> 𝐿 
+
+<latexit sha1_base64="7Kj+qYVof+XBaJlTo6xm2TclXUQ=">AAADqHicbVJtT9RAEF44X7C+APrRLxMPAhpyuRpF4ycMkYiJyRE8DkMPst1OuQ3b3aY7Pa42/QV+MtEf579xW84E7tikyewz+8w8z3TCVElL3e7fhcXWnbv37i898B4+evxkeWX16ZE1eSawL4wy2XHILSqpsU+SFB6nGfIkVDgIL3br/GCMmZVGf6MixWHCz7WMpeDkoIMfZyvtbqfbHJgP/GnQZtPTO1td/BVERuQJahKKW3vid1MaljwjKRRWXpBbTLm44Od44kLNE7TDslFawbpDIohN5j5N0KDXGSVPrC2S0L1MOI3sbK4Gb82FyUxnit8PS6nTnFCLq8ZxroAM1GOASGYoSBUu4CKTTjuIEc+4IDesG5U1XtKEcELVPNzI8bx1OEQEGQONEHhOI+dvxG1z/fj1EDac8tAWGzAlg9SWuFIYfYD9hlW492PccpVcC5BU60wzM5YRQojkREFoVAR1Q7B5mpqMYPNSultQJ+qZGfWy4wVOl4wDGe/2ewmpVHGpleERRt5tIASoLHoAwX68JxV+mriVs+WV3o6lonI5gDKoh2ZyKk9Pv+yZXEeNtzlfRje4LSxhsuW8SH3u3HQcq1pvKsHMD3X06n+PqWFhkoTr6JqvE39YBi6YlA3YDGGt3fbXKscNYumW2J9d2fng6HXH3+5sH7xp77ydrvMSe85esE3ms3dsh31mPdZngiH7yX6zP61XrV5r0Pp+9XRxYcp5xm6cVvgPBiYtLg==</latexit> 𝐿 
+
+Figure 7. Vortical structures visualized by instantaneous iso-surfaces of the 𝑄 -criterion at 𝑄 = 0.1 for the (𝑎 )
+
+DNS and (𝑏 ) the model with 𝑑 z = 16. 
+
+breakdown, consistent with the DNS behaviour. Figure 6 compares these characteristics for the DNS and the unconditionally generated sequence. We focus on the model with 𝑑 z = 16 in this figure, as later results indicate that turbulence statistics begin to degrade below this latent size. The DNS contains numerous quasi-streamwise vortices typical of wall-bounded turbulence. The generated fields exhibit fewer small-scale vortical structures. The reduced abundance of fine-scale vortical structures reflects the limited degrees of freedom imposed by the latent representation. Consequently, the generated flow primarily captures the dominant large-scale motions, while smaller-scale turbulent motions are weakened or absent due to the constrained latent representation. This results in flow fields that are qualitatively less rich in small-scale turbulent activity, as illustrated by the instantaneous 𝑄 -criterion iso-surface in figure 7. While even low latent dimensions can reproduce general flow features and the mean velocity profile, only higher-dimensional latent spaces can faithfully represent the second- and higher-order statistics. We assess model performance and justify the selected latent dimension by evaluating standard turbulence statistics of the generated flow fields up to fourth order. We consider statistically stationary plane Couette flow and decompose the velocity field as 𝒖 = 𝒖 + 𝒖 ′, where (·) denotes the mean velocity and (·) ′ the fluctuations. The velocity components (𝑢, 𝑣, 𝑤 ) correspond to the streamwise, wall-normal, and spanwise directions. All statistics are computed from an ensemble of 300 generated sequences and are averaged in time and over the homogeneous streamwise and spanwise directions. We begin our assessment with the first order mean streamwise velocity profile. All models and the DNS can follow the logarithmic law of the wall with 𝑢 + = (1/𝜅 ) ln 𝑦 + + 𝐶 
+
+with 𝜅 = 0.41 and 𝐶 = 5.1 (Avsarkisov et al. 2014), where 𝑢 + = (𝑢 + 𝑈 w)+. The profile of the mean streamwise velocity in wall coordinates is shown in figure 8 (𝑎 ). Models with lower latent dimensions correspond to lighter shades of blue in this figure and through the section. Here we note that all normalization of the model results into wall coordinates (·) + is done with friction velocity 𝑢 𝜏 =√︁ 𝜈 (𝜕𝑢 /𝜕𝑦 )| 𝑦 =0 of the DNS. We observed that evaluating the streamwise velocity gradient at the wall ( 𝑦 = 0) produced significantly higher gradient values. This behavior is attributed to the extremely fine mesh resolution near the wall, which increases numerical sensitivity in the gradient calculation, even though the predicted velocity field remains accurate. First-order statistics alone do not reveal accuracy differences among models, including those with latent dimension 𝑑 z = 4. Second-order statistics, however, show a clear degradation for 𝑑 z < 16. Figure 8 (𝑏 ) presents the components of Reynolds normal stresses, the squared velocity fluctuations. Models with 𝑑 z ≥ 16 reproduce all three velocity fluctuation components accurately. Models with smaller latent dimensions significantly underestimate fluctuation intensities. This is evidenced by a sharp drop, most evident in the streamwise component 𝑢 ′2+
+
+where the peak in the buffer layer is significantly underestimated although the location of the peak is captured by all models. This peak also 
+
+14 Turbulence generation and data assimilation with a latent diffusion model 10 −1 10 0 10 1 10 2
+
+0510 15 20               
+
+> u+
+> u+=y+
+> log law
+> u+=y+
+> log law
+> u+=y+
+> log law
+> u+=y+
+> log law
+> u+=y+
+> log law
+> u+=y+
+> log law
+> u+=y+
+> log law
+> (a)
+
+0.00 0.25 0.50 0.75 1.00 0.00.40.81.2
+
+> −u′v′+
+> (b)
+
+10 −1 10 0 10 1 10 2
+
+y+
+
+0369
+
+> u′2
+> i
+> +
+> u′2+
+> w′2+
+> v′2+
+> (c)
+
+0.00 0.25 0.50 0.75 1.00 
+
+y/h
+
+0.40.71.01.3
+
+> Stotal
+> (d)
+
+4816 32 64 96 
+
+> Latent Dimension  dz
+
+DNS Generated            
+
+> Figure 8. First- and second-order turbulent statistics of the unconditionally generated flow. (𝑎 )Mean streamwise velocity profiles compared with the law of the wall (grey), (𝑏 )Reynolds shear stress, (𝑐 )Reynolds normal stresses, (𝑑 )total shear stress as the sum of mean and Reynolds shear stress. We show the statistics for flows generated with varying latent dimensions 𝑑 zfrom 4 to 96 and compare against the DNS data.
+
+hints at the location of the most energetic eddies in the turbulent flow characterized by the maximum turbulent kinetic energy 𝐾 + = 0.5
+
+
+
+𝑢 ′2+
+
++ 𝑣 ′2+
+
++ 𝑤 ′2+
+
+at 𝑦 + = 15 in the buffer layer. As latent dimension increases, the generated statistics converge toward the DNS. These results indicate that latent spaces with sufficient dimensionality preserve the dominant flow dynamics. Diffusion models trained in such spaces generate unconditional samples that decode into physically consistent flow fields. A central principle of turbulent flows is the overall force balance. Figure 8 (𝑑 ) shows the total stress, defined as the sum of the mean shear stress d 𝑢 +/d𝑦 + and the Reynolds stress −𝑢 ′𝑣 ′+. Models with 𝑑 z ≥ 16 reproduce a total stress close to the DNS unity across the entire channel, indicating that fully stationary states are achieved (Teng et al. 2018). In contrast, models with 𝑑 z < 16 fail to maintain this balance, primarily due to an underestimation of the Reynolds shear stress (figure 8 𝑏 , consistent with the reduced velocity fluctuations (figure 8 𝑐 ). Overall, it is evident that the models with 𝑑 z < 16 show a clear drop-off in the accuracy of the second-order statistics, indicating that 𝑑 z = 16 is the minimum latent dimension for our setup. We quantify the scales of the coherent structures using two-point velocity correlations. The two-point velocity correlations show that all models accurately reproduce the spatial organization of the dominant coherent structures in turbulent plane Couette flow. Figure 9 presents the streamwise and spanwise correlations of velocity fluctuations at several wall-normal locations, providing a quantitative measure of the characteristic length scales of the flow. The correlations are defined as 
+
+𝑅 𝑢 𝑖 𝑢 𝑖 (∆𝑥 ) = 𝑢 ′ 
+
+> 𝑖
+
+(𝑥, 𝑧 )𝑢 ′ 
+
+> 𝑖
+
+(𝑥 + ∆𝑥, 𝑧 )
+
+𝑢 ′2
+
+> 𝑖
+
+, 𝑅 𝑢 𝑖 𝑢 𝑖 (∆𝑧 ) = 𝑢 ′ 
+
+> 𝑖
+
+(𝑥, 𝑧 )𝑢 ′ 
+
+> 𝑖
+
+(𝑥, 𝑧 + ∆𝑧 )
+
+𝑢 ′2
+
+> 𝑖
+
+, (4.1) 
+
+15 F. Steinbrenner, B. Turan, H. Teng and H. Xiao <latexit sha1_base64="SQRSPeLEZZvcWB0Qi189WTyWZjk=">AAADVnicjVJLS8NAEJ42aq3PVA8evASLopeSilSPglW8CFWsCraUTbqtoXmRbEQN/Sde9TfpfxHx2zUVVHxs2MzstzPfPHas0HViYZrPubw2Nj5RmCxOTc/Mzs3rpYWzOEgimzftwA2iC4vF3HV83hSOcPlFGHHmWS4/twZ78v78mkexE/in4jbkbY/1fafn2EwA6uj6SSdNkuF6q85dwYybjY5eNiumWsZ3pZopZcpWIyjllqhFXQrIpoQ84uSTgO4SoxjfJVXJpBBYm1JgETRH3XMa0hR8E1hxWDCgA/z7OF1mqI+z5IyVt40oLnYET4NWsQ8UowVrGZVDjyFfsO8U1v8xQqqYZYa3kBYYi4rxCLigK1j85elllqNc/uM58hGoQtYS/9KDFFl5f/RIUI92VG8cVBsqRHbN/siqjpsI2EDdGLSvLPvgsNT5Gnn4kE3Ekm82YjBU/7qQTEmuWPyMkYEvgpRvKfP5rQZZqYwuI6JeTFj16zx9V842K9VapXa8Vd5dy2ZtkpZphdYxT9u0S4fUQM428r+nB3rMP+VftXGt8G6az2U+i/RpafobR4CsFg==</latexit> 
+
+Ruu (!x)
+
+<latexit sha1_base64="xTT4R47/1eNLOJyz0d3k6xphCfQ=">AAADVnicjVJLT8JAEB5AFPBV9ODBSyPR4IUUY9QjiWi8mKARNBFCtnXFhr7SLkQk/BOv+pv0vxjjt2sxUSK6zXZmv5355rFjBo4dCcN4TSRTM+nZuUw2N7+wuLSs5Vcakd8LLV63fMcPr0wWccf2eF3YwuFXQciZazr80uweyvvLPg8j2/cuxCDgLZd1PPvWtpgA1Na08/aw3x8Vm1XuCKbfb7e1glEy1NInlXKsFCheNT+fWKMm3ZBPFvXIJU4eCegOMYrwXVOZDAqAtWgILIRmq3tOI8rBtwcrDgsGtIt/B6frGPVwlpyR8rYQxcEO4anTJvaxYjRhLaNy6BHkG/aDwjq/RhgqZpnhANIEY1YxngIXdAeLvzzd2HKcy388xz4CVchaoik9GCIr948eCbqlA9UbG9UGCpFds76yquImBNZVNzodKcsOOEx17iMPD7KOWPLNxgy66t8NJFOSKxYvZmTgCyHlW8p8ptUgK5XRZUTUiwkr/5ynSaWxUyrvlfbOdguVrXjWMrROG1TEPO1ThU6ohpwt5P9IT/ScfEm+p9KpuU/TZCL2WaVvK6V9AE1ZrBg=</latexit> 
+
+Rvv (!x)
+
+<latexit sha1_base64="OkeiVnf10mLc1HFcIy7BiESvLpE=">AAADVnicjVJLS8NAEJ42PlqfqR48eAkWRS8lFVGPBat4EVSsCiplk25raF4k29Ya+k+86m/S/yLit2sqaPGxYTOz385889ixQteJhWm+ZLLa2PjEZC4/NT0zOzevFxbO46AT2bxmB24QXVos5q7j85pwhMsvw4gzz3L5hdXek/cXXR7FTuCfiX7IbzzW8p2mYzMBqK7rp/Wk1xusX1e5K5hxt1HXi2bJVMsYVcqpUqR0HQeFzBJdU4MCsqlDHnHySUB3iVGM74rKZFII7IYSYBE0R91zGtAUfDuw4rBgQNv4t3C6SlEfZ8kZK28bUVzsCJ4GrWIfKEYL1jIqhx5DvmLfK6z1Y4REMcsM+5AWGPOK8Qi4oFtY/OXppZbDXP7jOfQRqELWEv/SgwRZeX/0SFCTdlVvHFQbKkR2zf7MqoqbCFhb3Ri0ryxb4LDUuYs8fMgaYsk3GzIYqn8NSKYkVyx+ysjAF0HKt5T5/FaDrFRGlxFRLyas/H2eRpXzzVJ5u7R9slWsrKWzlqNlWqF1zNMOVeiQjpGzjfwf6JGess/ZN21cm/wwzWZSn0X6sjT9HVMyrBo=</latexit> 
+
+Rww (!x)
+
+<latexit sha1_base64="SQRSPeLEZZvcWB0Qi189WTyWZjk=">AAADVnicjVJLS8NAEJ42aq3PVA8evASLopeSilSPglW8CFWsCraUTbqtoXmRbEQN/Sde9TfpfxHx2zUVVHxs2MzstzPfPHas0HViYZrPubw2Nj5RmCxOTc/Mzs3rpYWzOEgimzftwA2iC4vF3HV83hSOcPlFGHHmWS4/twZ78v78mkexE/in4jbkbY/1fafn2EwA6uj6SSdNkuF6q85dwYybjY5eNiumWsZ3pZopZcpWIyjllqhFXQrIpoQ84uSTgO4SoxjfJVXJpBBYm1JgETRH3XMa0hR8E1hxWDCgA/z7OF1mqI+z5IyVt40oLnYET4NWsQ8UowVrGZVDjyFfsO8U1v8xQqqYZYa3kBYYi4rxCLigK1j85elllqNc/uM58hGoQtYS/9KDFFl5f/RIUI92VG8cVBsqRHbN/siqjpsI2EDdGLSvLPvgsNT5Gnn4kE3Ekm82YjBU/7qQTEmuWPyMkYEvgpRvKfP5rQZZqYwuI6JeTFj16zx9V842K9VapXa8Vd5dy2ZtkpZphdYxT9u0S4fUQM428r+nB3rMP+VftXGt8G6az2U+i/RpafobR4CsFg==</latexit> 
+
+Ruu (!x)
+
+<latexit sha1_base64="xTT4R47/1eNLOJyz0d3k6xphCfQ=">AAADVnicjVJLT8JAEB5AFPBV9ODBSyPR4IUUY9QjiWi8mKARNBFCtnXFhr7SLkQk/BOv+pv0vxjjt2sxUSK6zXZmv5355rFjBo4dCcN4TSRTM+nZuUw2N7+wuLSs5Vcakd8LLV63fMcPr0wWccf2eF3YwuFXQciZazr80uweyvvLPg8j2/cuxCDgLZd1PPvWtpgA1Na08/aw3x8Vm1XuCKbfb7e1glEy1NInlXKsFCheNT+fWKMm3ZBPFvXIJU4eCegOMYrwXVOZDAqAtWgILIRmq3tOI8rBtwcrDgsGtIt/B6frGPVwlpyR8rYQxcEO4anTJvaxYjRhLaNy6BHkG/aDwjq/RhgqZpnhANIEY1YxngIXdAeLvzzd2HKcy388xz4CVchaoik9GCIr948eCbqlA9UbG9UGCpFds76yquImBNZVNzodKcsOOEx17iMPD7KOWPLNxgy66t8NJFOSKxYvZmTgCyHlW8p8ptUgK5XRZUTUiwkr/5ynSaWxUyrvlfbOdguVrXjWMrROG1TEPO1ThU6ohpwt5P9IT/ScfEm+p9KpuU/TZCL2WaVvK6V9AE1ZrBg=</latexit> 
+
+Rvv (!x)
+
+<latexit sha1_base64="OkeiVnf10mLc1HFcIy7BiESvLpE=">AAADVnicjVJLS8NAEJ42PlqfqR48eAkWRS8lFVGPBat4EVSsCiplk25raF4k29Ya+k+86m/S/yLit2sqaPGxYTOz385889ixQteJhWm+ZLLa2PjEZC4/NT0zOzevFxbO46AT2bxmB24QXVos5q7j85pwhMsvw4gzz3L5hdXek/cXXR7FTuCfiX7IbzzW8p2mYzMBqK7rp/Wk1xusX1e5K5hxt1HXi2bJVMsYVcqpUqR0HQeFzBJdU4MCsqlDHnHySUB3iVGM74rKZFII7IYSYBE0R91zGtAUfDuw4rBgQNv4t3C6SlEfZ8kZK28bUVzsCJ4GrWIfKEYL1jIqhx5DvmLfK6z1Y4REMcsM+5AWGPOK8Qi4oFtY/OXppZbDXP7jOfQRqELWEv/SgwRZeX/0SFCTdlVvHFQbKkR2zf7MqoqbCFhb3Ri0ryxb4LDUuYs8fMgaYsk3GzIYqn8NSKYkVyx+ysjAF0HKt5T5/FaDrFRGlxFRLyas/H2eRpXzzVJ5u7R9slWsrKWzlqNlWqF1zNMOVeiQjpGzjfwf6JGess/ZN21cm/wwzWZSn0X6sjT9HVMyrBo=</latexit> 
+
+Rww (!x)
+
+<latexit sha1_base64="SQRSPeLEZZvcWB0Qi189WTyWZjk=">AAADVnicjVJLS8NAEJ42aq3PVA8evASLopeSilSPglW8CFWsCraUTbqtoXmRbEQN/Sde9TfpfxHx2zUVVHxs2MzstzPfPHas0HViYZrPubw2Nj5RmCxOTc/Mzs3rpYWzOEgimzftwA2iC4vF3HV83hSOcPlFGHHmWS4/twZ78v78mkexE/in4jbkbY/1fafn2EwA6uj6SSdNkuF6q85dwYybjY5eNiumWsZ3pZopZcpWIyjllqhFXQrIpoQ84uSTgO4SoxjfJVXJpBBYm1JgETRH3XMa0hR8E1hxWDCgA/z7OF1mqI+z5IyVt40oLnYET4NWsQ8UowVrGZVDjyFfsO8U1v8xQqqYZYa3kBYYi4rxCLigK1j85elllqNc/uM58hGoQtYS/9KDFFl5f/RIUI92VG8cVBsqRHbN/siqjpsI2EDdGLSvLPvgsNT5Gnn4kE3Ekm82YjBU/7qQTEmuWPyMkYEvgpRvKfP5rQZZqYwuI6JeTFj16zx9V842K9VapXa8Vd5dy2ZtkpZphdYxT9u0S4fUQM428r+nB3rMP+VftXGt8G6az2U+i/RpafobR4CsFg==</latexit> 
+
+Ruu (!x)
+
+<latexit sha1_base64="xTT4R47/1eNLOJyz0d3k6xphCfQ=">AAADVnicjVJLT8JAEB5AFPBV9ODBSyPR4IUUY9QjiWi8mKARNBFCtnXFhr7SLkQk/BOv+pv0vxjjt2sxUSK6zXZmv5355rFjBo4dCcN4TSRTM+nZuUw2N7+wuLSs5Vcakd8LLV63fMcPr0wWccf2eF3YwuFXQciZazr80uweyvvLPg8j2/cuxCDgLZd1PPvWtpgA1Na08/aw3x8Vm1XuCKbfb7e1glEy1NInlXKsFCheNT+fWKMm3ZBPFvXIJU4eCegOMYrwXVOZDAqAtWgILIRmq3tOI8rBtwcrDgsGtIt/B6frGPVwlpyR8rYQxcEO4anTJvaxYjRhLaNy6BHkG/aDwjq/RhgqZpnhANIEY1YxngIXdAeLvzzd2HKcy388xz4CVchaoik9GCIr948eCbqlA9UbG9UGCpFds76yquImBNZVNzodKcsOOEx17iMPD7KOWPLNxgy66t8NJFOSKxYvZmTgCyHlW8p8ptUgK5XRZUTUiwkr/5ynSaWxUyrvlfbOdguVrXjWMrROG1TEPO1ThU6ohpwt5P9IT/ScfEm+p9KpuU/TZCL2WaVvK6V9AE1ZrBg=</latexit> 
+
+Rvv (!x)
+
+<latexit sha1_base64="OkeiVnf10mLc1HFcIy7BiESvLpE=">AAADVnicjVJLS8NAEJ42PlqfqR48eAkWRS8lFVGPBat4EVSsCiplk25raF4k29Ya+k+86m/S/yLit2sqaPGxYTOz385889ixQteJhWm+ZLLa2PjEZC4/NT0zOzevFxbO46AT2bxmB24QXVos5q7j85pwhMsvw4gzz3L5hdXek/cXXR7FTuCfiX7IbzzW8p2mYzMBqK7rp/Wk1xusX1e5K5hxt1HXi2bJVMsYVcqpUqR0HQeFzBJdU4MCsqlDHnHySUB3iVGM74rKZFII7IYSYBE0R91zGtAUfDuw4rBgQNv4t3C6SlEfZ8kZK28bUVzsCJ4GrWIfKEYL1jIqhx5DvmLfK6z1Y4REMcsM+5AWGPOK8Qi4oFtY/OXppZbDXP7jOfQRqELWEv/SgwRZeX/0SFCTdlVvHFQbKkR2zf7MqoqbCFhb3Ri0ryxb4LDUuYs8fMgaYsk3GzIYqn8NSKYkVyx+ysjAF0HKt5T5/FaDrFRGlxFRLyas/H2eRpXzzVJ5u7R9slWsrKWzlqNlWqF1zNMOVeiQjpGzjfwf6JGess/ZN21cm/wwzWZSn0X6sjT9HVMyrBo=</latexit> 
+
+Rww (!x)
+
+Figure 9. Two-point correlations of velocity fluctuations for unconditionally generated flows. We evaluate the correlations at three wall-normal locations: (𝑎, 𝑏 ) 𝑦 + = 5, (𝑐, 𝑑 ) 𝑦 + = 15, and (𝑒, 𝑓 ) 𝑦 + = 49. The panels (𝑎, 𝑐, 𝑒 ) show streamwise two-point correlations 𝑅 𝑢 𝑖 𝑢 𝑖 (∆𝑥 ), while (𝑏, 𝑑, 𝑓 ) show spanwise correlations 𝑅 𝑢 𝑖 𝑢 𝑖 (∆𝑧 ), for the streamwise, wall-normal, and spanwise velocity fluctuations. We report the statistics for flows generated with different latent dimensions 𝑑 z and compare with the DNS data. 
+
+where 𝑖 = 1, 2, 3 corresponding to the streamwise, wall-normal, and spanwise directions. Near-wall coherent structures play a central role in sustaining turbulence in plane Couette flow. In the buffer layer, low-speed streaks form parallel to the wall and undergo waviness and breakdown, which in turn generate larger-scale vortices in the outer region of the flow (Hamilton et al. 1995; Pirozzoli et al. 2011, 2014; Kline & Robinson 1990). Previous numerical studies have shown that these streaks exhibit universal characteristics across wall-bounded turbulent flows (Pirozzoli et al. 2011). The long streamwise streaks are clearly visible in figure 6 and are responsible for the extended correlation lengths in the streamwise direction (figure 9a,c,e). It can also be seen that the streamwise correlations decay slowly to a value approximately 0 .1 in the buffer layer and around 0 .2 in the core region, indicating nearly uncorrelated velocity fluctuations. The point of the zero value for the streamwise correlation in the core region of the DNS is at approximately 35, suggesting the presence of long streamwise streaks and a streamwise scale of 70 for these large-scale coherent structures. With our smaller generated patch, we cannot resolve the complete streamwise scale. Nevertheless, some portion of the streamwise coherent structure can be captured by all models. In contrast, the spanwise correlations (figure 9b,d,f) reach their first minimum over much shorter distances, reflecting the limited spanwise spacing of the coherent structures. Near the wall at 𝑦 + = 5, the first minimum of 𝑅 𝑢𝑢 (∆𝑧 ) occurs at 
+
+16 Turbulence generation and data assimilation with a latent diffusion model 10 0 10 1                                            
+
+> 0.00.51.01.52.0
+> kzEuu /u2
+> τ
+> (a)y+=5
+> 10 010 1
+> 01234(b)y+=15
+> 10 010 1
+> 0123(c)y+=49
+> 10 010 1
+> 0.00 0.01 0.02
+> kzEvv /u2
+> τ
+> (d)y+=5
+> 10 010 1
+> 0.00 0.05 0.15 0.25 (e)y+=15
+> 10 010 1
+> 0.00.20.40.6(f)y+=49
+> 10 010 1
+> kzh
+> 0.00.10.20.30.4
+> kzEww /u2
+> τ
+> (g)y+=5
+> 10 010 1
+> kzh
+> 0.00.20.40.60.8(h)y+=15
+> 10 010 1
+> kzh
+> 0.00.20.40.60.8(i)y+=49
+> 4816 32 64 96
+> Latent Dimension  dz
+> DNS Generated
+
+Figure 10. Pre-multiplied energy spectra of the unconditionally generated flow. We evaluate the correlations at three wall-normal locations: (𝑎, 𝑑, 𝑔 ) 𝑦 + = 5, (𝑏, 𝑒, ℎ ) 𝑦 + = 15, and (𝑐, 𝑓 , 𝑖 ) 𝑦 + = 49. The panels (𝑎 –𝑐 )
+
+show the streamwise, (𝑑 – 𝑓 ) wall-normal, and (𝑔 –𝑖 ) spanwise velocity components as functions of the spanwise wavenumber. We report the statistics for flows generated with different latent dimensions 𝑑 z and compare with the DNS data. 
+
+∆𝑧 ≈ 0.7, corresponding to a spanwise spacing of ∆𝑧 + ≈ 120. Away from the wall in the core region of the flow, counter-rotating quasi-streamwise vortices, roll cells, are viewed as the large-scale structures. The spanwise two-point correlation 𝑅 𝑢𝑢 (∆𝑥 ) at 𝑦 + = 49 shows a first minium at ∆𝑧 ≈ 1.8 which corresponds to a spanwise scale of the large-scale structures in this core region of the flow of ∆𝑧 ≈ 3.7. These correlation trends are reproduced by all models, which suggests that the dominant coherent structures and their characteristic length scales are preserved in the generated samples. The qualitative agreement with visualizations of the streamwise velocity field and Q-criterion iso-surfaces further supports this conclusion, but the two-point correlations provide the primary quantitative evidence. The ability of the models to capture the length scales of the coherent structures becomes more apparent in the spectral space. We examine the distribution of turbulent fluctuations across different length scales in figure 10, where we show the premultiplied spanwise energy spectra 𝑘 𝑧 𝐸 𝑢 𝑖 𝑢 𝑖 at locations 𝑦 + = 5, 𝑦 + = 15 and 𝑦 + = 49 for all velocity components 𝑢 𝑖 .Here, 𝑘 𝑧 = 2𝜋 /𝜆 𝑧 is the spanwise wavenumber, and 𝜆 𝑧 is the spanwise wavelength. The energy spectra 𝐸 𝑢 𝑖 𝑢 𝑖 are obtained from the amplitude of the discrete Fourier transform of the 
+
+17 F. Steinbrenner, B. Turan, H. Teng and H. Xiao 10 0 10 1 10 2              
+
+> y+
+> −0.50.00.51.01.5Skewness  S(u′) (a)
+> 10 010 110 2
+> y+
+> 23456Flatness  F(u′) (b)
+> 4816 32 64 96
+> Latent Dimension  dz
+> DNS Generated
+> Figure 11. Third- and fourth-order turbulent statistics of the unconditionally generated flow. (𝑎 )Skewness
+> 𝑆 (𝑢 ′)and (𝑏 )flatness 𝐹 (𝑢 ′)of the streamwise velocity fluctuation. We show the statistics for flows generated with varying latent dimensions 𝑑 zand compare against the DNS data.
+
+velocity fluctuation in the spanwise direction. They give the decomposition of the turbulent fluctuations in the wavenumber space. Therefore, their integral over all wavenumbers is equal to the variance, that is, ∫ ∞ 
+
+> 0
+
+𝐸 𝑢 𝑖 𝑢 𝑖 (𝑘 𝑧 ) 𝑑𝑘 𝑧 = 𝑢 ′2 
+
+> 𝑖
+
+. It can be seen that the peak in the pre-multiplied energy spectrum is captured by all of the models at every wall normal location. However, models with 𝑑 z < 16 show significant attenuation in the magnitude of the spectra, especially for spanwise and wall-normal components. This is consistent with the trend observed previously in the Reynolds stress profiles. The peaks in the premultiplied spectra indicate the dominant length scales of the flow. In wall-bounded turbulence, two distinct characteristic length scales are typically observed. The first of these occurs around 
+
+𝑦 + = 15 at length scales of around 100 wall units and is caused by the near-wall streaks and quasi-streamwise vortices. In figure 10( 𝑏 ), a peak is visible around 𝑘 𝑧 ℎ ≈ 5 in the spanwise spectra of the streamwise velocity for all models, which corresponds to a wavelength of around 100 wall units. The second, occurring at the logarithmic layer, is caused by the so-called ”superstructures” (Hutchins & Marusic 2007) or ”large-scale motions” (Pirozzoli 
+
+et al. 2014), and have a wavelength on the order of the outer length scale ℎ of the flow. For plane Couette flow, Pirozzoli et al. (2014) report a spanwise wavelength of 𝜆 𝑧 ≈ 5ℎ for these large-scale structures. The spanwise spectrum of the streamwise velocity exhibits a peak around 𝑘 𝑧 ℎ ≈ 2 or 𝜆 𝑧 ≈ 𝜋ℎ for all models at 𝑦 + = 49, similar to the value reported by Pirozzoli et al. (2014). All models with a latent dimension of eight or larger accurately reproduce the skewness and flatness of the streamwise velocity. This result indicates that the models capture key aspects of intermittency and asymmetry in the near-wall region. Figure 11 shows that both skewness and flatness deviate strongly from Gaussian values near the wall, where a Gaussian distribution would yield 𝑆 (𝑢 ′) = 0 and 𝐹 (𝑢 ′) = 3. We compute the skewness as 𝑆 (𝑢 ′) ≡ 𝑢 ′3/( 𝑢 ′2)3/2
+
+and the flatness as 𝐹 (𝑢 ′) ≡ 𝑢 ′4/( 𝑢 ′2)2
+
+. As the wall is approached, skewness and flatness converge to approximately 1 .0 and 4 .5, respectively. These values indicate strong asymmetry and pronounced intermittency of the streamwise velocity, consistent with observations for wall-bounded turbulence (Kim et al. 1987). Toward the channel centre, both statistics approach Gaussian behaviour. These findings are noteworthy and somewhat surprising; even though the low-order statistics, such as Reynolds stresses, are not captured well by the models with a latent dimension smaller than 16, all models can accurately reproduce these higher-order statistics. This behavior arises because skewness and flatness are normalized higher-order moments. In contrast, TKE is an absolute variance (second moment) and depends on the amplitude and representation of small-scale, decorrelated fluctuations; these are the first to be lost when the latent bottleneck is too small. 
+
+18 Turbulence generation and data assimilation with a latent diffusion model 
+
+As was seen in figure 8 (𝑐 ) the models produce fluctuations with the same shape but with a systematically smaller amplitude, skewness and flatness can remain nearly unchanged while the absolute variance (and thus TKE) decreases. Higher-order statistics are rarely reported in generative turbulence modelling, despite their relevance for characterizing anisotropy and intermittency. Recent work by Li et al. 
+
+(2024 a) demonstrated that diffusion models can reproduce generalized flatness up to eighth order in Lagrangian homogeneous isotropic turbulence. These results, together with the present findings, highlight that generative models should be evaluated not only on second-order statistics but also on higher-order measures of turbulence structure. 4.2. Data Assimilation 
+
+We assess the performance of the conditional latent diffusion model in the context of data assimilation and, in particular, its ability to indirectly impose statistical constraints with our proposed method in §2.3. In the present work, data assimilation for a chaotic system such as turbulent plane Couette flow must satisfy two fundamental requirements: (i) agreement with observations at the observation locations, and (ii) consistency with the physical laws and statistical structure implied by the underlying turbulent dynamics. In addition, because turbulence is inherently chaotic, a successful assimilation procedure should generate an ensemble of plausible flow realisations that satisfy (i) and (ii), rather than collapsing to a single deterministic trajectory. In §4.1 we demonstrated that samples generated by the unconditional model reproduce the key turbulent statistics of the flow with DNS-level accuracy. The principal challenge in the conditional setting is therefore not the recovery of turbulence per se, but the preservation of its statistical and physical structure under observational constraints. Imposing these constraints, especially for larger amount of observation data (Amor´ os-Trepat et al. 2026), and maintaining the physical fidelity of the generated fields represent conflicting objectives for the generative model. Satisfying these two objectives simultaneously is by no means trivial, even when the data is drawn from the learned diffusion prior. In what follows, we show that the proposed approach of indirectly imposing statistical quantities can satisfy both observational consistency and physical fidelity, provided that the observational data are sufficiently sparse and appropriately distributed. We consider two data assimilation configurations designed to reflect prototypical real-world observation scenarios. The first consists of data points randomly scattered across the full spatial domain (hereafter referred to as the “scattered observations task”; figure 12 𝑎 ). The second consists of sensors densely distributed within a rectangular subdomain (the “block task”; figure 12 𝑏 ). The block spans the full wall-normal extent of the domain, 𝑑 2,and extends from 𝑥 = 𝑧 = 0 to 𝑑 b1 and 𝑑 b3 in the streamwise and spanwise directions, respectively. In both configurations, the total number of observations is denoted by 𝑁 obs .The scattered observations task emulates sparsely distributed observations, such as those obtained from UAV-based sensing in wind farm applications, whereas the block task represents spatially concentrated observations within a localized region, analogous to LiDAR observations. In both cases, observational data are sampled from direct numerical simulation (DNS) at intervals of ∆𝑡 gen . Because conditioning is imposed pointwise in physical space, the operator H in the observation operator F = H ◦ D acts as a masking operator that retains values at observed locations and nullifies the remainder of the domain. The specific assimilation cases considered are summarised in table 1, where baseline configurations are indicated in bold. For the scattered observations task, we consider different values of the data percentage, that is, the number of sensors as a percentage of the total number of grid points. For the block task, we explore different block sizes and data percentages as well as different levels of coarsening. Coarsening refers to selecting every 
+
+> 19
+
+F. Steinbrenner, B. Turan, H. Teng and H. Xiao Wall    
+
+> Randomly Scattered Observations Block Observations
+> Wall
+
+Figure 12. Schematic of the assimilated data in the (𝑎 ) randomly scattered and (𝑏 ) block observation tasks. The illustrated domains are scaled by factors of 0 .2, 1, and 0 .2 in the 𝑥 -, 𝑦 -, and 𝑧 -directions, respectively, relative to the generated domain. For clarity, every 50 th data points in the baseline scattered task (0 .1% of the total data points) are shown. For the block task, the baseline block of size 𝐿 𝑥 /12 × 𝐿 𝑦 × 𝐿 𝑧 /8 is depicted, while the 11 × 64 × 15 data points within the block are omitted. Case Name Total Data Percentage Block Size Coarsening Data Grid R-50 50% – – –R-10 10% – – –
+
+R-1 (baseline) 1% – – –
+
+R-0.1 0.1% – – –R-0.01 0.01% – – –R-0.001 0.001% – – –B-6 6% 𝐿 𝑥 /4 × 𝐿 𝑦 × 𝐿 𝑧 /4 – 31 × 64 × 31 
+
+B-1 (baseline) 1% Lx/12 × Ly × Lz/8 – 11 × 64 × 15 
+
+B-1s3 ×2 1% 𝐿 𝑥 /4 × 𝐿 𝑦 × 𝐿 𝑧 /4 3 × 1 × 2 11 × 64 × 15 B-1s6 ×4 1% 𝐿 𝑥 /2 × 𝐿 𝑦 × 𝐿 𝑧 /2 6 × 1 × 4 11 × 64 × 16 B-0.1 0.1% 𝐿 𝑥 /12 × 𝐿 𝑦 × 𝐿 𝑧 /8 2 × 2 × 2 5 × 32 × 8B-0.02 0.02% 𝐿 𝑥 /12 × 𝐿 𝑦 × 𝐿 𝑧 /8 5 × 4 × 4 4 × 16 × 4
+
+Table 1. Considered data assimilation cases. Random observations scattered over the full domain (R), and spatially confined block observations (B) are examined. The baseline configurations, each using 1% of the total grid points for the randomly scattered observation and block task, are highlighted in bold. 
+
+𝑛 th point in each coordinate direction to create a sparser, regularly spaced subset of the original block (e.g., a coarsening of 3 × 1 × 2 selects every third point in the streamwise and every second point in the spanwise direction). The baseline scattered task corresponds to observations at 1% of the total spatial grid points, sampled uniformly at random. The baseline block task also uses 1% of the total grid points, but confined to a subdomain of dimensions 𝐿 𝑥 /12 and 𝐿 𝑧 /8, with all grid points within this block treated as observations. For all cases, we employ the latent representation introduced in §4.1. To focus on the impact of observation configuration and statistical conditioning, we adopt the 32-dimensional latent space, which exhibits improved conditional generation performance compared with the 16-dimensional representation. Unless otherwise specified, the conditioning strength parameter in equation 2.10 is set to 𝜌 = 0.5. To impose statistical quantities indirectly, we generate 300 samples using the sampling approach described in §2.3, with the starting time of each measurement segment separated by 30 ∆𝑡 . Streamwise velocity contours of generated samples for the baseline configuration of the two tasks are shown in figure 13. The velocity contours for both tasks show good agreement with the DNS sequence, with small scale discrepancies visible upon closer inspection, especially for the block task. 
+
+20 Turbulence generation and data assimilation with a latent diffusion model Random           
+
+> 03∆tgen 6∆tgen 9∆tgen
+> Block DNS
+> Time t
+> 0.00.10.20.30.40.50.60.7Streamwise Velocity  u
+> Figure 13. Assimilation of instantaneous observations to turbulence generation. Contours of streamwise velocity at 𝑦 +=15 are shown. Top row: generated samples with randomly scattered observations; middle row: generated samples with block observations; bottom row: DNS data. Sensor locations are indicated by circles (random) and a dashed box (block). In the scattered observations task, every fifth sensor location is displayed for clarity.
+
+To quantify the consistency of the generated samples with the imposed data we use the average root mean squared error (RMSE). We define the average RMSE as RMSE (𝒖 ) =
+
+vut 1
+
+𝑁 𝑝 𝑁 𝑝 ∑︁ 
+
+> 𝑖 =1
+
+∥ ˜𝒖 𝑖 − 𝒖 ∥22, (4.2) where 𝑁 𝑝 denotes the number of samples over which the average is taken and 𝒖 , ˜ 𝒖 denote the DNS and generated velocity fields respectively. While RMSE is reported here for completeness and comparison with prior studies, its interpretation in the context of chaotic turbulent flows requires careful consideration. We therefore defer a detailed discussion of trajectory- and distribution-level metrics to §5.2. For evaluating the physical consistency of the generated samples, we employ the statistical quantities presented in §4.1. The difference in the spatial distribution of the observations between the two tasks lead to significant differences in the generated samples due to the highly anisotropic correlation structure of the flow. In wall-bounded turbulence such as Couette flow, the streamwise correlation length scale is substantially larger than those in the wall-normal and spanwise directions, as illustrated in figure 13. Spatially distributed observations (circles in figure 13, top row ) therefore impose constraints that propagate efficiently in the streamwise direction, leading to a relatively homogeneous influence across the domain. In contrast, block observations (red block in figure 13, middle row ) concentrated within a localized region provide strongly localized conditioning, with constraints that weaken as the correlation with distant regions decreases. This distinction in conditioning geometry is expected to produce qualitatively different spatial patterns in the reconstruction deviation. The baseline configurations for the two tasks show varying levels of success in terms of data consistency, sample diversity and physical fidelity. The comparison of data consistency between the two tasks is provided in figure 14 (𝑎 ), which shows the variation of spatially averaged RMSE over time. The results in this figure are obtained by imposing the same data 50 times to asses sample diversity as well as data consistency. Both data assimilation tasks show smaller deviation from the DNS than the unconditional 
+
+21 F. Steinbrenner, B. Turan, H. Teng and H. Xiao 0 1 2 3 4 5 6 7 8 9                                        
+
+> t/∆tgen
+> 0.00 0.05 0.10 0.15 0.20 0.25 RMSE (u)
+> (a)
+> 0123456789
+> t/∆tgen
+> 0.00.10.20.30.40.50.6
+> u
+> (b)
+> 0123456789
+> t/∆tgen
+> 0.00.10.20.30.40.50.6
+> u
+> (c)
+> Unconditional Block Randomly Scattered Generated Samples Observations
+> Figure 14. Temporal evolution of trajectory-level deviations from the DNS reference for the baseline configurations of the two assimilation tasks. Conditionally generated flows with scattered and block observations, as well as unconditionally generated flows, are shown. (𝑎 )Spatially averaged root-mean-square error (RMSE) in velocity between the generated fields and DNS as a function of time. The shaded region denotes one standard deviation computed from 50 samples conditioned on the same data. Time evolution of the streamwise velocity at an observed location for the block (𝑏 )and randomly scattered (𝑐 )observation tasks, respectively. Individual sample trajectories are shown with shades of blue and gray. For clarity, 8 samples are shown. The ensemble mean is indicated by circles ( ◦).
+
+samples, as seen in figure 14 (𝑎 ). However, the scattered observations task shows smaller deviations, indicating better data consistency. This behaviour is further illustrated by the time evolution of the streamwise velocity at observed locations for individual samples, shown in figure 14 (𝑏, 𝑐 ) for the block and sparse observation tasks, respectively. Results are presented for a randomly selected assimilation point in each task. Although the block task exhibits greater apparent sample diversity than the scattered-observation case, it achieves poorer data consistency. While this may suggest improved representation of flow variability, further analysis indicates that block-conditioned samples lack physical fidelity. The observed RMSE variation therefore arises from unphysical realizations rather than meaningful distributional coverage. In terms of physical fidelity, scattered observations are significantly more successful than the block task, as shown in figure 15. Note that the results shown here are generated using the strategy outlined in §4.2 to ensure that the generated ensemble approximates the posterior distribution conditioned on observations. While both tasks can match the mean streamwise velocity (figure 15 𝑎 ), Reynolds shear stress profile of the scattered observations task shows much better agreement with the DNS (figure 15 𝑏 ) compared to the block task. Both tasks can match the two-point correlation of the DNS and that of prior samples accurately at the beginning of the buffer layer at 
+
+𝑦 + = 15 up to approximately ∆𝑧 /ℎ = 1 (figure 15 𝑐 ). However, further away from the wall there are some minor deviations. The premultiplied energy spectra shown in figure 15 (𝑑 )
+
+confirm that conditional samples can approximately match the length scales of the coherent structures in the buffer layer. The wavenumber with the highest energy is underestimated for both the scattered and the block data assimilation tasks. Furthermore, the spectra of the block task shows significant damping of the turbulent fluctuations in a broad band of wavenumbers. The difference between the two tasks is most apparent in the flatness and skewness profiles, which show significant discrepancies near the wall (figure 15e,f) for the block task. The baseline configurations reveal distinct failure modes that highlight the intrinsic difficulty of diffusion-based data assimilation. Although diffusion posterior sampling provides a principled Bayesian framework for incorporating observations, our results show that practical performance depends sensitively on observation density, spatial configuration, and conditioning strength. A detailed analysis of this tension is presented, and the relation to classical ensemble-based data assimilation methods, in §5.3. To elucidate the mechanisms underlying the observed degradation, we perform a series of targeted parametric studies. Specifically, we vary the block size in streamwise and 
+
+22 Turbulence generation and data assimilation with a latent diffusion model 10 −1 10 0 10 1 10 2                           
+
+> y+
+> 0510 15 20
+> u+
+> u+=y+
+> log law
+> u+=y+
+> log law
+> u+=y+
+> log law
+> u+=y+
+> log law
+> (a)
+> 0.00.20.40.60.81.0
+> y/h
+> 0.00.40.81.2
+> −u′v′+
+> (b)
+> 01234
+> ∆z/h
+> −0.30.00.51.0
+> Ruiui(∆z)
+> Ruu (∆z)Rvv (∆z)
+> Rww (∆z)(c)
+> 10 010 1
+> kzh
+> 012345
+> kzEuu /u2
+> τ
+> (d)
+> 10 010 110 2
+> y+
+> −0.50.00.51.01.5Skewness  S(u′) (e)
+> 10 010 110 2
+> y+
+> 23456Flatness  F(u′) (f)
+> DNS Randomly Scattered Block Unconditional
+
+Figure 15. Performance of the conditionally generated flow for the scattered and block data assimilation tasks. The resulting statistics are shown for (𝑎 ) mean streamwise velocity, (𝑏 ) Reynolds shear stress, (𝑐 )
+
+two-point correlations of the streamwise, wall-normal and spanwise velocity fluctuation at 𝑦 + = 15 in the spanwise direction, (𝑑 ) pre–multiplied energy spectra for the streamwise velocity as a function of the spanwise wavenumber at 𝑦 + = 15, (𝑒, 𝑓 ) skewness and flatness of the streamwise velocity fluctuation. We compare against the unconditional samples with latent dimension 𝑑 z = 32 and the DNS reference. 
+
+spanwise direction, the total number of observations 𝑁 obs , and the spatial configuration by coarsening the grid-arranged data points within the block region. The corresponding cases are summarized in table 1. Our studies show that increasing the number of observations tends to improve data consistency for both tasks. However, a higher sensor count alone does not necessarily lead to better agreement with the data. We examine the effect of sensor count on agreement with the data in figure 16, which shows the variation of RMSE with number of observations for both tasks at observed and unobserved locations. For randomly scattered observations, the RMSE outside the measured locations tends to decrease as the data percentage increases. As more observations are added and the model receives more information about the state of the system, the agreement with the DNS sequence improves even in unobserved locations. For the block task, the RMSE at measured and unmeasured locations stays more or less constant until a observation percentage of 6%. Note that the B-0.02, B-0.1 and B-1 cases have the same block size and the data percentage is increased by adding more observations within this block (see table 1). Since the newly 
+
+23 F. Steinbrenner, B. Turan, H. Teng and H. Xiao 0.001 0.01 0.1 1 10 50 Data Percentage (%)                
+
+> 0.00 0.05 0.10 0.15 0.20 RMSE (u)
+> R-0 .001
+> R-0 .01 R-0 .1R-1R-10 R-50
+> (a)
+> 0.02 0.1 16Data Percentage (%)
+> 0.00 0.05 0.10 0.15 0.20
+> B-0 .02 B-0 .1B-1B-6
+> (b)
+> Observed Locations Unobserved Locations
+> Figure 16. Effect number of observations on conditional generation. We show the variation of spatiotemporally averaged root mean squared error (RMSE) in velocity with observation percentage for (𝑎 )the scattered observations task and (𝑏 )block observations. Shaded region indicates one standard deviation over 50 generated samples with the same data. The name of each case is indicated on the plot. The baseline cases are highlighted in bold.
+
+added observations come from the same constrained region, they are highly correlated with the existing observations and provide limited information gain. For the block case with 6% total data percentage (R-6) the data grid is extended and the model receives information from a wider region of the domain, leading to a sharp drop in the RMSE. The slight increase in the RMSE from R-1 onward cases can again be attributed to the observations becoming more correlated with increasing sensor density. The deviation from the DNS is much lower at measured locations than the unmeasured locations for the R-0.001 case, indicating that this case can satisfy the observation constraints, even though it fails to reproduce the turbulence statistics as we demonstrate later in figure 17 (𝑎 –𝑐 ). Beyond a data percentage of 0.01%, the error at unmeasured and measured locations converge for the scattered task. This is in contrast to the block task, where error at measured locations is consistently lower at measured locations. This difference between the two tasks can be explained by the spatial correlation structure of the flow and its interactions with the conditioning geometry. In the scattered observations task, the relatively even spatial distribution of observations, together with the long streamwise correlation length scale, imposes a more homogeneous constraint across the periodic domain. Therefore, the deviation becomes more uniformly distributed across the domain. In the block task, however, the data is localized to a small portion of the domain. As the correlation with the localized block data decreases, the conditioning becomes progressively weaker, leading to larger deviations in unobserved locations. Conditioning with randomly scattered observations yields DNS-level accuracy in turbu-lent statistics, provided that the observation density lies within an appropriate range. We examine the behaviour of turbulent statistics in figure 17( 𝑎 –𝑐 ) for scattered observation cases in which the total number of observations is systematically increased from 0 .001% to 50% (R-0.001 to R-50) of all grid points in the domain. We present three representative turbulence statistics: the Reynolds shear stress, the premultiplied spanwise energy spectrum of the streamwise velocity component, and the flatness of the streamwise velocity fluctu-ations. DNS-level accuracy is achieved when the observation density lies approximately between 0 .01% and 1%. The R-0.01% shows good agreement with the DNS statistics, while exhibiting satisfactory data consistency and sample diversity (see figure 16). Therefore, this case satisfies the requirements for successful data assimilation. To examine the limits of this method, two extreme case with 0.001% and 50 % data points were additionally carried out. From these, we detect two failure modes where the turbulent statistics degrade. Intuitively, in the extreme sparse case (R-0.001), the likelihood contribution in equation 2.10 should be negligible, as it scales with only a very small number 
+
+24 Turbulence generation and data assimilation with a latent diffusion model 0.0 0.5 1.00.00.40.81.2
+
+> −u′v′+
+> (a)
+
+10 0 10 1
+
+012345
+
+> kzEuu /u2
+> τ
+> (b)
+
+10 0 10 1 10 22345Flatness  F(u′) (c) R-50 R-10 
+
+> R-1
+> R-0.01 R-0.001
+
+0.0 0.5 1.00.00.40.81.2
+
+> −u′v′+
+> (d)
+
+10 0 10 1
+
+012345
+
+> kzEuu /u2
+> τ
+> (e)
+
+10 0 10 1 10 2
+
+2345Flatness  F(u′) ( f ) B-6 
+
+> B-1
+> B-0.1 B-0.02
+
+0.0 0.5 1.0
+
+y/h
+
+0.00.40.81.2
+
+> −u′v′+
+> (g)
+
+10 0 10 1
+
+kzh
+
+012345
+
+> kzEuu /u2
+> τ
+> (h)
+
+10 0 10 1 10 2
+
+y+
+
+2345Flatness  F(u′) (i) B-1 
+
+> B-1s3 ×2B-1s6 ×4
+
+DNS Randomly Scattered Block 
+
+Figure 17. Effect of task parameters on conditionally generated flows for randomly scattered observations and block data assimilation. Panels ( 𝑎 –𝑐 ) illustrate the influence of the total data percentage in the scattered observations task. Panels ( 𝑑 – 𝑓 ) show the influence of total data percentage in the block task. Panels ( 𝑔 –𝑖 ) show the influence of data grid stretching in the block task. The generated flows are evaluated using the Reynolds shear stress (second-order statistics) as a function of the wall-normal coordinate, the pre-multiplied energy spectrum of the streamwise velocity component as a function of spanwise wavenumber at 𝑦 + = 15, and the skewness of the streamwise velocity fluctuations (fourth-order statistics) as a function of the logarithmic wall distance. Results are compared with the DNS reference data. 
+
+of discrepancy terms proportional to 𝑁 obs . One would therefore expect the generated statistics to converge toward those of the unconditional model. However, the turbulent statistics in the R-0.001 case deviate significantly from the unconditional samples. This apparent contradiction arises from the normalization used in equation 2.13. Because the gradient of the 𝐿 2 norm rescales the update by the inverse of the discrepancy magnitude, the very small number of sparse observations disproportionately determine the correction direction. In such settings, isolated measurements may be overweighted and observational noise amplified, leading to unphysical samples and degraded statistics. The failure in the R-0.001 case therefore reflects not insufficient conditioning, but rather instability induced by normalized sparse updates. In Chung et al. (2023) the conditioning strength was calibrated for settings with relatively fixed observation density. In contrast, the present study spans 
+
+25 F. Steinbrenner, B. Turan, H. Teng and H. Xiao 
+
+four orders of magnitude in 𝑁 obs , significantly altering the balance between likelihood and prior contributions. The instability in the R-0.001 case thus exposes a regime in which the original normalization becomes unreliable. This observation aligns with broader critiques of the diffusion posterior sampling formulation (Rozet & Louppe 2023) and indicates that its normalization warrants careful reconsideration when the number of observations varies widely. On the other hand, the case with 50% observations (R-50) exhibits a distinct failure mode associated with overly dense conditioning. This same mechanism underlies the degradation observed in the baseline block case (B-1), and is examined further in the block data assimilation study. In the block task, increasing the number of observations by refining the sensor grid within a fixed block yields little change in the turbulent statistics. In contrast, enlarging the block, thereby increasing both the number and spatial extent of constraints, produces modest improvement in Reynolds shear stress and energy spectra (figure 17 𝑑 – 𝑓 ). However, the flatness profile deteriorates as the observation percentage increases. This behaviour can be interpreted within the Bayesian-like framework of diffusion posterior sampling. Conditioning modifies the learned diffusion prior through a likelihood term that steers the generative process toward regions of the high-dimensional state space consistent with the observations. As the number of observations increases, the admissible region of the distribution becomes progressively restricted. When the conditioning becomes sufficiently dense, particularly in a correlated manner, the posterior becomes increasingly concentrated in regions of low prior probability or outside the well-represented manifold of the learned prior. In this regime, the generative process struggles to reconcile strict local data consistency with preservation of the global statistical structure, resulting in a degradation of the turbulent statistics. Enlarging the spatial coverage of the block while keeping the total number of observations fixed substantially improves recovery of the turbulent statistics. Figures 17( 𝑔 –𝑖 ) isolate this effect at constant observation density (1%), comparing three configurations with identical 𝑁 obs but different grid stretching (B-1, B-1s3 ×2, and B-1s6 ×4). Increasing the stretching enlarges the block and distributes the same number of data points over a wider region. As the block coverage increases, the Reynolds shear stress and premultiplied energy spectrum approach DNS-level accuracy, whereas a small, localized block systematically underestimates these statistics and exhibits significant deviation in flatness near the wall. This behaviour reflects the role of spatial correlation in the conditioning process. Localized blocks impose highly correlated constraints, particularly in the streamwise direction, leading to strong but spatially concentrated posterior conditioning and degraded global statistics. Distributing the same observations over a larger region reduces inter-point correlation and spreads the constraint more evenly across the domain. In this regime, the block task increasingly resembles the scattered-observation scenario, enabling recovery of DNS-level turbulent statistics. The behaviour observed here also bears strong resemblance to classical challenges in ensemble-based data assimilation. In particular, the effective information content of observations depends not only on their number but also on their spatial correlation. We discuss the connection between diffusion-based conditioning and traditional ensemble Kalman filtering in §5.3. 
+
+> 5. Discussions
+
+The adoption of generative models introduces a methodological shift in the simulation and data assimilation of turbulent flows. Rather than evolving turbulent trajectories through explicit integration of the governing equations, these models learn an approximation of 
+
+> 26
+
+Turbulence generation and data assimilation with a latent diffusion model 
+
+the underlying probability distribution of flow states. As a consequence, several princi-ples traditionally associated with turbulence simulation and classical data assimilation require reinterpretation within this probabilistic framework. Accordingly, we examine three conceptual aspects of this shift: (i) the role of reduced computational domains in probabilistic turbulence modelling, (ii) the interpretation of trajectory-level error metrics for evaluating generative models, and (iii) the balance between conditioning and prior structure in conditional diffusion models. 5.1. Reduced Generation Domain versus DNS Domain Requirements 
+
+The reduced physical domain employed in this work reflects a fundamental conceptual difference between probabilistic generative modelling and traditional direct numerical simulation (DNS). Turbulence simulations conventionally rely on large computational domains to represent the full range of turbulent motions. In contrast, the reduced domain employed here is not intended as a numerical approximation of DNS, but as a deliberate modelling choice aligned with the goal of learning turbulence statistics rather than time-resolved dynamics. Conventional DNS of statistically stationary wall-bounded turbulence requires a domain sufficiently large that two-point velocity correlations decay to zero at large separations, thereby avoiding artificial confinement of large-scale motions (Kim et al. 1987). The subdomain used in this work violates this requirement in the streamwise direction, as the correlations do not decay to zero (see figure 9). Such a domain would therefore be insufficient for a conventional DNS to develop statistically independent large-scale structures. However, the generative model is not restricted by this domain-size requirement. Its objective is to learn the joint probability distribution of flow states rather than their explicit temporal evolution. Each subdomain represents only a fraction of the full DNS domain, but the dynamics within each patch remain physically consistent. The influence of the surrounding flow is implicitly embedded in the training data, because all samples are extracted from a properly resolved full-domain DNS. The ensemble of subdomains therefore encodes the essential turbulent motions across scales. Generation then corresponds to sampling from this learned distribution, which explains why correct vortical structures and turbulence statistics can be reproduced despite the reduced domain size. 5.2. Trajectory-Level Metrics versus Distributional Fidelity 
+
+The use of root mean square error (RMSE) as an evaluation metric in generative turbulence modelling warrants careful interpretation. While RMSE has been adopted in several related studies (e.g., Li et al. 2023; Du et al. 2024; Li et al. 2024 b), it fundamentally measures instantaneous, trajectory-level (pointwise) deviation relative to a reference realization. However, in turbulent flows, trajectory matching is generally not an appropriate criterion for model quality. Turbulence is chaotic, and two DNS or LES starting from nearly identical initial conditions may diverge exponentially, with a growth rate characterized by the largest Lyapunov exponent (Ott 2002), while still producing statistically indistinguishable turbulence. Consequently, large pointwise differences between two realizations do not necessarily imply poor physical fidelity. For this reason, DNS and LES are evaluated in the turbulence community primarily based on the statistical quantities they reproduce (e.g. mean profiles, Reynolds stresses, energy spectra), rather than instantaneous field agreement. Two trajectories that diverge substantially in an 𝐿 2 sense may nevertheless represent equally plausible realizations of the same underlying turbulent flow if their statistics coincide. Since diffusion models aim 
+
+> 27
+
+F. Steinbrenner, B. Turan, H. Teng and H. Xiao 
+
+to approximate the full data distribution rather than match individual samples (Ho et al. 
+
+2020; Song et al. 2021), their assessment should likewise emphasize distributional fidelity rather than trajectory agreement alone. Adequate sample diversity and sufficient coverage of the underlying distribution are therefore essential for faithful representation of turbulent dynamics. Within this perspective, RMSE should be interpreted as quantifying deviation from a particular realization, rather than error in the sense of physical inaccuracy. That said, for strongly conditioned tasks—such as filling gappy data when a large portion of the flow field is prescribed, as in Li et al. (2023) (“in-painting” in computer vision)—trajectory-level metrics can be justified. In such cases, the conditioning substantially reduces uncertainty, leading to a sharply concentrated posterior distribution in which pointwise agreement becomes a meaningful indicator of performance. 5.3. Relation to classical ensemble-based data assimilation 
+
+Conditional diffusion models implement data assimilation through the Bayesian decom-position in equation 2.9, in which the posterior score is expressed as the sum of a prior term and a likelihood correction. This structure is formally analogous to ensemble-based methods such as the EnKF, where a forecast model provides a prior ensemble that is subsequently updated by incorporating observations through a likelihood-based correction. In both frameworks, the central challenge is to reconcile data consistency with preservation of the dynamical or statistical structure encoded in the prior. From this perspective, conditional generation corresponds to sampling from a restricted subset of a high-dimensional probability distribution while attempting to retain the intrinsic correlations learned by the unconditional model. However, our results demonstrate that this theoretical mechanism does not automatically yield robust performance. Conditioning does not simply “insert” observational information into the model; it biases the sampler toward a subregion of state space consistent with the data, while the diffusion dynamics promote global consistency with the learned prior distribution. This induces a structural tension between local agreement with observations and preservation of global turbulent statistics. The failure modes identified in §4.2 reflect different manifestations of this tension. For sparse observations, the normalization of the likelihood term can overweight isolated measurements and amplify noise, effectively distorting the posterior correction relative to the prior structure. For dense or strongly correlated observations, the posterior becomes increasingly concentrated, restricting the admissible region of the learned distribution and potentially pushing the sampling dynamics toward regions that are poorly represented by the prior. In both regimes, the difficulty arises from the delicate balance required between the likelihood correction and the prior manifold. These observations closely mirror classical data assimilation challenges. In EnKF, increasing the number of observations within a spatially correlated region does not necessarily increase effective information content, since redundant measurements primarily constrain the same directions in state space. Similarly, in the diffusion-based setting, highly correlated or spatially concentrated conditioning can disproportionately restrict specific modes of the learned distribution. A key distinction, however, lies in how physical consistency is maintained. In traditional ensemble methods, the governing equations explicitly propagate ensemble members in physical time, ensuring dynamical coherence. In contrast, diffusion models encode physical structure implicitly within the learned prior. Excessively strong or localized conditioning can therefore distort this learned manifold, degrading statistical fidelity even when local data consistency is enforced. 
+
+> 28
+
+Turbulence generation and data assimilation with a latent diffusion model 
+
+6. Conclusions 
+
+In this work, we present a latent diffusion framework for reduced-order modelling and data assimilation in wall-bounded turbulent flows. Traditional data assimilation methods such as the ensemble Kalman filter (EnKF) require repeated evaluations of high-fidelity numerical solvers, which limits their applicability to high-Reynolds-number, wall-bounded turbulent flows encountered in real-world settings such as wind farms. Likelihood-based generative models such as diffusion models offer an alternative by learning complex high-dimensional probability distributions directly from data. The present work establishes a foundation for generative data assimilation in such settings. Our framework combines a 𝛽 -variational autoencoder ( 𝛽 -VAE) with a diffusion trans-former (DiT) to generate four-dimensional spatiotemporal flow samples. We demonstrate the approach on plane Couette flow at 𝑅𝑒 ℎ = 1300. The unconditional samples reproduce DNS statistics up to fourth-order moments, as well as two-point correlations and energy spectra, using only 16 latent degrees of freedom while retaining DNS-level fidelity. The accuracy degrades towards LES-level predictions when fewer than 16 latent degrees of freedom are employed. Furthermore, the model performs two distinct data assimilation tasks without retraining. Crucially, turbulent statistics can be imposed implicitly through marginal sampling of time-series observations, enabling distribution-level correction rather than deterministic trajectory matching. Conditional diffusion-based data assimilation therefore requires a delicate balance between observation density and conditioning strength (Chung et al. 
+
+2023). When properly tuned, the method recovers DNS-level statistical fidelity; when this balance is not achieved, two failure modes emerge. Sparse observations can overweight isolated measurements and amplify noise, whereas overly dense or strongly correlated constraints may lead to an overly concentrated posterior and degrade turbulent statistics. While the present work establishes a conceptual and methodological promising foun-dation, several developments are required for deployment in practical applications. Most importantly, the model must generalise across varying flow conditions. The methodology introduced here for imposing statistical structure provides a potential pathway toward interpolation, and possibly controlled extrapolation, beyond the original training manifold. In addition, the current temporal generation window is too short for realistic operational use; this limitation may be addressed through autoregressive rollouts (Shysheya et al. 2024). Finally, practical wind-farm applications require the ability to handle complex geometries such as turbines. Generalization to varying obstacle geometries may be achieved by treating them as additional conditioning variables (Hu et al. 2025).      
+
+> Acknowledgments. We thank Dr. Hossein Gorji of EMPA, Dr. Ruifeng Hu of Lanzhou University and Dr. Zhiye Zhao from the HKUST for their insightful discussions.
+> Funding. The authors acknowledge support from the Deutsche Forschungsgemeinschaft (DFG, German Research Foundation) under Germany’s Excellence Strategy - EXC 2075 - 390740016 and support from the Stuttgart Center for Simulation Science (SimTech). F.S. and B.T. are supported by the Carl Zeiss Foundation (CZS Project Number P2021-04012), which is gratefully acknowledged. The authors also acknowledge support by the state of Baden–W¨ urttemberg through bwHPC and the German Research Foundation (DFG) through grant INST 35/1597-1 FUGG.
+> Data availability statement. The data and code that support the findings of this study will be made openly available at https://github.com/ITLR-DDSim/latent-diffusion-turbulence.git .
+> Declaration of interests. The authors report no conflict of interest.
+
+29 F. Steinbrenner, B. Turan, H. Teng and H. Xiao 
+
+𝑑 z Number of Layers ˜𝑑 𝑐 × ˜𝑑 1 × ˜𝑑 2 × ˜𝑑 3 Number of Parameters 4 6 1 × 2 × 1 × 2 5.28 × 10 8
+
+8 6 2 × 2 × 1 × 2 5.28 × 10 8
+
+16 6 4 × 2 × 1 × 2 5.28 × 10 8
+
+32 5 1 × 4 × 2 × 4 1.32 × 10 8
+
+64 5 2 × 4 × 2 × 4 1.32 × 10 8
+
+96 5 3 × 4 × 2 × 4 1.32 × 10 8
+
+Table 2. Details of the 𝛽 -VAEs used in this work. <latexit sha1_base64="fets/LLMtY/KT0CMBXAnG7b6UVo=">AAADVnicjVJbSwJBFD5q5qXbWg899CJJ0JOsEdajdKOXwCAvoCK762iLe2NnFEz8J73Wb6r/EtE30xqUZM0ye858c853LnPMwLG50PXXWDyxklxNpTPZtfWNzS0tt13n/ii0WM3yHT9smgZnju2xmrCFw5pByAzXdFjDHJ7L+8aYhdz2vTsxCVjHNQae3bctQwDqalrb9J0en7gQ07Y7mnW1gl7U1covKqVIKVC0qn4utktt6pFPFo3IJUYeCegOGcTxtahEOgXAOjQFFkKz1T2jGWXhO4IVg4UBdIj/AKdWhHo4S06uvC1EcbBDeObpAPtKMZqwllEZdA75hv2gsMGvEaaKWWY4gTTBmFGMN8AF3cPiL083spzn8h/PuY9AFbIWvqQHU2Tl/tEjQX06Vb2xUW2gENk16yurC9yEwIbqJk+XynIADlOdx8jDg6whlnyzOUNe9a8HaSjJFIsXMRrgCyHlW8p8ltUgK5XRZUTUiwkr/ZynRaV+VCyVi+Xb40LlLJq1NO3RPh1ink6oQtdURc4W8n+kJ3qOv8TfE8lE6tM0Hot8dujbSmgfSOytOQ==</latexit> 
+
+μ 
+
+> <latexit sha1_base64="dgx7ETD4aR4MsnbRq3hIwWduBG4=">AAADWXicjVJLSwMxEJ52fdT6au3Bg5diETyVrUj1KL7wIijaKrQi2W1cQ/fFJhVq6W/xqj9J/Cse/BK3gharWbIz+TLzzSPjxL6QyrZfM1lranpmNjeXn19YXFouFFeaMuolLm+4kR8l1w6T3BchbyihfH4dJ5wFjs+vnO6Bvr964IkUUXip+jG/CZgXijvhMgXotlBqO5Hfkf0AYtC+EF7AhreFil21zSqPK7VUqVC6zqJiZpXa1KGIXOpRQJxCUtB9YiTxtahGNsXAbmgALIEmzD2nIeXh24MVhwUD2sXfw6mVoiHOmlMabxdRfOwEnmXawD42jA6sdVQOXUK+Yz8azPs1wsAw6wz7kA4Y5wzjKXBF97D4yzNILUe5/Mdz5KNQha5FTujBAFkFf/RI0R3tmt4IVBsbRHfN/crqEDcJsK65KdORsfTA4ZjzA/IIIRuIpd9sxFA2/etAMiO5YQlTRga+BFK/pc5nUg26Uh1dR0S9mLDaz3kaV5pb1Vq9Wj/fruztp7OWozVap03M0w7t0QmdIWcXr/dEz/SSfbMyVs7Kf5pmM6lPib4tq/QBuJCtZw==</latexit>
+
+!
+
+Input: turbulent 
+
+flow fields 
+
+snapshots 𝝓 
+
+64 ×2!"# channels 4 channels 64 ×2$"# channels 
+
+Spatial 3D Convolution (stride 2) 
+
+3D convolution (stride 1) 
+
+i − th Encoder block 
+
+i = {1,2,3,4,5,6}
+
+𝒛 
+
+#%& 
+
+%! × '( 
+
+%! × #%& 
+
+%!
+
+#%& 
+
+%!"# × '( 
+
+%!"# × #%& 
+
+%!"#
+
+... 
+
+j − th Decoder block 
+
+j = {1,2,3,4,5,6}
+
+Bottleneck layer 
+
+with latent DOF d𝒛 
+
+Batch normalization Residual connection 
+
+Trilinear interpolation 
+
+4 𝑐ℎ𝑎𝑛𝑛𝑒𝑙𝑠 
+
+(𝒖 , 𝒗 , 𝒘 , 𝒑 )
+
+128 × 64 ×128 
+
+Output: turbulent 
+
+flow fields 
+
+snapshots 𝝓 H
+
+128 × 64 ×128 
+
+4 𝑐ℎ𝑎𝑛𝑛𝑒𝑙𝑠 
+
+(𝒖 , 𝒗 , 𝒘 , 𝒑 )
+
+... 
+
+ReLU 3D convolution (kernel size 1, stride 1) 
+
+2 × 1 ×2 2! × 1! × 2! 2!"# × 1!"# × 2!"#
+
+Figure 18. Schematic of the 𝛽 -VAE architecture for 𝑑 = 16 in the first training stage. In the bottleneck layer 
+
+𝝁 and 𝜮 are the mean and variance of the variational distribution. The three-dimensional convolutions in the encoder and decoder block have a kernel size of three. 
+
+Appendix A. The 𝛽 -VAE and diffusion transformer implementation details 
+
+We provide a detailed description of the 𝛽 -VAE and diffusion transformer model implementation details such as architecture, training and hyperparameter choices. Both the 𝛽 -VAE and the DiT are trained with the Adam optimizer (Kingma & Ba 2015) at a learning rate of 1 × 10 −4. The 𝛽 -VAE, which only needs to be trained once for diffusion models sharing the same latent dimension, required approximately 100 GPU hours on an NVIDIA A100 Tensor Core GPU. Each diffusion model was then trained for about 2 GPU hours on the same hardware. 
+
+A.1. 𝛽 -variational autoencoder 
+
+A snapshot of the flow at time 𝑡 is defined as the matrix 
+
+𝝓 (𝑡 ) = [𝝓 (𝑥 1, 𝑦 1, 𝑧 1, 𝑡 ), · · · , 𝝓 (𝑥 𝑑 1 , 𝑦 𝑑 2 , 𝑧 𝑑 3 , 𝑡 )] ∈ R𝑑 𝑐 ×𝑑 . (A 1) where 𝑑 ≡ 𝑑 1 ×𝑑 2 ×𝑑 3, and 𝑑 𝑐 = 4 is the number of channels, corresponding to each of the field variables 𝑢 , 𝑣 , 𝑤 ,and 𝑝 . We store the flow snapshots in physical space as four-dimensional arrays 𝝓 (𝑡 ) ∈ R4×𝑑 1 ×𝑑 2 ×𝑑 3 . Similarly, the latent representation of a single flow snapshot in the bottleneck layer of the 𝛽 -VAE in the implementation is stored as a four-dimensional array z ∈ R ˜𝑑 𝑐 × ˜𝑑 1 × ˜𝑑 2 × ˜𝑑 3 . The number of channels and the reduced physical dimension ˜𝑑 = ˜𝑑 1 ˜𝑑 2 ˜𝑑 3 are both design choices, and define the number of degrees of freedom of the latent variable 𝑑 z = ˜𝑑 𝑐 ˜𝑑 . The number of layers in the encoder and decoder networks varies depending on the number of degrees of freedom of the latent variable and so does the number of total parameters of the 𝛽 -VAE (table 2). A schematic of the 𝛽 -VAE architecture is shown in figure 18. In every layer of the 𝛽 -VAE, we use convolutional networks with rectified linear unit (ReLU) as activation function. In the encoder, all convolutional layers in the networks have a a kernel size of three, padding of one and a stride of two. Each convolutional layer is followed by a residual block also containing convolutional layers to improve training performance and stability. In the final layer, convolutions with a kernel size of one are used to obtain the mean and variance of the variational distribution. The decoder uses trilinear interpolation to upsample the data, followed by convolutional layers with a kernel size of three, padding of one and stride of one. 
+
+30 Turbulence generation and data assimilation with a latent diffusion model Noised Latent 
+
+Vector 
+
+Diffusion 
+
+Timestep 
+
+Patch Embedder 
+
+Diffusion 
+
+Timestep 
+
+Embedder 
+
+DiT Blocks 
+
+Layer Norm 
+
+MLP and Reshape 
+
+Noise 
+
+<latexit sha1_base64="Te2+RgRRj334zc1sOtEAhObiMYM=">AAAB9XicbVDLSgMxFL1TX7W+qi7dBIsgCGVGpLosunFZwT6gHUsmzbShmWRIMkoZ+h9uXCji1n9x59+YaWehrQdCDufcS05OEHOmjet+O4WV1bX1jeJmaWt7Z3evvH/Q0jJRhDaJ5FJ1AqwpZ4I2DTOcdmJFcRRw2g7GN5nffqRKMynuzSSmfoSHgoWMYGOlh14g+UBPInulZ9N+ueJW3RnQMvFyUoEcjX75qzeQJImoMIRjrbueGxs/xcowwum01Es0jTEZ4yHtWipwRLWfzlJP0YlVBiiUyh5h0Ez9vZHiSGfR7GSEzUgvepn4n9dNTHjlp0zEiaGCzB8KE46MRFkFaMAUJYZPLMFEMZsVkRFWmBhbVMmW4C1+eZm0zqterVq7u6jUr/M6inAEx3AKHlxCHW6hAU0goOAZXuHNeXJenHfnYz5acPKdQ/gD5/MH4c6Sxw==</latexit> 
+
++
+
+Input Tokens 
+
+Layer Nom 
+
+Scale, shift 
+
+Multi -Head 
+
+Self -Atention 
+
+Diffusion 
+
+Timestep 
+
+Embedding 
+
+MLP 
+
+<latexit sha1_base64="2zwacNj+yeOLRSsHYY7AsjdwNjc=">AAAB+nicbVDLSsNAFJ34rPWV6tLNYBFcSElEqsuiG5cV7AOaECbT23boTBJmJkqJ/RQ3LhRx65e482+ctFlo64HLPZxzL3PnhAlnSjvOt7Wyura+sVnaKm/v7O7t25WDtopTSaFFYx7LbkgUcBZBSzPNoZtIICLk0AnHN7nfeQCpWBzd60kCviDDiA0YJdpIgV3xhkQIErhnXgja9HJgV52aMwNeJm5BqqhAM7C/vH5MUwGRppwo1XOdRPsZkZpRDtOylypICB2TIfQMjYgA5Wez06f4xCh9PIilqUjjmfp7IyNCqYkIzaQgeqQWvVz8z+ulenDlZyxKUg0RnT80SDnWMc5zwH0mgWo+MYRQycytmI6IJFSbtPIQ3MUvL5P2ec2t1+p3F9XGdRFHCR2hY3SKXHSJGugWNVELUfSIntErerOerBfr3fqYj65Yxc4h+gPr8wfHSJMN</latexit> 
+
+ω1, ε1
+
+<latexit sha1_base64="IZFwnb2i1eg/zzikjsgF23VnBkM=">AAAB+nicbVC7TsMwFHXKq5RXCiOLRYXEgKqkQoWxgoWxSPQhNVHkuE5r1XYi2wFVoZ/CwgBCrHwJG3+D02aAliNd3aNz7pWvT5gwqrTjfFultfWNza3ydmVnd2//wK4edlWcSkw6OGax7IdIEUYF6WiqGeknkiAeMtILJze533sgUtFY3OtpQnyORoJGFCNtpMCueiPEOQoa515ItOmVwK45dWcOuErcgtRAgXZgf3nDGKecCI0ZUmrgOon2MyQ1xYzMKl6qSILwBI3IwFCBOFF+Nj99Bk+NMoRRLE0JDefq740McaWmPDSTHOmxWvZy8T9vkOroys+oSFJNBF48FKUM6hjmOcAhlQRrNjUEYUnNrRCPkURYm7TyENzlL6+SbqPuNuvNu4ta67qIowyOwQk4Ay64BC1wC9qgAzB4BM/gFbxZT9aL9W59LEZLVrFzBP7A+vwBylqTDw==</latexit> 
+
+ω2, ε2
+
+<latexit sha1_base64="5n9Mvo3RgrklJF/Y5yy+moKlZrs=">AAAB73icbVBNS8NAEJ3Ur1q/qh69LBbBU0lEqseiF48V7Ae0oUy2m3bpZhN3N0IJ/RNePCji1b/jzX/jts1BWx8MPN6bYWZekAiujet+O4W19Y3NreJ2aWd3b/+gfHjU0nGqKGvSWMSqE6BmgkvWNNwI1kkUwygQrB2Mb2d++4kpzWP5YCYJ8yMcSh5yisZKnR6KZIR9r1+uuFV3DrJKvJxUIEejX/7qDWKaRkwaKlDrrucmxs9QGU4Fm5Z6qWYJ0jEOWddSiRHTfja/d0rOrDIgYaxsSUPm6u+JDCOtJ1FgOyM0I73szcT/vG5qwms/4zJJDZN0sShMBTExmT1PBlwxasTEEqSK21sJHaFCamxEJRuCt/zyKmldVL1atXZ/Wanf5HEU4QRO4Rw8uII63EEDmkBBwDO8wpvz6Lw4787HorXg5DPH8AfO5w+4Y4/H</latexit> 
+
+ω1
+
+<latexit sha1_base64="Qzct2UG14XwBtw0jRwBbF+EnPjE=">AAAB73icbVBNS8NAEJ34WetX1aOXxSJ4KkmR6rHoxWMF+wFtKJPtpl262cTdjVBC/4QXD4p49e9489+4bXPQ1gcDj/dmmJkXJIJr47rfztr6xubWdmGnuLu3f3BYOjpu6ThVlDVpLGLVCVAzwSVrGm4E6ySKYRQI1g7GtzO//cSU5rF8MJOE+REOJQ85RWOlTg9FMsJ+tV8quxV3DrJKvJyUIUejX/rqDWKaRkwaKlDrrucmxs9QGU4FmxZ7qWYJ0jEOWddSiRHTfja/d0rOrTIgYaxsSUPm6u+JDCOtJ1FgOyM0I73szcT/vG5qwms/4zJJDZN0sShMBTExmT1PBlwxasTEEqSK21sJHaFCamxERRuCt/zyKmlVK16tUru/LNdv8jgKcApncAEeXEEd7qABTaAg4Ble4c15dF6cd+dj0brm5DMn8AfO5w+554/I</latexit> 
+
+ω2
+
+Scale, shift 
+
+Layer Nom 
+
+Scale, shift 
+
+MLP 
+
+Scale, shift 
+
+<latexit sha1_base64="Te2+RgRRj334zc1sOtEAhObiMYM=">AAAB9XicbVDLSgMxFL1TX7W+qi7dBIsgCGVGpLosunFZwT6gHUsmzbShmWRIMkoZ+h9uXCji1n9x59+YaWehrQdCDufcS05OEHOmjet+O4WV1bX1jeJmaWt7Z3evvH/Q0jJRhDaJ5FJ1AqwpZ4I2DTOcdmJFcRRw2g7GN5nffqRKMynuzSSmfoSHgoWMYGOlh14g+UBPInulZ9N+ueJW3RnQMvFyUoEcjX75qzeQJImoMIRjrbueGxs/xcowwum01Es0jTEZ4yHtWipwRLWfzlJP0YlVBiiUyh5h0Ez9vZHiSGfR7GSEzUgvepn4n9dNTHjlp0zEiaGCzB8KE46MRFkFaMAUJYZPLMFEMZsVkRFWmBhbVMmW4C1+eZm0zqterVq7u6jUr/M6inAEx3AKHlxCHW6hAU0goOAZXuHNeXJenHfnYz5acPKdQ/gD5/MH4c6Sxw==</latexit> 
+
++
+
+<latexit sha1_base64="2XFsWRkH6sKypArDukFiNsJlyjA=">AAAB7HicbVBNS8NAEJ34WetX1aOXxSJ4KkmR6rHgxWMF0xbaUDbbbbt0swm7E6GE/gYvHhTx6g/y5r9x0+agrQ8GHu/NMDMvTKQw6Lrfzsbm1vbObmmvvH9weHRcOTltmzjVjPsslrHuhtRwKRT3UaDk3URzGoWSd8LpXe53nrg2IlaPOEt4ENGxEiPBKFrJ7yNNy4NK1a25C5B14hWkCgVag8pXfxizNOIKmaTG9Dw3wSCjGgWTfF7up4YnlE3pmPcsVTTiJsgWx87JpVWGZBRrWwrJQv09kdHImFkU2s6I4sSsern4n9dLcXQbZEIlKXLFlotGqSQYk/xzMhSaM5QzSyjTwt5K2IRqytDmk4fgrb68Ttr1mteoNR6uq816EUcJzuECrsCDG2jCPbTABwYCnuEV3hzlvDjvzseydcMpZs7gD5zPH1Wnjlc=</latexit> 
+
+ω<latexit sha1_base64="Dk4laHVjk4a+Tri+qZiEhP/ObSY=">AAACDnicbZC7SgNBFIbPeo3xtmppMxgCVmE3hGgZsLGMYC6QhDA7mU2GzF6YOSuEJU9g46vYWChia23n2zhJVtHEHwY+/nMOZ87vxVJodJxPa219Y3NrO7eT393bPzi0j46bOkoU4w0WyUi1Paq5FCFvoEDJ27HiNPAkb3njq1m9dceVFlF4i5OY9wI6DIUvGEVj9e1ipYsi4Jq4Dsmo/A3uj9O3C07JmYusgptBATLV+/ZHdxCxJOAhMkm17rhOjL2UKhRM8mm+m2geUzamQ94xGFKzppfOz5mSonEGxI+UeSGSuft7IqWB1pPAM50BxZFers3M/2qdBP3LXirCOEEessUiP5EEIzLLhgyE4gzlxABlSpi/EjaiijI0CeZNCO7yyavQLJfcaql6UynUylkcOTiFMzgHFy6gBtdQhwYwuIdHeIYX68F6sl6tt0XrmpXNnMAfWe9f7PmaGg==</latexit> 
+
+4 → 10 → 2 → 1 → 2
+
+<latexit sha1_base64="Dk4laHVjk4a+Tri+qZiEhP/ObSY=">AAACDnicbZC7SgNBFIbPeo3xtmppMxgCVmE3hGgZsLGMYC6QhDA7mU2GzF6YOSuEJU9g46vYWChia23n2zhJVtHEHwY+/nMOZ87vxVJodJxPa219Y3NrO7eT393bPzi0j46bOkoU4w0WyUi1Paq5FCFvoEDJ27HiNPAkb3njq1m9dceVFlF4i5OY9wI6DIUvGEVj9e1ipYsi4Jq4Dsmo/A3uj9O3C07JmYusgptBATLV+/ZHdxCxJOAhMkm17rhOjL2UKhRM8mm+m2geUzamQ94xGFKzppfOz5mSonEGxI+UeSGSuft7IqWB1pPAM50BxZFers3M/2qdBP3LXirCOEEessUiP5EEIzLLhgyE4gzlxABlSpi/EjaiijI0CeZNCO7yyavQLJfcaql6UynUylkcOTiFMzgHFy6gBtdQhwYwuIdHeIYX68F6sl6tt0XrmpXNnMAfWe9f7PmaGg==</latexit> 
+
+4 → 10 → 2 → 1 → 2
+
+<latexit sha1_base64="lRUazw71oiwNHvzK1RssK3FzQcc=">AAAB7nicbVBNS8NAEJ3Ur1q/qh69LBbBU0mk1B4LXjxWsB/QhrLZbtqlm03YnQgl9Ed48aCIV3+PN/+N2zYHbX0w8Hhvhpl5QSKFQdf9dgpb2zu7e8X90sHh0fFJ+fSsY+JUM95msYx1L6CGS6F4GwVK3ks0p1EgeTeY3i387hPXRsTqEWcJ9yM6ViIUjKKVuo0BioibYbniVt0lyCbxclKBHK1h+WswilkacYVMUmP6npugn1GNgkk+Lw1SwxPKpnTM+5Yqapf42fLcObmyyoiEsbalkCzV3xMZjYyZRYHtjChOzLq3EP/z+imGDT8TKkmRK7ZaFKaSYEwWv5OR0JyhnFlCmRb2VsImVFOGNqGSDcFbf3mTdG6qXr1af6hVmrU8jiJcwCVcgwe30IR7aEEbGEzhGV7hzUmcF+fd+Vi1Fpx85hz+wPn8ATC0j3M=</latexit> 
+
+8→
+
+Figure 19. Schematic of the DiT architecture. The indicated shapes for the noised latent vector and the noise are for 𝑑 z = 16. Hyperparameter Value Number of DiT Blocks 8Number of Heads 8Hidden Size 240 Patch Size 1 × 1 × 1 × 1Total Number of Parameters 8.56 × 10 6
+
+Table 3. Hyperparameters of the DiT. Hidden size refers to the dimension of the embedding space. Patch size refers to the dimension of each of the patches in the 4D latent space. For training the 𝛽 -VAE with the loss function described in equation 2.2, we define the appropriate 𝛽 value as 5 × 10 −4. As previously mentioned, the values of this scalar hyperparameter is chosen to balance the trade-off between reconstruction accuracy and disentanglement within the latent representations (Higgins et al. 2017). Note that the optimal 𝛽 value for our three-dimensional turbulent plane Couette channel flow is two orders lower than the one identified for two-dimensional periodic flow at 𝑅𝑒 = 40 (Solera-Rico et al. 2024). Both values are noticeably lower then the ones reported for natural image tasks which are of the order 𝑂 (1) (e.g., Higgins et al. 2017). 
+
+A.2. Diffusion transformer 
+
+We use the diffusion transformer (DiT) Peebles & Xie (2023) as the neural backbone of our diffusion model. A schematic of the DiT architecture is shown in Figure 19. DiT largely follows the design of the vision transformer (ViT) (Dosovitskiy et al. 2021) originally developed for image classification, where the input image (or the noised image in the case of DiT) is first divided into a sequence of patches, which are then mapped to an embedding space via a patch embedding network. The diffusion timestep 𝜏 is also mapped to the same space via a feed-forward network. The resulting tokens are then fed to the DiT blocks. Each DiT block consists of a multi-head self-attention layer and a feed-forward layer. The layer normalisation in the standard transformer encoder is replaced with an adaptive layer norm (adaLN), with the scaling and shifting parameters 𝛾 1,2 and 𝛽 1,2
+
+being learned from the diffusion timestep embeddings via a feed-forward network. A final feed-forward layer recovers the noise added to the image after the DiT blocks have processed the tokens. The ViT architecture was extended to the video domain by Arnab et al. (2021), as was DiT itself (Lu et al. 
+
+2024; Ma et al. 2025). In both cases, the extension to videos requires the patch embedding process described 
+
+31 F. Steinbrenner, B. Turan, H. Teng and H. Xiao 
+
+above to be performed in 3D (frame,height,width) instead of 2D. In this work, we adapt the DiT architecture to four-dimensional generation by treating sequences of three-dimensional latents as a 4D vector and dividing them into patches of size 1 × 1 × 1 × 1. These tokens are then fed to the DiT blocks, where the temporal and (latent) spatial dimensions are processed simultaneously, similar to “Model 1” in Arnab et al. (2021). We also employ sinusoidal embeddings from Vaswani et al. (2017) to encode position and time information into the tokens. Other hyperparameters are listed in Table 3. 
+
+REFERENCES 
+
+Amor ´ os-Trepat, M., Medrano-Navarro, L., Liu, Q., Guastoni, L. & Thuerey, N. 2026 Guiding diffusion models to reconstruct flow fields from sparse data. Physics of Fluids 38 (1). 
+
+Arnab, A., Dehghani, M., Heigold, G., Sun, C., Luˇ ci´ c, M. & Schmid, C. 2021 ViViT: A video vision transformer. In Proc. IEEE/CVF Int. Conf. Comput. Vis. , pp. 6836–6846. 
+
+Avsarkisov, V., Hoyas, S., Oberlack, M. & Garcia-Galache, J. P. 2014 Turbulent plane couette flow at moderately high Reynolds number. J. Fluid Mech. 751 , R1. 
+
+Bauer, P., Thorpe, A. J. & Brunet, G. 2015 The quiet revolution of numerical weather prediction. Nature 525 ,47–55. 
+
+Chung, H., Kim, J., Mccann, M. T., Klasky, M. L. & Ye, J. C. 2023 Diffusion posterior sampling for general noisy inverse problems. In The Eleventh International Conference on Learning Representations .
+
+Dhariwal, P. & Nichol, A. 2021 Diffusion models beat GANs on image synthesis. Adv. Neural Inf. Process. Syst. 34 , 8780–8794. 
+
+Dosovitskiy, A. & others 2021 An image is worth 16x16 words: Transformers for image recognition at scale. In International Conference on Learning Representations .
+
+Du, P., Parikh, M. H., Fan, X., Liu, X.-Y. & Wang, J.-X. 2024 Conditional neural field latent diffusion model for generating spatiotemporal turbulence. Nat. Commun. 15 (1), 10416. 
+
+Eivazi, H., Le Clainche, S., Hoyas, S. & Vinuesa, R. 2022 Towards extraction of orthogonal and parsimonious non-linear modes from turbulent flows. Expert Syst. Appl. 202 , 117038. 
+
+Evensen, G. 2009 Data assimilation: the ensemble Kalman filter . Springer. 
+
+Gao, H., Han, X., Fan, X., Sun, L., Liu, L.-P., Duan, L. & Wang, J.-X. 2024 a Bayesian conditional diffusion models for versatile spatiotemporal turbulence generation. Comput. Methods Appl. Mech. Eng. 427 , 117023. 
+
+Gao, H., Kaltenbach, S. & Koumoutsakos, P. 2024 b Generative learning for forecasting the dynamics of high-dimensional complex systems. Nat. Commun. 15 (1), 8904. 
+
+Guo, F., Mann, J., Pe ˜ na, A., Schlipf, D. & Cheng, P. W. 2022 The space-time structure of turbulence for lidar-assisted wind turbine control. Renew. Energy 195 , 293–310. 
+
+Hamilton, J. M., Kim, J. & Waleffe, F. 1995 Regeneration mechanisms of near-wall turbulence structures. J. Fluid Mech. 287 , 317–348. 
+
+Higgins, I., Matthey, L., Pal, A., Burgess, C., Glorot, X., Botvinick, M., Mohamed, S. & Lerchner, A. 
+
+2017 𝛽 -VAE: Learning basic visual concepts with a constrained variational framework. In Proc. Int. Conf. Learn. Represent. .
+
+Ho, J., Jain, A. & Abbeel, P. 2020 Denoising diffusion probabilistic models. Adv. Neural Inf. Process. Syst. 
+
+33 , 6840–6851. 
+
+Hu, J., Lu, Z. & Yang, Y. 2025 Generative prediction of flow fields around an obstacle using the diffusion model. Phys. Rev. Fluids 10 (9), 094903. 
+
+Hutchins, N. & Marusic, I. 2007 Evidence of very long meandering features in the logarithmic region of turbulent boundary layers. J. Fluid Mech. 579 , 1–28. 
+
+Jacobsen, C., Zhuang, Y. & Duraisamy, K. 2025 CoCoGen: Physically consistent and conditioned score-based generative models for forward and inverse problems. SIAM J. Sci. Comput. 47 (2), C399–C425. 
+
+Kim, J., Moin, P. & Moser, R. 1987 Turbulence statistics in fully developed channel flow at low Reynolds number. J. Fluid Mech. 177 , 133–166. 
+
+Kingma, D. P. & Ba, J. 2015 Adam: A method for stochastic optimization. In 3rd International Conference on Learning Representations (ICLR 2015) .
+
+Kingma, D. P. & Welling, M. 2022 Auto-encoding variational bayes, arXiv: 1312.6114. 
+
+Kline, S. J. & Robinson, S. K. 1990 Turbulent boundary layer structure: Progress, status, and challenges. In 
+
+Structure of Turbulence and Drag Reduction: IUTAM Symposium Zurich, Switzerland July 25–28, 1989 , pp. 3–22. Springer. 
+
+Li, T., Biferale, L., Bonaccorso, F., Scarpolini, M. A. & Buzzicotti, M. 2024 a Synthetic Lagrangian turbulence by generative diffusion models. Nat. Mach. Intell. 6 (4), 393–403. 
+
+Li, T., Buzzicotti, M., Biferale, L., Bonaccorso, F., Chen, S. & Wan, M. 2023 Multi-scale reconstruction of turbulent rotating flows with proper orthogonal decomposition and generative adversarial networks. J. Fluid Mech. 971 , A3. 
+
+32 Turbulence generation and data assimilation with a latent diffusion model 
+
+Li, Z., Han, W., Zhang, Y., Fu, Q., Li, J., Qin, L., Dong, R., Sun, H., Deng, Y. & Yang, L. 2024 b Learning spatiotemporal dynamics with a pretrained generative model. Nat. Mach. Intell. 6 (12), 1566–1579. 
+
+Linot, A. J. & Graham, M. D. 2022 Data-driven reduced-order modeling of spatiotemporal chaos with neural ordinary differential equations. Chaos 32 (7). 
+
+Linot, A. J. & Graham, M. D. 2023 Dynamics of a data-driven low-dimensional model of turbulent minimal couette flow. J. Fluid Mech. 973 , A42. 
+
+Liu, X.-Y., Parikh, M. H., Fan, X., Du, P., Wang, Q., Chen, Y.-F. & Wang, J.-X. 2025 CoNFiLD-inlet: Synthetic turbulence inflow using generative latent diffusion models with neural fields. Phys. Rev. Fluids 
+
+10 (5), 054901. 
+
+Lu, H., Yang, G., Fei, N., Huo, Y., Lu, Z., Luo, P. & Ding, M. 2024 VDT: General-purpose video Diffusion transformers via mask modeling. In The Twelfth International Conference on Learning Representations .
+
+Ma, X., Wang, Y., Chen, X., Jia, G., Liu, Z., Li, Y.-F., Chen, C. & Qiao, Y. 2025 Latte: Latent Diffusion Transformer for video generation. Transactions on Machine Learning Research .
+
+Mack, J., Arcucci, R., Molina-Solana, M. & Guo, Y.-K. 2020 Attention-based convolutional autoencoders for 3d-variational data assimilation. Computer Methods in Applied Mechanics and Engineering 372 , 113291. 
+
+Meyers, J., Bottasso, C. L., Dykes, K., Fleming, P. A., Gebraad, P. M. O., Giebel, G., G ¨ oc ¸men, T. & van Wingerden, J. 2022 Wind farm flow control: prospects and challenges. Wind Energy Sci. .
+
+Molter, C. & Cheng, P. W. 2020 Andromeda - a novel flying wind measurement system. J. Phys. Conf. Ser. 
+
+1618 (3), 032049. 
+
+Mons, V., Du, Y. & Zaki, T. A. 2021 Ensemble-variational assimilation of statistical data in large-eddy simulation. Phys. Rev. Fluids 6 (10), 104607. 
+
+Ott, E. 2002 Chaos in Dynamical Systems , 2nd edn. Cambridge University Press. 
+
+Peebles, W. & Xie, S. 2023 Scalable Diffusion models with transformers. In Proc. IEEE/CVF Int. Conf. Comput. Vis. , pp. 4195–4205. 
+
+Pirozzoli, S., Bernardini, M. & Orlandi, P. 2011 Large-scale motions and inner/outer layer interactions in turbulent couette–poiseuille flows. J. Fluid Mech. 680 , 534–563. 
+
+Pirozzoli, S., Bernardini, M. & Orlandi, P. 2014 Turbulence statistics in couette flow at high Reynolds number. J. Fluid Mech. 758 , 327–343. 
+
+Rombach, R., Blattmann, A., Lorenz, D., Esser, P. & Ommer, B. 2022 High-resolution image synthesis with latent diffusion models. In Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. , pp. 10684–10695. 
+
+Rozet, F. & Louppe, G. 2023 Score-based data assimilation. Advances in Neural Information Processing Systems 36 , 40521–40541. 
+
+Shu, D., Li, Z. & Barati Farimani, A. 2023 A physics-informed diffusion model for high-fidelity flow field reconstruction. J. Comput. Phys. 478 , 111972. 
+
+Shysheya, A., Diaconu, C., Bergamin, F., Perdikaris, P., Hern ´ andez-Lobato, J. M., Turner, R. & Mathieu, E. 2024 On conditional diffusion models for PDE simulations. Adv. Neural Inf. Process. Syst. 37 ,23246–23300. 
+
+Solera-Rico, A., Sanmiguel Vila, C., G ´ omez-L ´ opez, M., Wang, Y., Almashjary, A., Dawson, S. T. & Vinuesa, R. 2024 𝛽 -variational autoencoders and transformers for reduced-order modelling of fluid flows. 
+
+Nat. Commun. 15 (1), 1361. 
+
+Song, Y. & Ermon, S. 2019 Generative modeling by estimating gradients of the data distribution. Adv. Neural Inf. Process. Syst. 32 .
+
+Song, Y., Sohl-Dickstein, J., Kingma, D. P., Kumar, A., Ermon, S. & Poole, B. 2021 Score-based generative modeling through stochastic differential equations. In International Conference on Learning Representations .
+
+Teng, H., Liu, N., Lu, X. & Khomami, B. 2018 Turbulent drag reduction in plane couette flow with polymer additives: a direct numerical simulation study. J. Fluid Mech. 846 , 482–507. 
+
+Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, L. & Polosukhin, I. 2017 Attention is all you need. Adv. Neural Inf. Process. Syst. 30 .
+
+Veers, P. & others 2019 Grand challenges in the science of wind energy. Science 366 (6464), eaau2027. 
+
+Vinograd, M. Y. & Di Leoni, P. C. 2025 Reduced representations of rayleigh–b´ enard flows via autoencoders. 
+
+J. Fluid Mech. 1006 , A10. 
+
+Zeng, K., De Jesus, C. E. P., Fox, A. J. & Graham, M. D. 2024 Autoencoders for discovering manifold dimension and coordinates in data from complex dynamical systems. Mach. Learn.: Sci. Technol. 5 (2), 025053. 
+
+Zhan, Z., Chen, D., Mei, J., Zhao, Z., Chen, J., Chen, C., Lyu, S. & Wang, C. 2025 Conditional image synthesis with diffusion models: A survey. Trans. Mach. Learn. Res. 2025 .
+
+Zhang, X.-L., Xiao, H., Luo, X. & He, G. 2022 Ensemble Kalman method for learning turbulence models from indirect observation data. J. Fluid Mech. 949 , A26. 
+
+33 F. Steinbrenner, B. Turan, H. Teng and H. Xiao 
+
+Zhou, A., Li, Z., Schneier, M., Buchanan Jr, J. R. & Farimani, A. B. 2025 Text2pde: Latent diffusion models for accessible physics simulation, 2025. URL https://arxiv. org/abs/2410.01153 .
+
+34

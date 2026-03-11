@@ -1,0 +1,489 @@
+Title: Trajectory Tracking Control Design for Autonomous Helicopters with Guaranteed Error Bounds
+
+URL Source: https://arxiv.org/pdf/2603.08045v1
+
+Published Time: Tue, 10 Mar 2026 01:53:01 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+# Trajectory Tracking Control Design for Autonomous Helicopters with Guaranteed Error Bounds 
+
+Philipp Schitz 1,2, Johann C. Dauer 1, and Paolo Mercorelli 2
+
+Abstract —This paper presents a systematic framework for computing formally guaranteed trajectory tracking error bounds for autonomous helicopters based on Robust Positive Invariant (RPI) sets. The approach focuses on establishing a closed-loop translational error dynamics which is cast into polytopic linear parameter-varying form with bounded additive and state-dependent disturbances. Ellipsoidal RPI sets are computed, yielding explicit position error bounds suitable as certified buffer zones in upper-level trajectory planning. Three controller archi-tectures are compared with respect to the conservatism of their error bounds and tracking performance. Simulation results on a nonlinear helicopter model demonstrate that all architectures respect the derived bounds, while highlighting trade-offs between dynamical fidelity and conservatism in invariant set computation. 
+
+I. I NTRODUCTION 
+
+Unmanned helicopters combine vertical take-off and landing capabilities with comparatively high payload capacity and range, making them attractive for logistics, inspection, and offshore operations [1]. In such missions, trajectory tracking is typically embedded in a hierarchical architecture: high-level planners generate collision-free reference trajectories, while lower-level controllers ensure their execution. In most practical systems, uncertainty in trajectory tracking is handled through heuristic safety margins [2], [3]. While computationally convenient, such approaches lack formal guarantees. If the margin is chosen too small, disturbances may lead to constraint violations. If chosen too large, the planner becomes overly conservative, reducing feasible corridors and mission efficiency. The absence of a systematic link between closed-loop tracking dynamics and trajectory planning remains a central limitation in many frameworks. One method to overcome this limitation is the use of invari-ant sets [4] which guarantee that a system, once within such a set, will never leave it. However, computation of invariant sets remains difficult for nonlinear systems. A common strategy is thus to bring the system into a linear form and conservatively bound the modeling errors. The authors in [5] use a motion planning paradigm where nodes in a graph are connected through invariant sets. These sets are generated from a reduced closed-loop model by bounding the errors induced by the attitude dynamics. However, since only position setpoints are considered, the quadrotor is restricted to low velocities. 
+
+> 1
+
+Institute of Flight Systems, German Aerospace Center (DLR), 38108 Braunschweig, Germany (e-mail: philipp.schitz@dlr.de; johann.dauer@dlr.de). 
+
+> 2
+
+Institute for Production Technology and Systems, Leuphana University of Lueneburg, 21335 Lueneburg, Germany (e-mail: paolo.mercorelli@leuphana.de). 
+
+Another approach to utilizing robust invariant sets is presented in [6] where reachability analysis is employed to validate pre-defined loitering maneuvers for unmanned helicopters. A similar approach is presented in [7] where a library of maneuver with corresponding invariant sets is built up and then used to compose trajectories online. In both cases, the invariant sets are based on linearization along the reference trajectory and are thus valid only for a particular trajectory. Another line of research is tube-based Model Predictive Control [8], where nominal trajectories are planned considering tightened con-straints. The concept is based on an ancillary controller which keeps the true system close to the reference, with tracking error bounds derived from robust positive invariant (RPI) sets. These error bounds are then used to tighten the constraint sets, ensuring robust constraint satisfaction. This method has been applied to the autonomous landing of unmanned helicopters in our previous works [9] and [10]. For helicopters, many existing trajectory tracking architectures [11]–[13] produce nonlinear error dynamics and therefore do not lend themselves to RPI set computation. The work in [10] overcomes this limitation by introducing a simplified outer-loop model with linear error dynamics. However, the approach only considers constant heading angles and relies on a linearized coupling of acceleration and attitude commands. 
+
+A. Contribution and structure of the paper 
+
+In this work, we develop tracking controller architectures to arrive at RPI sets for unmanned helicopters to be used in any planning framework with sufficiently smooth trajectories. Crucially, our proposed method remains valid even for time-varying yaw angles and is adaptable to a wide variety of ex-isting helicopter attitude controllers. This is done by replacing the nonlinear coupling of the translation and attitude subsys-tems by an equivalent acceleration dynamics, resulting a linear outer-loop model. We formally derive disturbance bounds and thus bring the system into a form suitable for computation of RPI sets via semidefinite programming. For outer loop feedback design, we showcase three different architectures and compare the conservatism of their error bounds as well as their tracking performance. 
+
+B. Notation 
+
+The identity and zero matrices are denoted as I and 0,respectively. Given a matrix P , we write P ≻ 0 (P ≺ 0)to denote symmetric positive (negative) definiteness. We in-terpret the norm operator || · || as the (induced) 2-norm. A diagonal matrix B with elements b1, . . . , b N is written as B =
+
+> arXiv:2603.08045v1 [eess.SY] 9 Mar 2026
+
+diag (b1, . . . , b N ) and the inverse operation is (b1, . . . , b N ) = 
+
+diag (B). Given vectors or matrices A1, . . . , A N , we write the set spanned by their convex hull as A = conv (A1, . . . , A N ).Given a polytopic set A we denote its vertices as vert (A) = (A1, . . . , A N ). For a variable x, we use x(i) to denote their 
+
+i-th derivative with respect to time and x(i,j ) with i ≤ j to denote the tupel (x(i), x (i+1) , . . . , x (j)).II. P ROBLEM STATEMENT AND PRELIMINARIES 
+
+Our aim is to compute explicit position error bounds to be used as buffer zones for collision avoidance in upper-level tra-jectory planning algorithms. By providing a principled method to arrive at these bounds, the buffer zones are guaranteed to be valid under concrete assumptions that can be monitored during flight. We assume that the planner generates smooth (at least four times smoothly differentiable) three-dimensional position reference trajectories p(0 ,4)  
+
+> r
+
+. We further assume that a at least twice smoothly differentiable heading reference signal is available. This signal may be generated by the planner itself or computed to satisfy a specific objective. In this study, the following constraint on yaw angle of the helicopter is imposed: 
+
+ψr = atan2 ( ˙ pr,y , ˙pr,x ), ˙p2 
+
+> r,x
+
++ ˙ p2 
+
+> r,y
+
+> 0, (1) so that the nose always points into the direction of its velocity vector. Since the necessary derivatives of pr are available, 
+
+˙ψr and ¨ψr are readily computed to complete the reference trajectory σr = ( p(0 ,4)  
+
+> r
+
+, ψ (0 ,2)  
+
+> r
+
+).For the computation of formally guaranteed error bounds we employ the notion of Robust Positive Invariant (RPI) sets. 
+
+Definition 1 (Robust Positive Invariance): Let ˙x = f (x, d)
+
+with the state x ∈ Rn and a disturbance d ∈ D ⊂ Rp. A set 
+
+Z ⊂ Rn is RPI if x(t0) ∈ Z implies that x(t) ∈ Z for all 
+
+d(t) ∈ D and t ≥ t0.Once the state is within the RPI set, we can formally guarantee that it will never leave this set for any disturbance trajectories evolving within D. In this work, we use Linear Matrix Inequality (LMI) tools to compute ellipsoidal RPI sets. 
+
+Definition 2 (Ellipsoidal Set): Let P ∈ Rn×n be positive definite and c ∈ Rn. An ellipsoidal set with inverse shape matrix P and center c is defined as 
+
+E = {x ∈ Rn | (x − c)P (x − c)T ≤ 1}. (2) In order to obtain a bound on the position error we project the RPI set onto the position subspace. For the RPI set computation, we consider polytopic linear systems of the form 
+
+˙x = A(υ)x + E(∆ Cx + d(t)) ,A(υ) ∈ A = conv (A1, . . . , A N ), (3) where x ∈ Rn denotes the state and A ∈ Rn×n is a parameter-varying system matrix with parameter υ. The possible realiza-tions of the system matrix A are bounded by the convex hull of vertex matrices A1, . . . , A N . The disturbances are modeled using state-dependent and additive components. In both cases, 
+
+E ∈ Rn×p maps the disturbances onto the states. The state dependent disturbance is modeled using a disturbance matrix 
+
+∆ ∈ Rp×m with bound || ∆|| ≤ γ and a matrix C ∈ Rm×n to select the relevant outputs from the state vector. The additive disturbance is represented by d ∈ Rp which is bounded by 
+
+|| d|| ≤ ¯d.The ellipsoidal RPI set for system (3) is obtained by finding a common Lyapunov function V = xT P x for all Ai ∈ A .Using the Schur complement, we can enforce negativity of ˙V
+
+with contraction rates τ1, τ 2 ≥ 0 by ensuring 
+
+
+
+M P E P E ET P −τ1I 0
+
+ET P 0 −τ2I
+
+ ⪯ 0, ∀Ai ∈ vert (A),M = ATi P + P A i + τ1γ2CT C + τ2 ¯d2P. 
+
+(4) Thus, to minimize the RPI set size, we solve the following optimization problem 
+
+min   
+
+> P≻0,τ 1,τ 2≥0
+
+− log det( P ) s.t. (4) (5) using semidefinite programming with line search over τ2. The RPI set is then given by Z = {x | xP xT ≤ 1}. Our primary aim in this paper is therefore to design controller architectures that bring the closed-loop error dynamics into the form of (3) so that formal tracking error bounds can be established using the optimization problem (5). III. C ONTROL ORIENTED HELICOPTER MODEL 
+
+We begin by introducing the general form of the heli-copter dynamics with state xH = [p, v, η, ω, χ]T , where 
+
+p = [ px, p y , p z ]T , v = [ vx, v y , v z ]T , η = [ ϕ, θ, ψ ]T , and 
+
+ω = [ p, q, r ]T denote the inertial position and velocity, the Euler angles and the body-fixed angular rates, respectively. The state χ represents any additional states that describe main or tail rotor dynamics such as blade flapping, inflow or engine behavior. The input uH = [ ulon , u lat , u ped , u col ]T consists of longitudinal and lateral cyclic, pedal, and collective inputs. The dynamics in their general form are thus given by 
+
+˙p = v, ˙v = m−1RF (xH , uH ) + ez g (6a) 
+
+˙η = Ψ ω, ˙ω = −(ω × Jω) + τ (xH , uH ) (6b) 
+
+˙χ = fχ(xH , uH ) (6c) where Ψ encodes the kinematic relation between the Euler angles and the angular rates, ez = [0 , 0, 1] T , g denotes the gravitational constant, F and τ denote general forces and torques, respectively, and R ∈ SO (3) is the rotation matrix from body-fixed to local inertial coordinates. 
+
+A. Control-oriented model simplification 
+
+As a first step towards a suitable closed-loop model for RPI set computation, we consider a simplified translational helicopter dynamics (6a). In particular, we write 
+
+˙v = a = −Rez f + ez g + ¯Dva + w(t), ¯D = RDR T ,
+
+(7) where f := αu col denotes the mass-normalized thrust acting along the body-fixed z-axis, and D = diag (dx, d y , d z ) with dx, d y , d z ≤ 0 collects linear drag coefficients in body coor-dinates. The air-relative velocity is defined as va := v − vW ,where vW is the estimated mean wind velocity component expressed in the geodetic frame. The term w(t) with || w|| ≤ 
+
+wmax captures all remaining unmodeled effects, including states χ, time-varying deviations of the wind from vW , and other external disturbances. In practice, helicopter attitude controllers are designed using specialized procedures that account for higher-order internal dynamics χ and aerodynamic couplings. Such controllers are typically optimized to track specified reference models. Thus, for the attitude subsystem, we propose a generic interface formulated as reference dynamics for roll ϕ, pitch θ and the body frame yaw rate r. In particular, for ρ = [ ϕr , θ r , f ]T ,define 
+
+¨ρ = Ω 2(ρ − ρc) − 2ΩΞ ˙ ρ, (8) with bandwidths Ω = diag (ωϕ, ω θ , ω f ), damping coefficients 
+
+Ξ = diag (ξϕ, ξ θ , ξ f ), command ρc = [ ϕc, θ c, f c], and refer-ence angles ϕr , θ r . While the reference dynamics on ϕ and 
+
+θ reflect the inner-loop behavior, the imposed second-order dynamics on f are introduced to guarantee bounded derivatives of the thrust command. This property is required to ensure continuity of the input transformation defined below. For the yaw rate channel, we assume a first-order tracking dynamics: 
+
+˙rr = −ωr (r − rc). (9) with bandwidth ωr and yaw rate command rc. By explicitly modeling the closed-loop behavior instead of the controller structure, the subsequent RPI-based analysis remains agnostic to the particular inner-loop implementation. 
+
+B. Input transformation and disturbance bounding 
+
+We treat the thrust f and reference attitude ϕr , θr , ψr as the inputs to the translational subsystem. Define the acceleration command 
+
+ac := −Rr ez f + ez g, (10) where Rr is the rotation matrix associated with the reference attitude. The vector ac represents the inertial acceleration gen-erated by the commanded thrust direction and magnitude. In order to invert this mapping, we first express the commanded acceleration in the heading-fixed frame, 
+
+aHc := RTψ ac, (11) where Rψ denotes the yaw rotation. The inverse transform 
+
+ρ = Φ( aHc ) is given by 
+
+f =
+
+q
+
+aHc,x  
+
+> 2
+
++ aHc,y  
+
+> 2
+
++ ( aHc,z − g)2,θr = arctan aHc,x 
+
+aHc,z − g
+
+!
+
+, ϕr = arcsin aHc,y 
+
+f
+
+!
+
+.
+
+(12) Let ˜R := Rr RT denote the attitude configuration error between the desired attitude Rr and the true attitude R.Using the commanded acceleration ac defined in (10), we can rearrange the translational dynamics (7) into 
+
+˙v = ac + ¯Dva + ( ˜RT − I)( gez − ac) + w(t) (13) Using gez − ac = Rr ez f , we obtain 
+
+˙v = ac + ¯Dva + ( ˜RT − I)Rr ez f + w(t). (14) To separate nominal and disturbance contributions, introduce a reference velocity vr and define va,r = vr − vW and ev =
+
+v − vr . Then va = va,r + ev and we arrive at 
+
+˙v = ac + ¯Dva,r + ( ˜RT − I)Rr ez f + ¯Dev + w(t). (15) The term ¯Dva,r will later be compensated via flatness-based feedforward. The remaining terms ( ˜RT − I)Rr ez f and ¯Dev
+
+are discussed in the following. 
+
+a) Attitude-induced disturbance: The term ( ˜RT −
+
+I)Rr ez f captures the error induced by the thrust misalignment caused by the attitude error. Using ˜R = Rr RT , we obtain 
+
+( ˜RT Rr − Rr )ez = ( R − Rr )ez . (16) Define Rz := Rez and Rz,r := Rr ez . Both vectors lie on the unit sphere. Let δ be the angle between them. Then 
+
+|| Rz − Rz,r || 2 = 2(1 − cos( δ)) ≤ 2(1 − cos( δmax )) (17) for a given bounded attitude error δ ≤ δmax . Hence, given a thrust bound |f | ≤ fmax , we obtain a uniform bound 
+
+|| ( ˜RT − I)Rr ez f || ≤ || ( ˜RT − I)Rr ez || | f |≤ p2(1 − cos( δmax )) |fmax |. (18) Combining the attitude-induced error with the disturbance d(t)
+
+from the simplified translational dynamics (7), we obtain 
+
+¯d = p2(1 − cos( δmax )) |fmax | + wmax , (19) which we can directly incorporate into (5). 
+
+b) Drag-induced disturbance: Consider now the term 
+
+¯Dev which represents the velocity-error-dependent distur-bance. Since R is orthonormal, ¯D = RDR T represents a similarity transform. Therefore, the eigenvalues of ¯D are identical to those of D and are given by dx, d y , d z < 0. Define 
+
+dmax = max 
+
+> i∈{ x,y,z }
+
+(di), dmin = min 
+
+> i∈{ x,y,z }
+
+(di). (20) We separate ¯D into a the worst-case damping and a residual: 
+
+¯Dev = dmax ev + ∆ ¯Dev , ∆ ¯D = ¯D − dmax I. (21) Hence, the largest eigenvalue of ∆ ¯D is dmax − dmin and 
+
+|| ∆ ¯D|| ≤ γ = dmax − dmin . (22) The term dmax ev is therefore absorbed into the nominal linear dynamics while we set ∆ in (5) to ∆ ¯D with C chosen appropriately to extract the velocity error from the state vector of the error dynamics derived in Section IV. C. Reference model inversion 
+
+The attitude subsystem was previously modeled as a closed-loop reference dynamics in (8). However, through the non-linear mapping in (10), the translational dynamics cannot be combined with the attitude dynamics to form a linear dynamics. To obtain a representation more suitable for linear control design, we invert the reference model and replace the inner-loop dynamics by an equivalent acceleration dynamics. The particular structure of this dynamics will be detailed during the feedback control design section. Let ad be desired geodetic acceleration and aHd = RTψ ad its heading-fixed representation with derivatives 
+
+jHd = ˙ aHd = RTψ jd + ˙Rψ ad,
+
+sHd = ¨ aHd = RTψ sd + 2 ˙Rψ jd + ¨Rψ ad. (23) Using the inverse input transformation ρ = Φ( aHd ), we can compute the attitude and thrust commands required to generate 
+
+ad. Substituting ρ = Φ( ad) into the reference model (8) and solving for ρc yields 
+
+ρc = Φ( ad) + 2ΞΩ −1 ˙Φ( ad) + Ω −2 ¨Φ( ad). (24) This expression explicitly inverts the closed-loop attitude dynamics so that the inner loop reproduces the desired accel-eration ad. A direct consequence is that ad must be at least twice differentiable to guarantee the continuity of ρ.A similar inversion is performed for the yaw channel. We impose ˙ψr = ˙ψd for a desired ψd by an appropriate feed forward command rc. The transformation from Euler angle rate to body rate is 
+
+rr = − sin( ϕr ) ˙θr + cos( ϕr ) cos( θr ) ˙ψr . (25) Differentiating this expression and using the first-order refer-ence body yaw rate dynamics (9) gives 
+
+˙rr = ωr (rc − rr ) = g1 ˙ψd + g2 ¨ψd + g3,g1 = − sin( ϕr ) cos( θr ) ˙ϕr − cos( ϕr ) sin( θr ) ˙θr ,g2 = cos( ϕr ) cos( θr ), g3 = − cos( ϕr ) ˙ϕr ˙θr − sin( ϕr )¨θr .
+
+Solving for rc yields 
+
+rc = rr + ω−1 
+
+> r
+
+(g1 ˙ψd + g2 ¨ψd + g3). (26) With the above inversions, the closed-loop system reduces to the following outer-loop representation for feedback design: 
+
+¨p = ad + ¯Dva,r + w(t), ¨ad = sd, ¨ψr = ¨ψd. (27) Hence, the nonlinear coupling with the attitude subsystem has been replaced by an acceleration channel dynamics to be designed in the following. IV. C ONTROL 
+
+In this section, we design a feedforward acceleration signal that compensates the drag term ¯Dva,r . Afterwards, we intro-duce three different feedback architectures. 
+
+A. Drag compensation using flatness-based feedforward 
+
+The translational dynamics with body-fixed linear drag, together with the attitude subsystem, are differentially flat with respect to the position output, as shown in [14]. We exploit this property to compensate the nominal drag term ¯Dva,r 
+
+using a feedforward signal at. Consider the disturbance-free translational dynamics 
+
+a = −Rr ez f + ez g + ¯Dva,r (28) and parameterize the reference rotation matrix as Rr =[xB , yB , zB ]. For ideal tracking, ¯D = Rr DR Tr . Hence, we can rewrite the dynamics as 
+
+f zB − (dxxTB va,r )xB − (dy yTB va,r )yB
+
+− (dz zTB va,r )zB = gez − a. (29) Since xB , yB , zB are orthonormal, left-multiplication by xTB
+
+and yTB eliminates the other axis-aligned terms and we obtain 
+
+xTB α = 0 , α = gez − a + dxva,r 
+
+yTB β = 0 , β = gez − a + dy va,r .
+
+The heading constraint remains unchanged compared to [14] and is enforced by yC = [ − sin ψ, cos ψ, 0] T . The body axes are then constructed as 
+
+xB = yC × α
+
+∥yC × α∥ , yB = β × xB
+
+∥β × xB ∥ , zB = xB × yB .
+
+The body-fixed angular rates p, q, and r can be obtained by differentiating (7) once, projecting the dynamics along the body-axes, and solving a linear system. Similarly, the angular accelerations ˙p, ˙q, and ˙r are computed by differentiating (7) twice and solving an analogous system. The detailed derivation follows directly from [14] and is omitted for brevity, with modifications only due to the constant wind term and adifferent sign convention. Thus, for a given reference trajec-tory σr = ( p(0 ,4)  
+
+> r
+
+, ψ (0 ,2)  
+
+> r
+
+), the reference attitude Rr and its derivatives can be computed algebraically. We now compute feedforward signals for exact tracking of the reference signal in the absence of disturbances and match-ing initial state. Let ar ,jr ,sr denote the reference acceleration, jerk, and snap associated with σr . To cancel the nominal drag term ¯Dva,r , define the feedforward signals 
+
+at = ar − ¯Dva,r , (30a) 
+
+jt = jr − ( ¯Dar + ˙¯Dva,r ) (30b) 
+
+st = sr − ( ¯Djr + 2 ˙¯Dar + ¨¯Dva,r ) (30c) with times derivatives of ¯D given by 
+
+˙¯D = Rr (Sr D + DS Tr )RTr ,
+
+¨¯D = Rr (S2 
+
+> r
+
+D + DS 2 
+
+> r
+
++ 2 Sr DS Tr + ˙Sr D + D ˙STr )RTr ,
+
+where Sr is the skew-symmetric matrix associated with the reference angular velocity such that ˙Rr = Rr Sr .B. Feedback control 
+
+We present three control architectures that differ in the coor-dinate frame used for gain definition and acceleration reference dynamics. The central trade-off is between the tightness for their tracking error bounds due to a simple LTI structure and increased flexibility in the selection of the gains which are aligned with the helicopter lateral-longitudinal dynamics. In all cases, we introduce actuator dynamics on the ac-celeration channel that mimic the bandwidth and damping of the attitude reference model. This avoids unrealistically fast acceleration dynamics, which would result in aggressive attitude commands. The considered architectures are: 
+
+C-G: Geodetic reference model and gains. 
+
+C-GH: Geodetic reference model with heading-rotated gains. 
+
+C-H: Heading-fixed reference model and gains. Figure 1 shows the complete generalized architecture. Given a reference trajectory pr , the yaw reference is generated according to (1) and is then used for yaw control and the computation of at. The feedforward and its derivatives is then used in the translational controller to generate control inputs 
+
+ν which then enter the acceleration reference dynamics to be designed. A similar procedure is performed for the yaw channel. Finally, the desired acceleration and yaw commands are transformed into attitude commands going into the inner loop controller. 
+
+C. Disturbance observer 
+
+All architectures employ a nonlinear disturbance observer with linear error dynamics as proposed in [15]. In particular, 
+
+˙z = −Lz − L  ar + gez + Rr DR Tr va,r + ζ(v)
+
+ˆd = z + ζ(v) (31) with an auxiliary variable z, and the observer gains L and 
+
+ζ(v). We select ζ(v) = Lv and L = diag (l1, l 2, l 3) with 
+
+l1, l 2, l 3 > 0. Defining the disturbance estimation error as ed =
+
+d(t) − ˆd, the disturbance estimation error dynamics become 
+
+˙ed = ˙d(t) + Lz + L  ar + gez + Rr DR Tr va,r + Lv − ˙v
+
+= ˙d(t) + L(z + Lv − d(t)) = ˙d(t) − Led,
+
+or, equivalently, 
+
+˙ˆd = −L( ˆd − d(t)) . (32) Hence, the disturbance estimate is a low-pass filtered version of the true disturbance. We now present each of the controllers considered in this study. 
+
+D. C-G: Geodetic gains and reference model 
+
+We first consider an acceleration reference model defined in the geodetic frame: 
+
+¨ad = −Ω2
+
+> a
+
+(ad − ν) − 2Ω aΞa ˙ar
+
+Ωa = diag (ωa,x , ω a,y , ω a,z ), Ξa = diag (ξa,x , ξ a,y , ξ a,z )
+
+(33) Identical bandwidth and damping are chosen in the horizontal directions to preserve symmetry in the x-y plane. Define inertial errors ep := p−pr and ev := v−vr . The translational error dynamics become 
+
+¨ep = ˙ ev = ad − at + d(t) (34) Decompose the virtual input as ν = νf f + νf b with the feedforward term designed to cancel the filter dynamics: 
+
+νf f = at + 2Ξ aΩ−1 
+
+> a
+
+˙at + Ω −2 
+
+> a
+
+¨at. (35) Let ea := a − ad. The error dynamics including with the disturbance observer become 
+
+¨ep = ea + d(t)¨ea = −Ω2
+
+> a
+
+(ea − νf b + Kd ˆd) − 2Ξ aΩa ˙ea
+
+˙ˆd = −L( ˆd − d(t)) .
+
+(36) A simple linear controller is 
+
+νf b, 1 = −Kpep − Kv ev − Kaea − (1 + Ka) ˆd (37) with Ki = diag (ki,x , k i,y , k i,z ), i ∈ { p, v, a }. The resulting closed-loop system in LTI (no scheduling parameter), however the gains in x and y cannot distinguish between longitudinal and lateral helicopter dynamics. 
+
+E. C-GH: Heading-fixed gains, geodetic reference model 
+
+To incorporate distinct longitudinal and lateral behavior, we rotate the gain matrices according to the yaw angle: 
+
+Kψi = Rψ KiRTψ , i ∈ { p, v, a } (38) A rotation of a diagonal matrix with distinct entries ki,x ̸ = ki,y 
+
+produces a symmetric matrix whose principal axes are rotated by ψ. As ψ varies, the rotated gain matrices continuously interpolate between two extreme configurations: 
+
+Rψ KiRTψ ψ=0 
+
+= diag (ki,x , k i,y , k i,z ) = Ki, +, (39) 
+
+Rψ KiRTψ ψ=π/ 2
+
+= diag (ki,y , k i,x , k i,z ) = Ki, −. (40) Hence, the family of heading-dependent gains is contained in the convex hull Ki ∈ conv( Ki, +, Ki, −). The closed-loop system becomes a polytopic LPV system with scheduling parameter ψ and the vertices correspond to the two extreme gain configurations. With this architecture, longitudinal and lateral dynamics can be tuned independently, but the RPI computation must now consider a polytopic system rather than a single LTI model. 
+
+F. C-H: Heading-fixed gains and reference model 
+
+The previous architecture defines the acceleration reference model in the geodetic frame. To achieve full alignment with helicopter dynamics, we define both gains and acceleration reference model in the heading-fixed frame: 
+
+¨aHd = −Ω2
+
+> a
+
+(aHd − νH ) − 2Ω aΞa ˙aHr , (41) where the superscript (·)H is used to represent variables in the heading-fixed frame. Define errors eHp := RTψ ep. Using Flatness-based feedforward  
+
+> Attitude input transform
+> Translational controller and disturbance observer
+> Yaw control
+> Yaw reference generation
+> Acceleration reference dynamics
+> Yaw reference dynamics Fig. 1. Generalized overview of the proposed outer loop controller architecture.
+
+˙Rψ = Rψ S( ˙ψ), where S( ˙ψ)T = −S( ˙ψ), the error dynamics in the heading frame become 
+
+˙eHp = RTψ ev − S( ˙ψ)eHp
+
+¨eHp = eHa − 2S( ˙ψ) ˙ eHp − (S( ˙ψ)2 + S( ¨ψ)) eHp + dH (t) (42) with eHa := aHd − aHt and aHt = RTψ at. We again design a virtual controller νH = νHf f + νHf b with 
+
+νHf f = aHt + 2Ξ aΩ−1 
+
+> a
+
+˙aHt + Ω −2 
+
+> a
+
+¨aHt . (43) Since the control must now also compensate the yaw-induced coupling terms, we take 
+
+νHf b = −KpeHp − Kv ˙eHp − KaeHa − (1 + Ka) ˆdH
+
++ 2 S( ˙ψ) ˙ eHp + ( S( ˙ψ)2 + S( ¨ψ)) eHp , (44) resulting in the heading-fixed error dynamics 
+
+¨eHp = eHa + dH (t) − 2S( ˙ψ) ˙ eHp − (S( ˙ψ)2 + S( ¨ψ)) eHp
+
+¨ea = −Ω2
+
+> a
+
+(ea − νHf b ) − 2Ξ aΩa ˙ea
+
+˙ˆdH = −L( ˆdH − dH (t)) 
+
+(45) with the disturbance observer designed in the heading frame (derivation omitted for brevity). For bounded yaw rates and accelerations | ˙ψ| ≤ ˙ψmax , | ¨ψ| ≤ ¨ψmax , the system is a polytopic LPV model with vertices obtained by substituting extreme values of ˙ψ and ¨ψ. Note that the Coriolis terms containing S(ψ) do not inject or dissipate energy and therefore do not alter the intrinsic stability properties of the system. Nevertheless, they influence transient behavior and attainable performance, and must consequently be included in the RPI analysis. 
+
+G. Yaw control 
+
+For all controller architectures, the yaw reference system is chosen as 
+
+¨ψd = −ωψ ( ˙ψd − νψ ), (46) where ˙ψc is the yaw rate command and bandwidth chosen as 
+
+ωψ = ωr to match the inner-loop yaw-rate dynamics. Define 
+
+eψ = ψ − ψr for |eψ | < π . Assuming bounded inner-loop tracking errors, the true yaw rate satisfies ˙ψ = ˙ψd + ∆ ˙ψ,where ∆ ˙ψ is a bounded uncertainty term. Choose the virtual input 
+
+νψ = ˙ψr + ω−1 
+
+> ψ
+
+¨ψr − kψ eψ , kψ > 0 (47) Substituting into (46) and using ˙eψ = ˙ψd + ∆ ˙ψ − ψr yields the error dynamics 
+
+˙eψ = ˙ eψ,d + ∆ ˙ψ, ¨eψ,d = −ωψ ( ˙ eψ,d + kψ eψ ), (48) where ˙eψ,d = ˙ψd − ˙ψr . Thus, the yaw subsystem reduces to a stable second-order error dynamics driven only by bounded inner-loop mismatch. V. S IMULATION AND DISCUSSION 
+
+We compare the three controller architectures in two steps. First, we analyze the size and structure of their RPI sets. Second, we evaluate closed-loop tracking performance on a representative maneuver to assess practical conservatism. All simulations use the controller gains and acceleration reference model parameters shown in Tab. I. The damping ratio is set to ξ = 1 and the disturbance estimator gain is l1 =
+
+l2 = l3 = 3 . The disturbance bounds for RPI computation are obtained with γ = 0 .4 and from δmax = 7 ◦, fmax = 16 m/s 2,and wmax = 0 .5, resulting in ¯d = 2 .5. For the sake of brevity, we focus our attention only on the horizontal plane, since the vertical dynamics are identical for all architectures.                                          
+
+> TABLE I CONTROLLER GAINS AND REFERENCE MODEL PARAMETERS .Controller diag (Kp)diag (Kv)diag (Ka)diag (Ω)
+> C-G [1 ,1,2] [1 .4,1.4,3] [0 .5,0.5,1] [7 .5,7.5,12]
+> C-GH [1 ,1.5,2] [1 .4,2,3] [0 .5,0.5,1] [7 .5,7.5,12]
+> C-H [1 ,1.5,2] [1 .4,2,3] [0 .5,0.5,1] [7 .5,10 ,12]
+
+A. Error bounds 
+
+The three controllers reflect different trade-offs between dynamical fidelity and conservatism in the LMI-based RPI computation. Figure 2 shows the projection of the correspond-ing RPI sets onto the horizontal position–velocity subspace. 
+
+a) C-G: The purely geodetic controller yields the small-est position bound, despite the most conservative gain selec-tion. Its simple closed-loop structure leads to reduced conser-vatism in the LMI formulation. Since the error is expressed in the geodetic frame, the bounds in the x- and y-directions are identical and independent of yaw. Fig. 2. Projections of RPI sets onto the on the position-velocity subspace for the three considered feedback controllers. 
+
+b) C-GH: Introducing heading-dependent gains slightly enlarges the RPI set. Although lateral gains are more ag-gressive, the LMI synthesis employs a common Lyapunov function for all admissible gain combinations. This aggregates the worst-case properties of both axes into a single invariant set. The bound remains yaw-invariant. 
+
+c) C-GH: The heading-frame architecture models the attitude dynamics most accurately and allows axis-specific tuning consistent with roll and pitch behavior. However, the influence of the additional nonlinear Coriolis terms have to be modeled conservatively ( ˙ψmax = ¨ψmax = 0 .5), thus increasing the RPI set size. In the slower x-axis, this controller produces the largest bound. In contrast, it yields the smallest bound in the y-axis, despite the added conservatism. A key structural difference is the loss of yaw invariance: the RPI set rotates with the vehicle heading. This increases complexity in trajectory planning and collision checking, as obstacle intersection tests must account for orientation. 
+
+B. Trajectory tracking control 
+
+Next, we examine the control performance and evaluate conservatism using a fairly aggressive example maneuver. In particular, we consider an acceleration into a loiter with a 30 m radius and at 15 m/s under a mean wind speed of 7 m/s. This results in mean roll angle of approximately 30 degrees during the loiter. The reference trajectory is generated using the minimum-snap framework of [16]. The controllers are tested on the full nonlinear model (6) representing the midiARTIS helicopter, a small research helicopter operated by the German Aerospace Center. More information regarding its modeling and the attitude controller can be found in [17]. Figure 3 shows the position reference trajectory of the considered maneuver for the controller C-GH along with error bound snapshots. Figure 5 shows the associated time evolution of the horizontal velocity, disturbance estimation, as well as tilt and yaw angle errors. Lastly, Figure 4 depicts the position errors and their computed bound for the respective controller architecture. Notably, as can be seen in Figure 4, all controllers track the trajectory accurately and remain within their computed RPI bounds despite wind disturbances. This confirms that the inversion-based outer-loop design remains valid for the full nonlinear system. Performance differences align with the      
+
+> Fig. 3. Position trajectories of the considered maneuver in the x-y-plane for the C-GH controller with snapshots of the helicopter heading, position and the associated projection of the RPI ellipsoid onto the horizontal position subspace.
+> Fig. 4. Projection of RPI sets onto the x-yposition subspace with heading-fixed error trajectories for all three feedback architectures.
+
+RPI analysis: C-G exhibits the largest tracking deviations due to conservative gains, but its RPI bound is comparatively tight relative to the observed error. C-GH reduces position deviations while maintaining similar qualitative behavior. C-H shows tracking position errors comparable to C-GH. However, the RPI sets of both C-GH and C-H are significantly larger than the observed maximum deviation, indicating increased conservatism in the robustness analysis. In Figure 5, C-G and C-GH behave similarly, with mod-est differences in tilt and velocity errors. C-H displays the most aggressive lateral response, resulting in larger tilt-angle errors but reduced velocity error in the y-direction. Overall, increasing dynamical fidelity improves axis-specific tracking performance but enlarges the certified invariant set and, in the heading-frame case, sacrifices yaw invariance. Note that the maximum tilt angle and maximum thrust magnitude (not shown) used for ¯d are not violated during the maneuver, ensuring the soundness of the theoretical guarantees provided by the bound. The fact that the computed position error bounds remain valid under observable assumptions is one of the key advantages of the proposed method. VI. C ONCLUSION 
+
+This paper presented a framework for computing formally guaranteed trajectory tracking error bounds for unmanned helicopters. By combining flatness-based feedforward design, inversion of closed-loop attitude reference dynamics, and outer-loop acceleration controllers, the nonlinear helicopter Fig. 5. Trajectories of horizontal velocities in the heading frame (top row), disturbances in the heading frame (middle row), tilt angle error (bottom left), and yaw error (bottom right). 
+
+model was reduced to a polytopic LPV error system suit-able for ellipsoidal RPI set computation via LMIs. Three feedback architectures were analyzed. The purely geodetic design yields the smallest invariant set, despite conservative gain tuning. Introducing heading-dependent gains improves axis-specific tracking performance but enlarges the RPI set. The fully heading-fixed architecture most accurately reflects helicopter dynamics. However, the additional yaw-induced coupling terms increase conservatism and lead to orientation-dependent bounds. Nonlinear simulations demonstrated that all architectures respect their computed invariant. The proposed framework establishes an explicit link between closed-loop tracking dynamics and motion planning by providing formally guaranteed, monitorable buffer zones. Future work should address tighter invariant set approximations and integration of the bounds into online trajectory optimization and monitoring schemes. Furthermore, flight tests are intended to asses the applicability of the method in practice. REFERENCES [1] A. Donkels, S. Cain, J. Wilhelm, J. Dippmar, D. Heil, J. Janke, and T. Bruns, “Advances on the integration of transport drones into offshore wind farms,” CEAS Aeronautical Journal , Jun. 2025. [2] C. Richter, A. Bry, and N. Roy, “Polynomial Trajectory Planning for Aggressive Quadrotor Flight in Dense Indoor Environments,” in 
+
+Robotics Research , M. Inaba and P. Corke, Eds. Springer International Publishing, 2016, vol. 114, pp. 649–666. [3] N. Bashir, S. Boudjit, G. Dauphin, and S. Zeadally, “An obstacle avoidance approach for UAV path planning,” Simulation Modelling Practice and Theory , vol. 129, p. 102815, Dec. 2023. [4] F. Blanchini, “Set invariance in control,” Automatica , vol. 35, no. 11, pp. 1747–1767, Nov. 1999. [5] M. Greiff, H. Sinhmar, A. Weiss, K. Berntorp, and S. Di Cairano, “Invariant Set Planning for Quadrotors: Design, Analysis, Experiments,” 
+
+IEEE Transactions on Control Systems Technology , vol. 33, no. 2, pp. 449–462, Mar. 2025. [6] D. Althoff, M. Althoff, and S. Scherer, “Online safety verification of trajectories for unmanned flight with offline computed robust invariant sets,” in 2015 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS) . Hamburg, Germany: IEEE, Sep. 2015, pp. 3470– 3477. [7] A. Majumdar and R. Tedrake, “Funnel libraries for real-time robust feed-back motion planning,” The International Journal of Robotics Research ,vol. 36, no. 8, pp. 947–982, Jul. 2017. [8] D. Mayne, M. Seron, and S. Rakovi´ c, “Robust model predictive control of constrained linear systems with bounded disturbances,” Automatica ,vol. 41, no. 2, pp. 219–224, Feb. 2005. [9] P. Schitz, J. C. Dauer, and P. Mercorelli, “Robust Maneuver Planning With Scalable Prediction Horizons: A Move Blocking Approach,” IEEE Control Systems Letters , vol. 8, pp. 1907–1912, 2024. [10] P. Schitz, P. Mercorelli, and J. C. Dauer, “Robust Helicopter Ship Deck Landing With Guaranteed Timing Using Shrinking-Horizon Model Predictive Control,” accepted to the American Control Con-ference 2026, New Orleans, Louisiana, May 26-29, 2026. Available: https://arxiv.org/abs/2602.22714. [11] I. A. Raptis, K. P. Valavanis, and W. A. Moreno, “A Novel Nonlinear Backstepping Controller Design for Helicopters Using the Rotation Matrix,” IEEE Transactions on Control Systems Technology , vol. 19, no. 2, pp. 465–473, Mar. 2011. [12] M. He, J. He, and S. Scherer, “Model-based real-time robust controller for a small helicopter,” Mechanical Systems and Signal Processing , vol. 146, p. 107022, Jan. 2021. [13] O. Halbe and M. Hajek, “Robust Helicopter Sliding Mode Control for Enhanced Handling and Trajectory Following,” Journal of Guidance, Control, and Dynamics , vol. 43, no. 10, pp. 1805–1821, Oct. 2020. [14] M. Faessler, A. Franchi, and D. Scaramuzza, “Differential Flatness of Quadrotor Dynamics Subject to Rotor Drag for Accurate Tracking of High-Speed Trajectories,” IEEE Robotics and Automation Letters , vol. 3, no. 2, pp. 620–626, 2018. [15] W.-H. Chen, D. Ballance, P. Gawthrop, and J. O’Reilly, “A nonlinear disturbance observer for robotic manipulators,” IEEE Transactions on Industrial Electronics , vol. 47, no. 4, pp. 932–938, Aug. 2000. [16] D. Mellinger and V. Kumar, “Minimum snap trajectory generation and control for quadrotors,” in 2011 IEEE International Conference on Robotics and Automation . Shanghai, China: IEEE, May 2011, pp. 2520–2525. [17] P. Petit, S. Seher-Weiß, J. Wartmann, and A. Donkels, “System identi-fication driven high-performance controller design for an agile small rotorcraft UAV,” presented at the 51st European Rotorcraft Forum, Venice, Italy, Sept. 9-12, 2025.

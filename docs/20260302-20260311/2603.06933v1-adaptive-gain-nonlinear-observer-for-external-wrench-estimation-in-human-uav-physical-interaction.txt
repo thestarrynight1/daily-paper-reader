@@ -1,0 +1,482 @@
+Title: Adaptive Gain Nonlinear Observer for External Wrench Estimation in Human-UAV Physical Interaction
+
+URL Source: https://arxiv.org/pdf/2603.06933v1
+
+Published Time: Tue, 10 Mar 2026 00:18:56 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+> Personal use of this material is permitted. Permission from the author(s) and/or copyright holder(s), must be obtained for all other uses. Please contact us and provide details if you believe this document breaches copyrights.
+
+# Adaptive Gain Nonlinear Observer for External Wrench Estimation in Human-UAV Physical Interaction 
+
+Hussein N. Naser, Hashim A. Hashim, and Mojtaba Ahmadi 
+
+Abstract—This paper presents an Adaptive Gain Nonlinear Observer (AGNO) for estimating the external interaction wrench (forces and torques) in human-UAV physical interaction for assistive payload transportation. The proposed AGNO uses the full nonlinear dynamic model to achieve an accurate and robust wrench estimation without relying on dedicated force-torque sensors. A key feature of this approach is the explicit consideration of the non-constant inertia matrix, which is essential for aerial systems with asymmetric mass distribution or shifting payloads. A comprehensive dynamic model of a cooperative transportation system composed of two quadro-tors and a shared payload is derived, and the stability of the observer is rigorously established using Lyapunov-based analysis. Simulation results validate the effectiveness of the proposed observer in enabling intuitive and safe human-UAV interaction. Comparative evaluations demonstrate that the proposed AGNO outperforms an Extended Kalman Filter (EKF) in terms of estimation root mean square errors (RMSE), particularly for torque estimation under nonlinear interaction conditions. This approach reduces system weight and cost by eliminating additional sensing hardware, enhancing practical feasibility. Index Terms—Nonlinear observer, Adaptive, Force-torque estimation, sensorless Wrench estimation, Lyapunov stability, Human-UAV Physical interaction, Cooperative payload trans-portation. 
+
+I. INTRODUCTION Unmanned Aerial Vehicles (UAVs) are increasingly in-tegrated into human workspaces, necessitating intuitive and safe human-UAV interaction [1]. Physical interaction, where humans directly apply forces to UAVs for guidance, offers a promising paradigm for collaborative manipulation and assistive technologies [2]. Accurate measurements or estimations of human-applied forces are fundamental for intuitive and responsive systems [3]. Traditionally, interaction forces are measured using dedicated force-torque sensors [4]. However, these sensors add considerable weight that reduces payload capacity and flight endurance, especially for small to medium-sized UAVs [5], increase system complexity and cost due to calibration and protection requirements [6], and limit interaction flexibility while remaining vulnerable to 
+
+This work was supported in part by National Sciences and En-gineering Research Council of Canada (NSERC), under the grants RGPIN-2022-04937 and the University of Thi-Qar, Iraqi Ministry of Higher Education and Scientific Research under financial support (No. 6608 in 21/06/2022). H. N. Naser, H. A. Hashim, and M. Ahmadi are with the Department of Mechanical and Aerospace Engineering, Car-leton University, Ottawa, Ontario, K1S-5B6, Canada. Also, H. N. Naser is with the Department of Biomedical Engineer-ing, University of Thi-Qar, Nasiriyah, Thi-Qar, 64001, Iraq. Email: HusseinNaser@cmail.carleton.ca, husseinalshami@utq.edu.iq, hhashim@carleton.ca, and Mojtaba.Ahmadi@carleton.ca 
+
+damage during collisions [7]. These limitations motivate research into estimating interaction forces without di-rect measurement [7]. Force estimation methods utilize the system’s existing state measurements and dynamic model to infer applied forces, offering a more elegant and practical solution [8]. Estimation approaches eliminate additional sensors, reducing weight and complexity, and allow interaction at any point on the UAV. They depend on existing navigation sensors (IMU, position tracking) and can be implemented as software modules, making them adaptable and cost-effective [2]. A. Related Work Physical human-robot interaction has been extensively studied for manipulators and humanoid robots, with impedance control being a foundational framework [9]. Extending these paradigms to aerial vehicles presents unique challenges due to their underactuated nature, inherent instability, and safety concerns [10]. Early work demonstrated physical guidance of the quadrotors [11]. Recent advances focus on intuitive and safe interaction, expanding applications to collaborative payload trans-portation and aerial manipulation [2], [3], [12]. Given the limitations of direct force sensing, researchers have explored various estimation methods. Kalman filter-based approaches, including linear Kalman filters and their nonlinear variants, have been applied for force estimation; however, they face challenges with the nonlinearity of the UAV, linearization errors, increased computational complexity, and the need for careful tuning of noise covariance matrices [13]–[15]. Concurrently, data-driven machine learning approaches have emerged for force estimation, capable of handling complex nonlinearities; however, they demand extensive training data, exhibit limited generalization, and impose high computational demands on small UAVs. In addition, their ”black box” nature complicates theoretical guarantees on performance and stability [16]–[18]. In contrast, nonlinear observer approaches directly incorporate system nonlinear dy-namics without approximation, demonstrating superior performance during rapid force changes and improved robustness to model uncertainties. These observers handle nonlinearity naturally, adapt better to uncertainties, and provide robust and accurate estimates without heavy dependence on noise covariance tuning. This makes them well suited for estimating external interaction wrenches in dynamic human-UAV interaction scenarios for cooperative payload transportation [8], [19]–[22]. Inspired by the advantages of nonlinear observers, this paper proposes an Adaptive Gain Nonlinear Observer 
+
+H. Naser, H. A. Hashim, and M. Ahmadi, ”Adaptive Gain Nonlinear Observer for External Wrench Estimation in Human-UAV Physical Interaction,” In Proc. of the 2026 IEEE International Conference on Robotics & Automation (ICRA), Vienna, Austria 2026. 
+
+> arXiv:2603.06933v1 [eess.SY] 6 Mar 2026
+
+(AGNO) to estimate the external interaction wrench for assistive cooperative aerial payload transportation. This work aims to advance human-UAV physical interaction, enabling more intuitive, safe, and accessible interaction paradigms without specialized force sensing hardware. B. Contributions This paper makes several significant contributions to the field of human-UAV physical interaction: 1) A detailed dynamic model derivation for an assistive cooperative aerial payload transportation system, consisting of two quadrotors rigidly attached to a beam-shaped payload. 2) An adaptive gain nonlinear observer (AGNO) is proposed for estimating external interaction forces and torques. 3) An explicit analysis of a non-constant inertial matrix is provided, critical for aerial systems with asymmet-ric mass distribution or shifting payloads. 4) A rigorous stability analysis using Lyapunov theory establishes guarantees on the observer’s convergence and robustness properties. 5) A benchmark validation of the proposed AGNO is benchmarked against an EKF, demonstrating a lower RMSE and a superior torque estimation under nonlinear interaction conditions. This paper is structured as follows: Section II details the system modeling and control allocation and strategy. Sec-tion III introduces the proposed nonlinear observer design. Section IV presents a comprehensive stability analysis, with a specific focus on non-constant inertial matrices. Section V discusses the simulation results. Finally, Section VI provides the conclusions of this work. II. Methodology A. System Overview and Problem Formulation This work presents a cooperative aerial system for intu-itive human-guided payload transportation. Two quadro-tor UAVs are rigidly connected to a shared payload, enabling a human operator to guide the assembly through 3D space via direct physical interaction. To achieve this, we develop detailed dynamic models for each component and an integrated model for the unified system. Human interaction forces are then estimated using a nonlinear observer, which is detailed in the following section. B. Reference Frames and Notation The reference coordinate frames to describe the dynam-ics of the system are defined to have a world-inertial frame that is denoted as WI = {O, X, Y, Z }, while a body-fixed frame Bp = {op, x p, y p, z p} is attached to the payload’s center of mass (CoM). Each quadrotor is also associated with its own body-fixed frame Qj = {oj , x j , y j , z j },for j = 1, 2. All coordinate systems are defined such that their positive z-axis points upward. The position of the quadrotor j in the inertial frame is represented 𝑚 𝑝 𝑔 𝑌 
+
+𝑍 
+
+𝑋  
+
+> 𝑓 2𝑓 1
+> 𝜇 1𝜇 2
+> 𝜇 1𝜇 2
+> 𝐹 11
+> 𝐹 12
+> 𝐹 13
+> 𝐹 14
+> 𝐹 12
+> 𝐹 22
+> 𝐹 23
+> 𝐹 24
+> 𝜏 21
+> 𝜏 22
+> 𝜏 24
+> 𝜏 23
+> 𝜏 11
+> 𝜏 12
+> 𝜏 13
+> 𝜏 14
+> 𝑚 𝑞 1𝑔 𝑚 𝑞 2𝑔
+> 𝑠 1𝑠 2
+
+𝑥 𝑝 
+
+𝑦 𝑝 
+
+𝑧 𝑝  
+
+> 𝒛 𝟏
+> 𝒚 𝟏
+> 𝒙 𝟏
+> 𝒛 𝟐
+> 𝒚 𝟐
+> 𝒙 𝟐
+> Fig. 1. Free body diagram of the system components.
+
+by pj = [ xj , y j , z j ]⊤. The angular velocities expressed in the body-fixed frame are given by ω = [ p, q, r ]⊤, and the orientation of the system is described using Euler angles 
+
+ξ = [ ϕ, θ, ψ ]⊤. The rotation matrix R(ξ) maps vectors from the body-fixed frame to the inertial frame. The relationship between angular rates ω and Euler angle rates ˙ξ is given by [2]: 
+
+ω = Θ( ξ) ˙ξ, Θ( ξ) = 
+
+
+
+c(θ) 0 −s(θ)0 1 s(ϕ)
+
+s(θ) 0 c(ϕ)c(θ)
+
+ , (1) where s(·) and c(·) represent sin( ·) and cos( ·), respectively. C. The Payload Dynamics From the Free Body Diagram of the system in 1, the dynamic model of the payload with position pp =[xp, y p, z p]⊤, is: 
+
+mp ¨pp = ( f1 + f2) − mpgˆe, Ip ˙ω = ( μ1 + μ2) + ( s1 × f1) + ( s2 × f2) − ω × Ipω, (2) where mp denotes the mass of the payload, Ip denotes the inertia matrix, ¨pp is the translational acceleration, 
+
+ˆe = [0 , 0, 1] ⊤ is a unit vector on z-axis, g is the gravity, 
+
+f1, f2, μ1, and μ2 denote the forces and torques exerted by the quadrotors on the payload, respectively, and s1 and s2
+
+are position vectors from payload CoM to the quadrotors’ CoM. D. The Quadrotor Dynamics The translational and rotational dynamics of each quadrotor according to the Newton-Euler formalism are as follows: 
+
+mqj ¨pqj = RT qj ˆe − fj − mqj gˆe, Iqj ˙ω = τqj − μj − ω × Iqj ω, (3) where mqj is the mass of the jth quadrotor, Iqj is the inertia matrix, ¨pqj is the translational acceleration, ˙ω is the angular acceleration, fj and μj are internal forces and torques, Tqj and τqj = [τj1 , τ j2 , τ j3 ]⊤ denote the total thrust and the moment vector of the jth quadrotor, respectively. These control inputs are derived from the rotor thrusts as: 
+
+[Tqj
+
+τqj
+
+]
+
+=
+
+
+
+1 1 1 10 r 0 −r
+
+−r 0 r 0
+
+ϱ −ϱ ϱ −ϱ
+
+
+
+Fj1
+
+Fj2
+
+Fj3
+
+Fj4
+
+ , (4) where Fji = ktS2 
+
+> ji
+
+is the force generated by each rotor and 
+
+kt is the thrust constant, Sji is the rotor angular speed, 
+
+ϱ = km/k t is a ratio of constants, km is the constant of the drag moment, which is given as τji = kmS2
+
+> ji
+
+, and r is the arm length of the jth quadrotor. E. The Integrated System Dynamics Referring to the Free Body Diagram in Figure 1, the following assumptions are necessary for the modeling purposes of the integrated aerial payload transportation system. Assumption 1: The system comprises three rigid compo-nents (two identical quadrotors and one payload) rigidly connected, each with specific specifications and physical characteristics. Assumption 2: The payload is a hollow tube with mass 
+
+mp, length Lp, and radius rp.Assumption 3: x-axis and y-axis in the body-fixed reference frame are the symmetry axes of the system. The dynamics model of the integrated system, with p =[x, y, z ]⊤ is the position of its CoM measured in the inertial reference frame, is derived by combining the dynamics in (2) and (3), as follows: 
+
+m¨p = RT ˆe − mg ˆe + fex ,I ˙ω = τ − ω × Iω + Mex , (5) where m = mq1 + mq2 + mp represents the total mass of the system, I represents the diagonal matrix of the total moment of inertia, fex ∈ R3 and Mex ∈ R3 are the force and torque of the human external interaction, respectively, and T, τ are the total thrust and moments of the system coming from the two quadrotors. Aerial   
+
+> Transportation
+> System
+> (AGNO) for External
+> Wrench Estimation
+> External
+> Wrench
+> Desired
+> Trajectory
+> 𝜂 𝑑
+> Outer Loop
+> Admittance
+> Controller
+> ABS
+> Controller
+> FNTSMC
+> Controller
+> 𝜂 𝑟
+> 𝑇
+> 𝜙 𝑑
+> 𝜏 1
+> 𝜏 2
+> 𝜏 3
+> Inner Loop
+> ෡𝕋 𝑒𝑥
+> 𝜃 𝑑
+> 𝜓 𝑑
+> Fig. 2. Control system architecture.
+
+F. Control Architecture While the main focus of this work is the estimation of the external interaction wrenches, a brief description of the control architecture is given below, for more details on the controller design and its stability analysis, see [2], [23]. As illustrated in Figure 2, the control architec-ture integrates adaptive backstepping control for position stabilization, Nonsingular Fast Terminal Sliding Mode Control (NFTSMC) for robust attitude corrections, and an admittance controller for natural human-robot inter-action. This ensures reliable trajectory tracking, payload stabilization, and responsive human-guided operation. The admittance controller introduces compliance, allowing the UAV to respond adaptively to human-applied forces based on force estimations, enabling precise payload handling [11]. The control allocation between the total control signals and the jth quadrotor control input is derived as follows: 
+
+[Tτ
+
+]
+
+= Γ uq , (6) where uq ∈ R8 is the control input vector of both quadrotors: 
+
+uq = [ Tq1 , τ 11 , τ 12 , τ 13 , T q2 , τ 21 , τ 22 , τ 23 ]⊤, (7) and Γ ∈ R4×8 is a constant matrix that can be constructed depending on the configuration of the integrated system: 
+
+Γ = 
+
+
+
+1 0 0 0 1 0 0 0
+
+s1(2) 1 0 0 s2(2) 1 0 0
+
+−s1(1) 0 1 0 −s2(1) 0 1 00 0 0 1 0 0 0 1
+
+ . (8) Since the system in (6) is underdetermined, the solution is optimized by minimizing a cost function J(uq ):
+
+u∗ 
+
+> q
+
+= arg min {J|[T des , τ des ]⊤ = Γ uq }, (9) where the cost function is: 
+
+J =
+
+> 2
+
+∑
+
+> j=1
+
+dj1 T 2 
+
+> qj
+
++ dj2 τ 2 
+
+> j1
+
++ dj3 τ 2 
+
+> j2
+
++ dj4 τ 2 
+
+> j3
+
+. (10) where dji are positive constants. Equations (9) and (10) can be combined and reformulated as J = ∥O uq ∥22 where: 
+
+O = √diag (d11 , d 12 , d 13 , d 14 , d 21 , d 22 , d 23 , d 24 ) (11) An optimal control allocation is then computed using the matrices in (8) and (11) and utilizing the Moore-Penrose pseudoinverse ( +): 
+
+u∗ 
+
+> q
+
+= O−1(Γ O−1)+[T des , τ des ]⊤,
+
+= O−2Γ⊤(Γ O−2Γ⊤)−1[T des , τ des ]⊤. (12) This strategy ensures an optimal distribution of control efforts. III. The Proposed Nonlinear Observer Design For the estimation of the external interaction wrench, we express the dynamic model (5) in the inertial frame in terms of Euler angles as follows: 
+
+m¨p = R(ξ)T ˆe − mg ˆe + fex ,J(ξ) ¨ξ = τI − Cr (ξ, ˙ξ) ˙ξ + Mex , (13) where R(ξ) is the rotation matrix, τI = R(ξ)τ , Cr (ξ, ˙ξ)
+
+represents Coriolis and centrifugal terms, and it is given as follows: 
+
+Cr (ξ, ˙ξ) ˙ξ = J ˙Θ( ξ, ˙ξ) ˙ξ + [Θ( ξ) ˙ξ]
+
+> ×
+
+[JΘ( ξ) ˙ξ] , (14) where ˙Θ( ξ, ˙ξ) is the time derivative of the matrix in (1), 
+
+[·]× represents the skew symmetric matrix, and J(ξ) is the inertia tensor, which explicitly depends on the attitude ξ
+
+such that: 
+
+J(ξ) = Θ( ξ)⊤IΘ( ξ) = 
+
+
+
+J11 J12 J13 
+
+J21 J22 J23 
+
+J31 J32 J33 
+
+ (15) where the internal components of the matrix J(ξ) in (15) are given as follows: 
+
+J11 = Ixx cos 2 θ + Izz sin 2 θJ12 = 0 
+
+J13 = ( Izz − Ixx ) cos ϕ sin θ cos θJ21 = J12 
+
+J22 = Iyy 
+
+J23 = Iyy sin ϕJ31 = J13 
+
+J32 = J23 
+
+J33 = Ixx cos 2 ϕ sin 2 θ + Izz cos 2 ϕ cos 2 θ + Iyy sin 2 ϕ
+
+(16) The explicit dependence of J(ξ) on ξ is a key aspect of the model, accounting for asymmetric mass distributions and varying payloads that are common in practical aerial system applications. The dynamic model in (13) can be expressed in acompact form to develop a unified expression for the external interaction wrench: 
+
+Tex = M(η)¨ η + C(η, ˙η) ˙ η + G + A(η)u (17) where Tex = [f ⊤
+
+> ex
+
+, M ⊤
+
+> ex
+
+]⊤ is the external interaction wrench, η = [ p⊤, ξ ⊤]⊤ is the generalized configuration vec-tor, u = [ T, τ ⊤ 
+
+> I
+
+]⊤ is the control input vector, M(η) ∈ R6×6
+
+is the positive definite inertia matrix, C(η, ˙η) ∈ R6×6 is the Coriolis matrix, G ∈ R6 is the gravity vector and 
+
+A(η) ∈ R6×4 is the matrix of the control input coefficients. These matrices are given as follows: 
+
+M(η) =
+
+[mI3×3 03×3
+
+03×3 J(η)
+
+]
+
+, G =
+
+[mg ˆe
+
+0
+
+]
+
+,
+
+C(η, ˙η) = 
+
+[03×3 03×3
+
+03×3 Cr (η, ˙η)
+
+]
+
+, A(η) = 
+
+[−R(η)ˆ e 03×3
+
+03×1 −R(η)
+
+]
+
+,
+
+(18) where In×n and 0n×m are identity and zero matrices, respectively. A. The Proposed Nonlinear Observer Based on (17), a nonlinear observer is proposed to estimate the external interaction wrench as follows: 
+
+˙ˆTex = B(η, ˙η)(Tex − ˆTex 
+
+),
+
+= − B(η, ˙η)ˆTex + B(η, ˙η)
+
+(
+
+M(η)¨ η + C(η, ˙η) ˙ η
+
++ G + A(η)u
+
+)
+
+,
+
+(19) where ˆTex = [ ˆf ⊤
+
+> ex
+
+, ˆM ⊤
+
+> ex
+
+]⊤ ∈ R6 represents the wrench esti-mation and B(η, ˙η) ∈ R6×6 is a matrix to be designed to guarantee the observer convergence. Assuming ˙Tex = 0 for slowly varying physical interaction wrench, the observer estimation error and its dynamics become: 
+
+e = Tex − ˆTex ,
+
+˙e = ˙Tex − ˙ˆTex ,
+
+= −B(η, ˙η)( Tex − ˆTex ),
+
+= −B(η, ˙η)e =⇒ ˙e + B(η, ˙η)e = 0 .
+
+(20) This error dynamics in (20) shows that the asymptotic stability of the observer can be guaranteed by an appro-priate design of the matrix B(η, ˙η).B. Acceleration-Free Implementation A practical challenge in implementing the proposed observer is the requirement for acceleration measurements 
+
+(¨ η), particularly the angular acceleration ( ¨ξ), which is typically not directly available from standard sensor suites. To address this issue, we define an auxiliary vector as follows: 
+
+δ = ˆTex − Λ( ˙ η). (21) Differentiating (21) with respect to time and rearranging: 
+
+˙ˆTex = ˙δ + ∂Λ( ˙ η)
+
+∂ ˙η ¨η. (22) Substituting (21) and (22) into (19) results in the follow-ing. 
+
+˙δ + ∂Λ( ˙ η)
+
+∂ ˙η ¨η = −B(η, ˙η)(δ + Λ( ˙ η)) + B(η, ˙η)
+
+(
+
+M(η)¨ η + C(η, ˙η) ˙ η + G + A(η)u
+
+)
+
+. (23) To eliminate the acceleration term, we choose: 
+
+∂Λ( ˙ η)
+
+∂ ˙η = B(η, ˙η)M(η). (24) Substituting (24) into (23) and rearranging result in the acceleration-free observer dynamics (25): 
+
+˙δ = − B(η, ˙η)δ + B(η, ˙η)(C(η, ˙η) ˙ η + G + A(η)u − Λ( ˙ η)),
+
+ˆTex = δ + Λ( ˙ η).
+
+(25) For practical implementation, we select Λ( ˙ η) = k ˙η, which implies that: 
+
+B(η, ˙η) = kM−1, (26) where k > 0 is the observer gain. This design results in a computationally efficient observer that does not require acceleration measurements, making it suitable for implementation on the aerial platforms with typical sensor configurations. IV. Stability, Convergence, and Robustness Analysis A. Stability Analysis for Observer Design Stability analysis of nonlinear observers is theoretically challenging and typically relies on Lyapunov methods to prove convergence without explicit solutions. While systems with constant inertia allow relatively straight-forward analysis, UAV platforms with varying payloads or asymmetric mass distributions introduce time-varying inertial matrices that complicate this process. Nikoobin and Haghighi [21] addressed this issue for robotic manip-ulators by explicitly accounting for inertia variation in their Lyapunov analysis. B. Assumptions and Preliminaries Before proceeding with the stability analysis, we make the following assumptions. Assumption 4: The external interaction wrench will not be rapidly varying during the physical interaction between the aerial platform and the human operator, so that ( ˙Tex = 0) holds true. Assumption 5: The angular velocities in the roll and pitch directions are kept bounded during the payload transportation mission. Assumption 6: The inertia tensor J(η) is positive definite and bounded for all attainable attitudes in η.Assumption 7: The rate of change of the inertia tensor is bounded, i.e., | ˙J(η)| ≤ γ for some positive constant γ.These assumptions are reasonable for typical human-UAV interaction scenarios and provide the foundation for our stability analysis. C. Lyapunov Stability Analysis Theorem 1: Consider the nonlinear estimator of the external interaction wrench in (25) and let Assumptions 4 to 7 hold, the design of B(ξ, ˙ξ) in (26) ensures asymptotic stability of the error dynamics in (20) in the sense of Lyapunov such that ˆTex → Tex over time. Proof: Let Ve(e, η ) = e⊤M(η)e be a Lyapunov function candidate. This function is positive definite since the inertia matrix M(η) is positive definite. Taking the time derivative and substituting B(η, ˙η) = kM−1(ξ) yields: 
+
+˙Ve = ˙ e⊤M(η)e + e⊤ ˙M(η)e + e⊤M(η) ˙ e, 
+
+= −e⊤B⊤(η, ˙η)M(η)e + e⊤ ˙M(η)e − e⊤M(η)B(η, ˙η)e, 
+
+= −2ke ⊤e + e⊤ ˙M(η)e. 
+
+(27) The term e⊤ ˙M(η)e in (27) represents the effect of the time-varying inertial matrix. To ensure stability, we need to show that ˙Ve(e, η ) < 0 for all e̸ = 0 . The term e⊤ ˙M(η)e
+
+can be bounded following that: 
+
+|e⊤ ˙M(η)e| ≤ | e|2| ˙M(η)|, (28) where | ˙M(η)| represents the matrix norm of ˙M(η). From the structure of the inertia matrix M(η) in (18), its time derivative is given as: 
+
+˙M(η) = 
+
+[03×3 03×3
+
+03×3 ˙J(η)
+
+]
+
+, (29) Given Assumption 5, we have | ˙J(η)| ≤ γ, which implies 
+
+| ˙M(η)| ≤ γ, therefore: 
+
+|e⊤ ˙M(η)e| ≤ γ|e|2, (30) The result in (30) gives us: 
+
+˙Ve(e, η ) ≤ − 2k|e|2 + γ|e|2 = −(2 k − γ)|e|2, (31) For stability, we need ˙Ve(e, η ) < 0, which is satisfied when: 
+
+2k > γ. (32) The condition in (32) provides a design guideline for selecting the observer gain k. It should be chosen such that k > γ/ 2, where γ is the bound on the rate of change of the inertia tensor. D. Convergence Properties When the condition 2k > γ is satisfied, the error dynam-ics is asymptotically stable, meaning that lim t→∞ e(t) = 0 .This implies that the estimated interaction wrench ˆTex 
+
+converges to the actual interaction wrench Tex over time. The convergence rate is determined by the eigenvalues of the matrix B(η, ˙η). For our design with B(η, ˙η) = kM−1(η),the convergence rate is characterized by the time constant 
+
+τc such that: 
+
+τc = 1
+
+kλ min (M−1(η)) = λmax (M(η)) 
+
+k , (33) where λmin (·) and λmax (·) denote the minimum and maximum eigenvalues, respectively. This analysis shows that higher values of k lead to faster convergence, but there is a trade-off with noise sensitivity. In practice, the gain k should be chosen to balance the convergence speed and the robustness to measurement noise. E. Robustness Analysis In practical scenarios, the system model may contain uncertainties and external disturbances. Let us denote the actual system dynamics as follows: 
+
+Tex = M(η)¨ η + C(η, ˙η) ˙ η + G + A(η)u + ∆( η, ˙η), (34) where ∆( η, ˙η) represents the combined effect of model uncertainties and external disturbances. According to (34), the observer error dynamics in (20) now becomes: 
+
+˙e = −B(η, ˙η)e + ˙Tex − B(η, ˙η)∆( η, ˙η),
+
+= −B(η, ˙η)e − B(η, ˙η)∆( η, ˙η). (35) Since ( ˙Tex = 0 according to Assumption 4. Using the Lyapunov function in (27), the time derivative becomes: 
+
+˙Ve(e, η ) = −2ke ⊤e + e⊤ ˙M(η)e − 2ke ⊤∆( η, ˙η). (36) Assuming bounded ∆( η, ˙η), for some constants ε > 0
+
+i.e., ∥∆( η, ˙η)∥ ≤ ε, it can be shown that the observer error remains bounded, with the bound depending on the magnitude of this term. This robustness analysis demon-strates that the proposed nonlinear observer maintains bounded estimation errors even in the presence of model uncertainties and external disturbances, a critical property for practical implementation in real-world human-UAV interaction scenarios. F. Adaptive Gain Design To further improve the performance of the nonlinear observer, an adaptive gain design is proposed such that: 
+
+B(η, ˙η) = K(η, ˙η)M−1(η), (37) where K(η, ˙η) is a positive definite gain matrix that adapts based on the system state such that: 
+
+K(η, ˙η) = k0I6×6 + k1∥ ˙η∥I6×6 + k2∥M(η)∥I6×6, (38) where k0, k 1, k 2 > 0 are scalar gains and ∥ · ∥ denotes the norm of a vector or a matrix. This adaptive gain design ensures that: 1) The observer gain increases with higher velocities, providing faster convergence during dynamic mo-tions. 2) The observer gain adapts to changes in the iner-tial properties, maintaining stability across different configurations. 3) A minimum gain k0 ensures that basic stability properties are maintained at all times. G. Integration with Control Frameworks The estimated interaction wrench ˆTex is fed to the admittance controller to generate the reference trajectories for the aerial platform as follows: 
+
+Ma(¨ ηd − ¨ηr ) + Ba( ˙ ηd − ˙ηr ) + Ka(ηd − ηr ) = ˆTex , (39) where ηd is the desired trajectory (position and attitude), 
+
+ηr is the reference trajectory generated by the admittance controller based on ˆTex , and Ma, B a, K a are the virtual inertia, damping, and stiffness matrices that define the interaction behavior. This admittance control framework allows the UAV to respond compliantly to the human-applied forces, creating an intuitive interaction experience. V. Simulation Results and Discussion A. Simulation Setup The aerial cooperative payload transportation system, featuring two quadrotors to lift and transport the payload in response to the human-applied guidance. The system and AGNO observer were simulated using MATLAB (2024b). The integrated system was modeled as a single aerial vehicle with parameters detailed in Table I.                               
+
+> TABLE I System and Observer parameters. Symbol Definition Value/Unit
+> mTotal mass 3.9/kg
+> LpPayload length 2/m
+> gGravitational acceleration 9.81 /m/s 2
+> Ixx Moment of inertia in x-axis 3.227 /kg m 2
+> Iyy Moment of inertia in y-axis 0.061 /kg m 2
+> Izz Moment of inertia in z-axis 3.277 /kg m 2
+> k0Observer gain 0.78 /−
+> k1Observer gain 0.3/−
+> k2Observer gain 0.35 /−
+> TMaximum UAV thrust 35 /N
+> tsControl timestep 0.01 /s
+> MaVirtual inertial matrix 0.95 In×n/kg
+> BaVirtual damping 1.54 In×n/N s/m
+> KaVirtual spring 0In×n/N s/m
+
+B. Simulation Results During simulation, the system successfully lifted and transported the payload in response to human guidance. It followed complex 3D trajectories while maintaining stable tracking and attitude control, with initial errors rapidly converged to zero due to accurate estimation of the applied forces and torques, as shown in Figure 3. The arrows indicate the magnitude and direction of the external interaction forces and torques that guided the payload from the initial position to the final destination. The proposed AGNO demonstrated precise estimations of the external interaction wrenches, with force and torque errors approaching zero, as shown in Figures 4 and 5. The estimated and actual wrenches are closely aligned across all axes, confirming the observer’s effectiveness in capturing the interaction dynamics. Combined with ad-mittance control, this enables natural and stable human-UAV physical collaboration.  
+
+> Fig. 3. The simulation environment; MATLAB simulation of the aerial payload transport system’s motion following human guidance in 3D space as depicted by the arrows (magnitudes and directions).
+
+Figure 5 further quantifies this performance over the 70-seconds simulation. Low estimation errors were main-tained during rapid initialization (0-2 seconds), direc-tion reversals (8-12 seconds), bidirectional motion (32-36 seconds), and coupled force-torque interactions (43-56 seconds), highlighting the robustness of the proposed observer under highly nonlinear dynamics and interaction conditions. This eliminates the need for bulky and ex-pensive force sensors, reducing system weight and cost, and enabling natural and intuitive human-UAV physical interaction at any point of contact. To benchmark the performance of the proposed AGNO, an Extended Kalman Filter (EKF) was implemented under the same conditions. Although the EKF provided reasonable force estimation during smooth motion, its performance degraded significantly during rapid direction changes and coupled force-torque interactions, particularly in torque estimation, where the limitations of model linearization became evident. Quantitatively, the proposed AGNO outperformed the EKF in terms of RMSE for both force and torque estimation. In particular, it achieved RMSE values of (0.020, 0.011, 0.012, and 0.012) compared External Forces/Torques Estimation 
+
+Fig. 4. The actual and estimated forces in (x, y, z ) directions and torque around z axis. External Forces/Torques Estimation Errors 
+
+Fig. 5. Estimation errors of the external interaction forces in (x, y, z )
+
+directions and torque around z axis. 
+
+to (0.027, 0.014, 0.032, and 0.095) for the EKF in estimat-ing the external forces along the (x, y, z ) directions and the torque around the z-axis, respectively, as shown in Figure 5. These results demonstrate the advantage of the proposed AGNO in handling the strong nonlinearities of the system dynamics without relying on local linearization, resulting in more reliable and accurate wrench estimation than the EKF. VI. Conclusion This paper presented an Adaptive Gain Nonlinear Observer (AGNO) for estimating the external interac-tion wrench in human-UAV physical interaction. By ex-plicitly accounting for the time-varying inertial matrix, the proposed AGNO maintains high estimation accuracy during dynamic maneuvers and payload variations. The Lyapunov-based analysis provided theoretical guarantees of convergence and robustness. Benchmarking against an Extended Kalman Filter (EKF) demonstrated that the proposed AGNO achieved lower RMSE values in force estimation and a superior torque estimation, particularly under highly nonlinear interaction conditions where EKF performance degrades due to linearization. The proposed method enables intuitive and safe interaction without force-torque sensors, reducing system weight, cost, and complexity while preserving system performance. This approach supports advanced applications such as collab-orative aerial transportation and manipulation. References 
+
+[1] A. A. Laghari, A. K. Jumani, R. A. Laghari, and H. Nawaz, “Unmanned aerial vehicles: A review,” Cognitive Robotics, vol. 3, pp. 8–22, 2023. [2] H. N. Naser, H. A. Hashim, and M. Ahmadi, “Aerial assistive payload transportation using quadrotor uavs with nonsingular fast terminal smc for human physical interaction,” Results in Engineering, vol. 25, p. 103701, 2025. [3] S. Rajappa, H. Bülthoff, and P. Stegagno, “Design and im-plementation of a novel architecture for physical human-uav interaction,” The International Journal of Robotics Research, vol. 36, no. 5-7, pp. 800–819, 2017. [4] E. Mariotti, E. Magrini, and A. De Luca, “Admittance control for human-robot interaction using an industrial robot equipped with a f/t sensor,” in 2019 International Conference on Robotics and Automation (ICRA). IEEE, 2019, pp. 6130–6136. [5] H. N. Naser, H. A. Hashim, and M. Ahmadi, “Quaternion-based unscented kalman filter for robust wrench estimation of human-uav physical interaction,” Signal Processing, vol. 245, p. 110582, 2026. [Online]. Available: https://www.sciencedirect. com/science/article/pii/S0165168426000964 [6] F. Ruggiero, V. Lippiello, and A. Ollero, “Aerial manipulation: A literature review,” IEEE Robotics and Automation Letters, vol. 3, no. 3, pp. 1957–1964, 2018. [7] T. Tomić and S. Haddadin, “A unified framework for external wrench estimation, interaction control and collision reflexes for flying robots,” in 2014 IEEE/RSJ international conference on intelligent robots and systems. IEEE, 2014, pp. 4197–4204. [8] M. Wilmsen, C. Yao, M. Schuster, S. Li, and K. Janschek, “Nonlinear wrench observer design for an aerial manipulator,” IFAC-PapersOnLine, vol. 52, no. 22, pp. 1–6, 2019. [9] N. Hogan, “Impedance control: An approach to manipulation,” in 1984 American control conference. IEEE, 1984, pp. 304–313. [10] S. Rajappa, H. H. Bülthoff, M. Odelga, and P. Stegagno, “A control architecture for physical human-uav interaction with a fully actuated hexarotor,” in 2017 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS). IEEE, 2017, pp. 4618–4625. [11] F. Augugliaro and R. D’Andrea, “Admittance control for physi-cal human-quadrocopter interaction,” in 2013 European Control Conference (ECC). IEEE, 2013, pp. 1805–1810. [12] H. Lee, H. Kim, W. Kim, and H. J. Kim, “An integrated framework for cooperative aerial manipulators in unknown environments,” IEEE Robotics and Automation Letters, vol. 3, no. 3, pp. 2307–2314, 2018. [13] A. Skrede, “A linear discrete kalman filter to estimate the contact wrench of an unknown robot end effector,” in 2024 IEEE International Conference on Real-time Computing and Robotics (RCAR). IEEE, 2024, pp. 341–347. [14] Y. Yin, Q. Yang, and H. Fang, “Error-state kalman filter based external wrench estimation for mavs under a cascaded architecture,” in 2023 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS). IEEE, 2023, pp. 5019– 5026. [15] C. Banks, A. Bono, and S. Coogan, “Physical human-uav interaction with commercial drones using admittance control,” IFAC-PapersOnLine, vol. 54, no. 20, pp. 258–264, 2021. [16] A. Alharbat, G. Ruscelli, R. Diversi, and A. Mersha, “External-wrench estimation for aerial robots exploiting a learned model,” in 2025 International Conference on Unmanned Aircraft Sys-tems (ICUAS). IEEE, 2025, pp. 323–331. [17] S. Kružić, J. Musić, R. Kamnik, and V. Papić, “End-effector force and joint torque estimation of a 7-dof robotic manipulator using deep learning,” Electronics, vol. 10, no. 23, p. 2963, 2021. [18] Y.-W. Dai, W.-Y. Ye, C.-H. Pi, and S. Cheng, “Learning-based external wrench estimation for quadrotors,” in 2019 International Conference on Advanced Mechatronic Systems (ICAMechS). IEEE, 2019, pp. 245–249. [19] C. Veil, D. Mueller, and O. Sawodny, “Nonlinear disturbance observers for robotic continuum manipulators,” Mechatronics, vol. 78, p. 102518, 2021. [20] B. Yüksel, C. Secchi, H. H. Bülthoff, and A. Franchi, “A nonlinear force observer for quadrotors and application to physical interactive tasks,” in 2014 IEEE/ASME international conference on advanced intelligent mechatronics. IEEE, 2014, pp. 433–440. [21] A. Nikoobin and R. Haghighi, “Lyapunov-based nonlinear dis-turbance observer for serial n-link robot manipulators,” Journal of Intelligent and Robotic Systems, vol. 55, pp. 135–153, 2009. [22] H. A. Hashim, A. E. Eltoukhy, and A. Odry, “Observer-based Controller for VTOL-UAVs Tracking using Direct Vision-aided Inertial Navigation Measurements,” ISA transactions, vol. 137, pp. 133–143, 2023. [23] H. N. Naser, H. A. Hashim, and M. Ahmadi, “Human physical interaction based on uav cooperative payload transportation system using adaptive backstepping and fntsmc,” in 2025 Amer-ican Control Conference (ACC), 2025, pp. 450–456.

@@ -1,0 +1,1826 @@
+Title: PAC Finite-Time Safety Guarantees for Stochastic Systems with Unknown Disturbance Distributions
+
+URL Source: https://arxiv.org/pdf/2603.01918v1
+
+Published Time: Tue, 03 Mar 2026 04:07:19 GMT
+
+Number of Pages: 16
+
+Markdown Content:
+# PAC Finite-Time Safety Guarantees for Stochastic Systems with Unknown Disturbance Distributions 
+
+## Taoran Wu 
+
+KLSS, Institute of Software, CAS & University of Chinese Academy of Sciences, Beijing, China 
+
+wutr@ios.ac.cn 
+
+## Dominik Wagner 
+
+College of Computing and Data Science, Nanyang Technological University,Singapore 
+
+dominik.wagner@ntu.edu.sg 
+
+## C.-H. Luke Ong B
+
+College of Computing and Data Science, Nanyang Technological University, Singapore 
+
+luke.ong@ntu.edu.sg 
+
+## Bai Xue B
+
+KLSS, Institute of Software, CAS & University of Chinese Academy of Sciences, Beijing, China 
+
+xuebai@ios.ac.cn 
+
+## Abstract 
+
+We investigate the problem of establishing finite-time proba-bilistic safety guarantees for discrete-time stochastic dynam-ical systems subject to unknown disturbance distributions, using barrier certificate methods. Our approach develops a data-driven safety certification framework that relies only on a finite collection of independent and identically distributed (i.i.d.) disturbance samples. Within this framework, we pro-pose a certification procedure such that, with confidence at least 1 − 𝛿 over the sampled disturbances, if the output of the certification procedure is accepted, the probability that the system remains within a prescribed safe set over a fi-nite horizon is at least 1 − 𝜖 . A key challenge lies in formally characterizing the probably approximately correct (PAC) gen-eralization behavior induced by finite samples. To address this, we derive PAC generalization bounds using tools from VC dimension, scenario optimization, and Rademacher com-plexity. These results illuminate the fundamental trade-offs between sample size, model complexity, and safety tolerance, providing both theoretical insight and practical guidance for designing reliable, data-driven safety certificates in discrete-time stochastic systems. 
+
+Keywords: PAC Safety Guarantees; Stochastic Systems; Un-known Disturbance Distributions 
+
+ACM Reference Format: 
+
+Taoran Wu, Dominik Wagner, C.-H. Luke Ong B, and Bai Xue B.2026. PAC Finite-Time Safety Guarantees for Stochastic Systems  
+
+> Permission to make digital or hard copies of all or part of this work for personal or classroom use is granted without fee provided that copies are not made or distributed for profit or commercial advantage and that copies bear this notice and the full citation on the first page. Copyrights for components of this work owned by others than the author(s) must be honored. Abstracting with credit is permitted. To copy otherwise, or republish, to post on servers or to redistribute to lists, requires prior specific permission and/or a fee. Request permissions from permissions@acm.org.
+> HSCC ’26, Saint Malo, France
+> ©2026 Copyright held by the owner/author(s). Publication rights licensed to ACM. ACM ISBN 978-1-4503-XXXX-X/2018/06
+> https://doi.org/XXXXXXX.XXXXXXX
+
+with Unknown Disturbance Distributions. In Proceedings of 29th ACM International Conference on Hybrid Systems: Computation and Control (HSCC ’26). ACM, Saint Malo, France, 16 pages. https://doi. org/XXXXXXX.XXXXXXX 
+
+## 1 Introduction 
+
+Stochastic systems are widely used in safety-critical applica-tions because they provide a principled framework for mod-eling and reasoning about inherent uncertainties [ 7 ], partic-ularly aleatoric uncertainty arising from natural randomness in the system or environment [ 43 , 44 ]. In real-world settings such as autonomous vehicles, robotics, and aerospace, system behavior is often influenced by unpredictable disturbances, sensor noise, or environmental variability. By explicitly ac-counting for these stochastic effects, safety verification can provide probabilistic guarantees of system performance, ro-bustness, and safety—an essential requirement for deploying reliable systems in high-stakes scenarios [5]. Traditional approaches to stochastic safety often rely on complete knowledge of the disturbance distribution or adopt worst-case robust methods. Distribution-based approaches can fail when the assumed distribution deviates from reality, whereas robust methods are often overly conservative, limit-ing system performance. In many practical settings involving hybrid and cyber-physical systems, the true disturbance dis-tribution is unknown, and only finite samples of disturbances are available from sensors, simulations, or historical data. Although several recent works have begun to address safety guarantees for such systems, e.g., [ 23 , 24 ], existing methods remain at an early stage of development. In this work, we develop a data-driven framework to cer-tify PAC finite-time safety guarantees for discrete-time sto-chastic systems subject to unknown disturbance distribu-tions via the computation of barrier functions. This frame-work relies only on a finite collection of independent and identically distributed (i.i.d.) disturbance samples and pro-vides a certification procedure such that, with confidence at least 1 − 𝛿 over the sampled disturbances, if the output of the certification procedure is accepted, the probability that the  
+
+> arXiv:2603.01918v1 [eess.SY] 2 Mar 2026 HSCC ’26, May 11–14,2026, Saint Malo, France Taoran Wu, Dominik Wagner, C.-H. Luke Ong B, and Bai Xue B
+
+system remains within a prescribed safe set over a finite hori-zon is at least 1 − 𝜖 . A key technical challenge lies in charac-terizing the generalization gap between the empirical safety estimate obtained from finite samples and the true lower bound of the finite-time safety probability. To address this issue, we derive PAC-style generalization bounds using tools from statistical learning theory, including VC dimension, scenario optimization, and Rademacher complexity. These bounds are explicit and yield concrete sample-complexity requirements that relate the number of disturbance samples to the complexity of the barrier functions, as well as to 𝜖 
+
+and 𝛿 . This enables practitioners to determine the number of samples required to achieve a desired confidence level and safety guarantee. Finally, the proposed methods were illus-trated on several numerical examples using a semidefinite programming solver. The core novelty of this work lies in their architectural integration (specifically, the strategy of constructing PAC bounds for barrier certificates) to yield safety guarantees unavailable in prior data-driven methods. The main contri-butions of this work are listed below: 1. PAC Analysis of Sample-Based Barrier Certifi-cates: We derive VC-, scenario-, and Rademacher-based generalization bounds for barrier certificates constrained using disturbance samples, providing for-mal safety guarantees beyond the observed data. 2. Applicability to General Nonlinear Dynamics: Un-like prior data-driven approaches that are restricted to piecewise-affine systems [ 14 , 24 ], our framework applies to general nonlinear stochastic dynamics. 3. Unified View of Generalization Guarantees: We systematically derive and compare multiple PAC bounds within a single certification framework, clarifying trade-offs between conservatism and sample efficiency. 
+
+Related Work 
+
+Barrier certificates were first introduced for deterministic sys-tems as a Lyapunov-like tool for verifying safety and reach-ability properties [ 29 , 31 ], and were later extended to sto-chastic systems for infinite-horizon safety and reach-avoid verification. Notable contributions include establishing lower bounds on safety and reach-avoid probabilities via Ville’s inequality [ 30 , 59 , 60 ], as well as deriving both lower and up-per bounds on reach-avoid and safety probabilities through equation relaxations [ 12 , 50 , 52 , 53 , 56 ]. Extensions also cover infinite-horizon probabilistic program analysis and 𝜔 -regular properties [ 1 , 11 , 17 , 25 , 46 ]. However, in practice, finite-time verification is more relevant, as most real systems operate under bounded time constraints. 𝑐 -martingale–based barrier conditions have become an important tool for the finite-time formal verification of stochastic systems, with early foundations laid in [ 19 , 42 ]. These methods were later ex-tended to finite-time temporal-logic verification and con-troller synthesis under robust-invariance or stopped-process assumptions [ 15 , 16 , 39 ]. More recently, [ 49 , 59 ] extended 
+
+𝑐 -martingale–based barrier conditions and refined the asso-ciated safety probability bounds, while [ 13 ] investigated the safety verification problem for stochastic discrete-time sys-tems modeled by difference inclusions. The above methods assume full knowledge of the system, including both dynam-ics and disturbance distributions. In contrast, this work con-siders systems with known dynamics but unknown distur-bances, reflecting practical scenarios—such as autonomous systems operating in uncertain environments—where exact disturbance statistics are unavailable. On the other hand, data-driven methods for formal veri-fication and design of black-box systems have received in-creasing attention, e.g., [ 36 , 47 ]. A representative data-driven approach is scenario optimization, originally proposed in [ 9] to address robust optimization problems. It has since been integrated with barrier certificates for safety verifi-cation and controller synthesis in deterministic systems [ 27 , 32 , 37 , 48 , 51 ]. Later, [ 28 , 33 ] extended scenario optimiza-tion to the stochastic setting. [ 34 ] and [ 35 ] further reduced sample complexity using the wait-and-judge technique [ 10 ]and the repetitive scenario technique [ 8 ], respectively. All these works on stochastic systems require prior knowledge of certain constants, such as the Lipschitz constants of the system dynamics and the barrier certificates. In contrast, our work focuses on a complementary setting in which the system dynamics are assumed to be known, while the distur-bance distribution is unknown. We address this uncertainty using only i.i.d. disturbance samples, without imposing ad-ditional structural assumptions, such as Lipschitz continuity on the system dynamics. Moreover, we would like to high-light a technical subtlety in these approaches. To the best of our knowledge, works such as [ 33 –35 ] apply Chebyshev’s inequality to obtain uniform characterizations of expecta-tions (e.g., via Rademacher complexity). However, the va-lidity of this step in the current setting requires additional justification, since applying a pointwise bound to a data-dependent selection does not automatically extend to a uni-form guarantee. This setting is closely related to [ 14 , 23 , 24 ]. In [ 23 ], the authors studied finite-horizon safety guarantees for discrete-time piecewise affine stochastic systems with unknown disturbance distributions. Their approach uses sto-chastic barrier certificates to reformulate the problem as a chance-constrained optimization problem and synthesizes piecewise affine stochastic barrier functions via scenario optimization. Because it relies on this chance-constrained formulation, the method is conceptually similar to the robust barrier certificate approach proposed in this work, which en-forces constraint satisfaction over all sampled disturbances. More recently, [ 24 ] extended this method to nonlinear sys-tems with affine disturbances by over-approximating them as PAC Finite-Time Safety Guarantees for Stochastic Systems with Unknown Disturbance Distributions HSCC ’26, May 11–14,2026, Saint Malo, France 
+
+uncertain piecewise affine systems. In contrast, our method is applicable to more general system classes without requir-ing piecewise affine approximations or restricting the barrier function structure to (piecewise) affine forms. Moreover, to reduce the computational overhead associated with solving the resulting optimization problem, we further propose an alternative approach that synthesizes stochastic barrier func-tions directly, without performing a transformation into a chance-constrained optimization problem as in [ 23 , 24 ]. For a detailed discussion of the relations between [ 23 , 24 ] and the present work, please refer to Remark 4. Further, [ 14 ]addressed the controller synthesis for nonlinear switched systems with unknown disturbance distributions under LTL 𝑓 
+
+specifications. Their method is based on learning an ambigu-ity set that contains the unknown disturbance distribution and subsequently constructing a robust Markov decision process as a finite abstraction of the system. However, it is known that such discretization-based approaches suffer from the curse of dimensionality. 
+
+Organization. Section 2 introduces the system model, notation, and the PAC finite-time safety certification prob-lem. Section 3 presents the main PAC guarantees and explicit sample-complexity bounds using VC dimension, scenario optimization, and Rademacher complexity. Section 4 demon-strates the effectiveness of the proposed approaches, and Section 5 concludes this paper. 
+
+Notation. We use R𝑛 to denote the 𝑛 -dimensional Eu-clidean space, and N for the set of nonnegative integers. For two sets A and B, A \ B denotes the set difference, i.e., the set of all elements that belong to A but not to B. The notation 
+
+A denotes the closure of A, A𝑐 denotes its complement, and 
+
+A◦ denotes its interior. Given a probability space (Ω, F , P𝒚 ),we denote by P𝒚 [E] the probability of an event E ∈ F , and by E 𝒚 [·] the expectation with respect to P 𝒚 .
+
+## 2 Preliminaries 
+
+In this section, we introduce stochastic systems and the PAC finite-time safety certification problem of interest. 
+
+System model. We consider a discrete-time stochastic system 
+
+𝒙 ( 𝑗 + 1) = 𝒇 (𝒙 ( 𝑗 ), 𝒅 ( 𝑗 )) , 𝑗 ∈ N, (1) where 𝒙 ( 𝑗 ) ∈ R𝑛 is the system state and 𝒅 ( 𝑗 ) ∈ D is a sto-chastic disturbance with D being compact in R𝑑 . The update map 𝒇 (· , ·) : R𝑛 × D → R𝑛 is assumed known, determinis-tic, and continuous over (𝒙 , 𝒅 ). The disturbance sequence 
+
+{𝒅 ( 𝑗 )} 𝑗 ∈N consists of i.i.d. random vectors on a probability space (D, F , P𝒅 ), with 𝒅 ( 𝑗 ) ∼ P𝒅 for all 𝑗 ∈ N. The expecta-tion E 𝒅 [·] is taken with respect to P 𝒅 .
+
+Definition 1 (Disturbance Signal) . A disturbance signal 𝜋 is a sample path of the stochastic process {𝒅 ( 𝑗 ) : D → D, 𝑗 ∈ N},defined on the canonical sample space D∞ with the product topology B( D∞) and probability measure P𝜋 := P∞ 
+
+> 𝒅
+
+.
+
+Definition 2 (Trajectory) . Given an initial state 𝒙 0 ∈ R𝑛 and a disturbance signal 𝜋 , the corresponding trajectory of system 
+
+(1) is the mapping 𝝓 𝒙 0 
+
+> 𝜋
+
+(·) : N → R𝑛 defined recursively as 
+
+(
+
+𝝓 𝒙 0 
+
+> 𝜋
+
+( 𝑗 + 1) = 𝒇 (𝝓 𝒙 0 
+
+> 𝜋
+
+( 𝑗 ), 𝒅 ( 𝑗 )) , ∀𝑗 ∈ N,
+
+𝝓 𝒙 0 
+
+> 𝜋
+
+(0) = 𝒙 0.𝑘 -step safety certification. A compact set X ⊆ R𝑛 de-fines the safe region. Given state 𝒙 ∈ X, the system starting from 𝒙 ∈ X is 𝑘 -step safe with respect to 𝜖 (·) : X → [ 0, 1] if P𝜋 
+
+ ∧𝑘 𝑗 =1 𝝓 𝒙  
+
+> 𝜋
+
+( 𝑗 ) ∈ X ≥ 1 − 𝜖 (𝒙 ),
+
+where 𝑘 ∈ N.In this paper, instead of knowing P𝒅 , we assume access to a finite i.i.d. sample set 
+
+𝐷 𝑀 = {𝒅 (1) , . . . , 𝒅 (𝑀 ) } ∼ P𝑀  
+
+> 𝒅
+
+,
+
+where P𝑀  
+
+> 𝒅
+
+denotes the 𝑀 -fold product distribution of P𝒅 , and each sample 𝒅 (𝑖 ) ∈ D is drawn independently according to P𝒅 for 𝑖 = 1, . . . , 𝑀 .
+
+Problem 1 (PAC Finite-time Safety Certification) . For a given finite time horizon 𝑘 ∈ N, the goal is to design a certi-fication procedure A that provides k-step safety certification in the PAC sense: for each 𝒙 ∈ X, with confidence at least 
+
+1 − 𝛿 over the sample set 𝐷 𝑀 , if A ( 𝐷 𝑀 ) accepts, then the system (1) starting from 𝒙 is 𝑘 -step safe with respect to 𝜖 (𝒙 ),where 𝜖 (·) : X → [ 0, 1] specifies a state-dependent probability threshold that may depend on 𝐷 𝑀 .Formally, the 𝑘 -step PAC guarantee can be expressed as 
+
+P𝑀 
+
+> 𝒅
+
+"
+
+A ( 𝐷 𝑀 ) ⇒ 
+
+©«
+
+P𝜋 
+
+h 𝑘 Û
+
+> 𝑗 =1
+
+𝝓 𝒙  
+
+> 𝜋
+
+( 𝑗 ) ∈ X
+
+i
+
+≥ 1 − 𝜖 (𝒙 )
+
+ª®®®¬#
+
+≥ 1 − 𝛿, ∀𝒙 ∈ X.
+
+In addition, in the sequel, we denote by bX a compact set that contains X as well as all possible states reachable by system (1) from X within one step, i.e., 
+
+bX ⊇ { 𝒚 | 𝒚 = 𝒇 (𝒙 , 𝒅 ), 𝒙 ∈ X, 𝒅 ∈ D} ∪ X.
+
+Since 𝒇 (𝒙 , 𝒅 ) is continuous over (𝒙 , 𝒅 ) and both X and D are compact, such a compact set bX always exists. 
+
+## 3 PAC Finite-time Safety Certification 
+
+In this section, we propose data-driven approaches to address Problem 1 by combining robust and stochastic barrier certifi-cates with tools from statistical learning theory, including VC dimension, scenario approach, and Rademacher complex-ity. The integration of robust barrier certificates with VC dimension and scenario approach is presented in Subsection 3.1, while the integration of stochastic barrier certificates with Rademacher complexity is discussed in Subsection 3.2. HSCC ’26, May 11–14,2026, Saint Malo, France Taoran Wu, Dominik Wagner, C.-H. Luke Ong B, and Bai Xue B
+
+3.1 Certification via Robust Barrier Functions 
+
+In this subsection, we present approaches that integrate VC dimension and scenario approach with robust barrier func-tions (RBFs) to address Problem 1, beginning with a review of RBFs for discrete-time systems. 
+
+Definition 3. Given 𝛾 ∈ ( 0, 1) and a safe set X, a function 
+
+ℎ(·) : R𝑛 → R is a RBF for the system (1) if the inequalities hold: (
+
+ℎ(𝒙 ) ≤ 0, ∀𝒙 ∈ bX \ X,ℎ(𝒇 (𝒙 , 𝒅 )) ≥ 𝛾ℎ (𝒙 ), ∀𝒙 ∈ X, ∀𝒅 ∈ D,
+
+(2a) (2b) 
+
+and X𝑠 = {𝒙 ∈ X | ℎ(𝒙 ) > 0} ≠ ∅.
+
+Proposition 1 ([ 30 ]) . If there exists a RBF ℎ(·) : R𝑛 → R,then for any disturbance 𝒅 ∈ D and initial state 𝒙 0 ∈ X𝑠 =
+
+{𝒙 ∈ X | ℎ(𝒙 ) > 0}, the system (1) will remain within X𝑠 —and consequently within the safe set X—at the next time step, i.e., 
+
+∀𝒅 ∈ D, ∀𝒙 0 ∈ X𝑠 , 𝒇 (𝒙 0, 𝒅 ) ∈ X𝑠 .
+
+To search for such a function, we consider a parameter-ized function ℎ(𝒂 , ·) : R𝑛 → R with ℎ(0, 𝒙 ) ≡ 0 and aim to find the parameter vector 𝒂 = (𝒂 [1], . . . , 𝒂 [𝑚 ]) ⊤ ∈ R𝑚 
+
+such that ℎ(𝒂 , 𝒙 ) satisfies the constraints (2a) and (2b) . This search problem can be reformulated as the following uncer-tain optimization one: 
+
+min   
+
+> 𝒂 ∈R𝑚
+
+− 1
+
+> 𝑁 𝑜
+
+Í𝑁 𝑜  
+
+> 𝑖 =1
+
+ℎ(𝒂 , 𝒙 ′ 
+
+> 𝑖
+
+)
+
+s.t. 
+
+
+
+ℎ(𝒂 , 𝒙 ) ≤ 0, ∀𝒙 ∈ bX \ X,ℎ(𝒂 , 𝒇 (𝒙 , 𝒅 )) ≥ 𝛾ℎ (𝒂 , 𝒙 ), ∀𝒙 ∈ X, ∀𝒅 ∈ D,
+
+𝒂 [𝑙 ] ∈ [− 𝑈 𝑎 , 𝑈 𝑎 ], 𝑙 = 1, . . . , 𝑚, 
+
+(3) where 𝛾 ∈ ( 0, 1) and 𝑈 𝑎 > 0 are user-defined scalar values, and {𝒙 ′ 
+
+> 𝑖
+
+}𝑁 𝑜  
+
+> 𝑖 =1
+
+is a family of specified states distributed evenly over X, which can be generated by random sampling from a uniform distribution over the safe set X.
+
+Remark 1. The ideal objective of the program (3) is to find a function ℎ(𝒂 , 𝒙 ) that is maximized over X, thereby providing the largest possible X𝑠 . A natural choice for the objective func-tion is to maximize ∫ 
+
+> X
+
+ℎ(𝒂 , 𝒙 )𝑑 𝒙 . However, since this integral may not be analytically tractable, we approximate it using numerical sampling 1
+
+> 𝑁 𝑜
+
+Í𝑁 𝑜  
+
+> 𝑖 =1
+
+ℎ(𝒂 , 𝒙 ′ 
+
+> 𝑖
+
+).
+
+The optimization problem (3) always admits a feasible so-lution, since 𝒂 ≡ 0 is one such solution. Let 𝒂 ∗ be the solution to (3) . If X𝑠 = {𝒙 ∈ X | ℎ(𝒂 ∗, 𝒙 ) > 0} ≠ ∅, we conclude that ℎ(𝒂 ∗, 𝒙 ) is a RBF. However, problem (3) , which enforces worst-case satisfaction over all possible disturbances, can be overly conservative or even infeasible in practice. Such con-servatism may result in degraded performance or the failure to identify a feasible safety certificate. To alleviate this issue, we adopt a probabilistic formulation of the safety certifica-tion problem, which provides quantitative safety guarantees instead of relying on excessively conservative worst-case bounds. Nevertheless, the lack of knowledge about the true disturbance distribution prevents the direct computation of such probabilistic characterizations. To address this chal-lenge, we resort to a data-driven approach, leveraging fi-nite disturbance samples to obtain confidence-guaranteed probabilistic safety assurances. Specially, we draw 𝑀 i.i.d disturbance samples of the form 𝐷 𝑀 = {𝒅 (𝑖 ) }𝑀 𝑖 =1, where each 
+
+𝒅 (𝑖 ) is independently drawn from D according to P𝒅 . We then replace the universal disturbance constraints in (3) with their sample-based counterparts, leading to the following sample-based optimization problem: 
+
+min   
+
+> 𝒂 ∈R𝑚
+
+− 1
+
+> 𝑁 𝑜
+
+Í𝑁 𝑜  
+
+> 𝑖 =1
+
+ℎ(𝒂 , 𝒙 ′ 
+
+> 𝑖
+
+)
+
+s.t. 
+
+
+
+ℎ(𝒂 , 𝒙 ) ≤ 0, ∀𝒙 ∈ bX \ X,ℎ(𝒂 , 𝒇 (𝒙 , 𝒅 ( 𝑗 ) )) ≥ 𝛾ℎ (𝒂 , 𝒙 ), ∀𝒙 ∈ X,
+
+𝒂 [𝑙 ] ∈ [− 𝑈 𝑎 , 𝑈 𝑎 ]; 𝑗 = 1, . . . , 𝑀 ; 𝑙 = 1, . . . , 𝑚. 
+
+(4) Similar to program (3), program (4) is always feasible. 
+
+3.1.1 VC Dimension Based Methods. In this subsection, we employ the VC dimension to derive uniform generaliza-tion bounds over all sample disturbances for the solution to (4) , thereby establishing a PAC-style characterization of one-step (i.e., 𝑘 = 1) safety certification. The gain of PAC characterization of one-step safety certi-fication relies on the following assumption. 
+
+Assumption 1 (Uniformly Finite VC dimension) . Define the function class 
+
+F𝒙 =
+
+n b𝑓 𝒂 (𝒅 ) =1{𝒅 |ℎ (𝒂 ,𝒇 (𝒙 ,𝒅 ) ) − 𝛾ℎ (𝒂 ,𝒙 )<0} (𝒅 ) | 𝒂 ∈ [− 𝑈 𝑎 , 𝑈 𝑎 ]𝑚 o
+
+.
+
+Assume F𝒙 has VC dimension at most 𝑁 for every 𝒙 ∈ X
+
+(uniformly in 𝒙 ). 
+
+When ℎ(𝒂 , 𝒙 ) is linear in 𝒂 , we can write ℎ(𝒂 , 𝒚 ) = 𝒂 ⊤𝒈 (𝒚 ).Thus, the indicator function b𝑓 ∈ F𝒙 is characterized as: 
+
+b𝑓 𝒂 (𝒅 ) = 1{𝒅 |𝒂 ⊤ 𝝍 (𝒙 ,𝒅 )<0} (𝒅 ), 𝝍 (𝒙 , 𝒅 ) := 𝒈 (𝒇 (𝒙 , 𝒅 )) − 𝛾 𝒈 (𝒙 ).
+
+This defined a linear family in the parameters 𝒂 , hence its VC dimension is less than or equal to 𝑚 .Let E𝒅 ,𝑀 denote the empirical mean of b𝑓 𝒂 (𝒅 ) evaluated over the set of 𝑀 i.i.d. disturbance samples 𝐷 𝑀 , i.e., E𝒅 ,𝑀 [ b𝑓 𝒂 ] := 1
+
+> 𝑀
+
+Í𝑀 𝑖 =1 b𝑓 𝒂 (𝒅 (𝑖 ) ), ∀𝒙 ∈ X.
+
+Since there always exist solutions to (4) , there always exists a solution 𝒂 (𝐷 𝑀 ) such that E𝒅 ,𝑀 [ b𝑓 𝒂 (𝐷 𝑀 ) ] = 0, ∀𝒙 ∈
+
+X. According to Corollary 4 in [ 2], there exists an explicit bound on the number of samples 𝑀 required to ensure that the empirical probability E𝒅 ,𝑀 [ b𝑓 𝒂 (𝐷 𝑀 ) ] deviates from the true probability E𝒅 [ b𝑓 𝒂 (𝐷 𝑀 ) ] by at most 𝜖 from one side with confidence at least 1 − 𝛿 . Specifically, 
+
+𝑀 ≥ 5
+
+𝜖 
+
+
+
+ln 4
+
+𝛿 + 𝑁 ln 40 
+
+𝜖 
+
+
+
+(5) PAC Finite-Time Safety Guarantees for Stochastic Systems with Unknown Disturbance Distributions HSCC ’26, May 11–14,2026, Saint Malo, France 
+
+is sufficient to guarantee that P𝑀 
+
+> 𝒅
+
+h
+
+E𝒅 [ b𝑓 𝒂 (𝐷 𝑀 ) ] ≤ 𝜖 
+
+i
+
+≥ 1 − 𝛿, ∀𝒙 ∈ X.
+
+Lemma 1 (Corollary 4, [ 2]) . Suppose 𝜖 ∈ ( 0, 1) and 𝛿 ∈(0, 1) are given. Then, for each 𝒙 ∈ X, the probability of one-sided constrained failure 𝑝 (𝑀, 𝜖, 0) is smaller than 𝛿 , where 
+
+𝑝 (𝑀, 𝜖, 0) is defined as 
+
+𝑝 (𝑀, 𝜖, 0) := P𝑀 
+
+> 𝒅
+
+
+
+∃ 𝒂 ∈ [− 𝑈 𝑎 , 𝑈 𝑎 ]𝑚 ,
+
+
+
+E𝒅 ,𝑀 [ b𝑓 𝒂 ] ≤ 0 ∧ E𝒅 [ b𝑓 𝒂 ] > 𝜖 
+
+
+
+,
+
+if 𝑀 satisfies (5) .
+
+Under Assumption 1 and Lemma 1, we obtain the follow-ing conclusion. For each 𝒙 ∈ X, with confidence at least 
+
+1 − 𝛿 ,P𝒅 
+
+ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒇 (𝒙 , 𝒅 )) ≥ 𝛾 ℎ (𝒂 ∗ (𝐷 𝑀 ), 𝒙 ) ≥ 1 − 𝜖, 
+
+where 𝒂 ∗ (𝐷 𝑀 ) is obtained by solving (4) . Consequently, with the same confidence, if 𝒙 belongs to 
+
+X𝑠 = {𝒙 ∈ X | ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒙 ) > 0},
+
+the probability that the system (1) starting from 𝒙 remains within X𝑠 at the next step is at least 1 − 𝜖 . The above state-ments hold provided that the sample size 𝑀 satisfies (5). 
+
+Theorem 1 (State-pointwise PAC one-step safety guarantee I) . Let 𝜖, 𝛿 , and 𝛾 ∈ ( 0, 1) be given constants. Let 𝒂 ∗ (𝐷 𝑀 )
+
+be the (locally/globally) optimal solution to (4) with 𝐷 𝑀 =
+
+{𝒅 ( 𝑗 ) }𝑀 𝑗 =1
+
+> i.i.d.
+
+∼ P𝒅 , and define the certification procedure 
+
+A ( 𝐷 𝑀 ) :=
+
+(
+
+1, if X𝑠 ≠ ∅,
+
+0, otherwise, (6) 
+
+where 𝒂 ∗ (𝐷 𝑀 ) is obtained from (4) . Then the following proba-bilistic guarantee holds: 
+
+P𝑀 
+
+> 𝒅
+
+"
+
+X𝑠 ≠ ∅ ⇒ 
+
+
+
+P𝒅 
+
+"ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒇 (𝒙 , 𝒅 )) ≥ 𝛾ℎ (𝒂 ∗ (𝐷 𝑀 ), 𝒙 )
+
+#
+
+≥ 1 − 𝜖 
+
+#
+
+≥ 1 − 𝛿, ∀𝒙 ∈ X,
+
+implying 
+
+P𝑀 
+
+> 𝒅
+
+X𝑠 ≠ ∅ ⇒ P𝒅 [𝒇 (𝒙 , 𝒅 ) ∈ X𝑠 ] ≥ 1 − 𝜖 (𝒙 ) ≥ 1 − 𝛿, ∀𝒙 ∈ X,
+
+where X𝑠 = {𝒙 ∈ X | ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒙 ) > 0} ⊆ X,
+
+𝜖 (𝒙 ) :=
+
+( 𝜖, if 𝒙 ∈ X𝑠 ,
+
+1, if 𝒙 ∈ X \ X𝑠 , (7) 
+
+and the sample number 𝑀 satisfies (5) .
+
+Remark 2. In Theorem 1, we provide safety certification only for 𝒙 ∈ X𝑠 . The definition (7) on 𝜖 (𝒙 ) ensures that the PAC safety guarantee holds over the entire domain X, consistent with the formulation of Problem 1, while trivially assigning zero probability of safety to states outside X𝑠 .
+
+The proof of Theorem 1 is provided in Appendix A.1. The above VC-dimension–based analysis applies to any class of barrier functions satisfying Assumption 1. However, the re-quired sample complexity can be large, imposing substantial computational burden in practice. On the other hand, the one-step PAC guarantee in Theorem 1 is state-pointwise: for any fixed state 𝒙 ∈ X it provides, with a certain confidence, a probability lower bound on the one-step safety probability originating from that state. This pointwise property does not directly extend to 𝑘 -step safety for the actual (random) trajectory. We will investigate this in the future work. To alleviate these issues, we next focus on a special class of barrier functions that are linear in 𝒂 and employ scenario approach [ 9 ] to reduce the sample complexity and provide PAC 𝑘 -step safety guarantees. 
+
+3.1.2 Scenario Optimization Based Methods. In this section, we employ scenario approach, originally proposed for solving robust optimization problems in [ 9 ], to reduce the sample complexity of the VC dimension-based method discussed above and provide PAC 𝑘 -step safety guarantees, under Assumption 2. 
+
+Assumption 2. The parameterized function ℎ(𝒂 , ·) : R𝑛 →
+
+R is linear over unknown parameters 𝒂 ∈ R𝑚 with ℎ(0, 𝒙 ) ≡ 0,and continuous with respect to 𝒂 ∈ R𝑚 and 𝒙 ∈ R𝑛 .
+
+Under Assumption 2, a conclusion stronger than Theo-rem 1 can be established by solving (4) . It provides a state-uniform PAC one-step safety guarantee while requiring fewer samples. 
+
+Lemma 2 (State-uniform PAC one-step safety guarantee) .
+
+Let 𝜖, 𝛿 , and 𝛾 ∈ ( 0, 1) be given constants. Let 𝒂 ∗ (𝐷 𝑀 ) be the optimal solution to (4) with 𝐷 𝑀 = {𝒅 ( 𝑗 ) }𝑀 𝑗 =1
+
+> i.i.d.
+
+∼ P𝒅 , and the certification procedure A ( 𝐷 𝑀 ) be defined as in (6) . Then, under Assumption 2, the following probabilistic guarantee holds: 
+
+P𝑀 
+
+> 𝒅
+
+"
+
+X𝑠 ≠ ∅ ⇒ 
+
+
+
+∀𝒙 ∈ X, P𝒅 
+
+"ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒇 (𝒙 , 𝒅 )) ≥ 𝛾ℎ (𝒂 ∗ (𝐷 𝑀 ), 𝒙 )
+
+#
+
+≥ 1 − 𝜖 
+
+#
+
+≥ 1 − 𝛿, 
+
+implying 
+
+P𝑀 
+
+> 𝒅
+
+h
+
+X𝑠 ≠ ∅ ⇒ 
+
+
+
+∀𝒙 ∈ X𝑠 , P𝒅 [𝒇 (𝒙 , 𝒅 ) ∈ X𝑠 ] ≥ 1 − 𝜖 
+
+i 
+
+≥ 1 − 𝛿, 
+
+where X𝑠 = {𝒙 ∈ X | ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒙 ) > 0} and the number 𝑀 
+
+satisfies 
+
+𝑀 ≥ 2
+
+𝜖 (ln 1
+
+𝛿 + 𝑚 ). (8) 
+
+Theorem 2 (State-uniform PAC Finite-Time Safety Certifica-tion II) . Let 𝜖, 𝛿 , and 𝛾 ∈ ( 0, 1) be given constants. Let 𝒂 ∗ (𝐷 𝑀 )
+
+be the optimal solution to (4) with 𝐷 𝑀 = {𝒅 ( 𝑗 ) }𝑀 𝑗 =1
+
+> i.i.d.
+
+∼ P𝒅 ,and the certification procedure A ( 𝐷 𝑀 ) be defined as in (6) .HSCC ’26, May 11–14,2026, Saint Malo, France Taoran Wu, Dominik Wagner, C.-H. Luke Ong B, and Bai Xue B
+
+Then, under Assumption 2, the probabilistic guarantee holds: 
+
+P𝑀 
+
+> 𝒅
+
+h
+
+X𝑠 ≠ ∅ ⇒ 
+
+
+
+∀𝒙 ∈ X𝑠 , P𝜋 [∧ 𝑘 𝑖 =1𝝓 𝒙  
+
+> 𝜋
+
+(𝑖 ) ∈ X𝑠 ] ≥ ( 1 − 𝜖 )𝑘 i 
+
+≥ 1 − 𝛿, 
+
+where X𝑠 = {𝒙 ∈ X | ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒙 ) > 0} and the sample number 𝑀 satisfies (8) .
+
+The proofs of Lemma 2 and Theorem 2 are given in Appen-dix A.2 and A.3. Please refer to Remark 2 for the extension to all 𝒙 ∈ X.Theorems 1 and 2 respectively provide state-pointwise PAC one-step and state-uniform PAC k-steps safety guaran-tees, when 𝒙 ∈ X𝑠 . It is noting that the state-uniform PAC guarantee in Lemma 2 are stronger than the state-pointwise PAC guarantee in Theorem 1; the former implies the latter. The resulting set X𝑠 is particularly valuable in safety-critical systems, as it delineates a highly trustworthy region in which the system can safely operate. Conceptually, X𝑠 can be regarded as a set that plays a role analogous to an invari-ant set: if the system starts from an initial state within X𝑠 , it will remain inside this set over the next 𝑘 (≥ 1) steps with probability at least (1 − 𝜖 )𝑘 and confidence at least 1 − 𝛿 . The safety certification can be applied recursively in an online manner, providing continuous assurance of safe operation whenever the system remains within X𝑠 over time. However, many systems may admit overly conservative 
+
+X𝑠 or even fail to admit a nonempty X𝑠 , particularly when the desired confidence and probability thresholds 𝛿 and 𝜖 are small. On the other hand, the robustness-based formulation (4) can be overly conservative or even infeasible for many stochastic systems. This method enforces safety under all sampled disturbances, effectively performing a worst-case analysis over the empirical disturbance set. As a result, rare tail events are treated with the same importance as high-probability disturbances, which can lead to unnecessarily restrictive safety certificates. To overcome the above men-tioned issues, we next develop an alternative approach for solving Problem 1 using stochastic barrier functions that explicitly incorporate disturbance probabilities. 
+
+3.2 Certification via Stochastic Barrier Functions 
+
+In this section, we address the solution of Problem 1 with 
+
+𝑘 = 1 using stochastic barrier functions (SBFs). 
+
+Definition 4. Given a safe set X, a function ℎ(·) : R𝑛 → R is a SBF for the system (1) if there exists a scalar 𝜆 ∈ [ 0, 1] that meets the following condition: 
+
+
+
+ℎ(𝒙 ) ≥ 0, ∀𝒙 ∈ X,ℎ(𝒙 ) ≥ 1, ∀𝒙 ∈ bX \ X,
+
+E𝒅 [ℎ(𝒇 (𝒙 , 𝒅 ))] − ℎ(𝒙 ) ≤ 𝜆, ∀𝒙 ∈ X.
+
+(9a) (9b) (9c) 
+
+Proposition 2 ([ 19 ]) . If there exist a SBF ℎ(·) : R𝑛 → R and 
+
+𝜆 ∈ [ 0, 1], then 
+
+P𝜋 
+
+h
+
+∧𝑘 𝑖 =1 𝝓 𝒙  
+
+> 𝜋
+
+(𝑖 ) ∈ X
+
+i
+
+≥ 1 − 𝑘𝜆 − ℎ(𝒙 ), ∀𝒙 ∈ X.
+
+Remark 3. In [ 19 ], the domain R𝑛 is used in (9a) –(9c) , rather than the compact set bX later introduced in [ 49 ]. Although the primary purpose of introducing bX in [ 49 ] was to define a stopped process, restricting attention to a smaller compact set generally leads to more accurate results when performing approximations. 
+
+In the following, we present our stochastic barrier function method for addressing Problem 1 with 𝑘 = 1, leveraging the constraints (9a) –(9c) together with tools from statistical learning theory, in particular Rademacher complexity. Since the disturbance distribution P𝒅 is unknown, the expectation term E𝒅 [ℎ(𝒂 , 𝒇 (𝒙 , 𝒅 ))] cannot be evaluated di-rectly. To address this issue, we extract 𝑀 i.i.d disturbance samples of the form 𝐷 𝑀 = {𝒅 (𝑖 ) }𝑀 𝑖 =1 and use these samples to empirically estimate the expectation, i.e., E𝒅 [ℎ(𝒂 , 𝒇 (𝒙 , 𝒅 ))] ≲
+
+> 1
+> 𝑀
+
+Í𝑀 𝑗 =1 ℎ(𝒂 , 𝒇 (𝒙 , 𝒅 ( 𝑗 ) )) + 𝜏 , where 𝜏 ∈ [ 0, 1] is a deviation term accounting for the finite-sample error. This leads to the following optimization problem (10): 
+
+min   
+
+> 𝜆 ∈R,𝒂 ∈R𝑚
+> 1
+> 𝑁 𝑜
+
+Í𝑁 𝑜 
+
+> 𝑖 =1
+
+ 𝜆 + ℎ(𝒂 , 𝒙 ′ 
+
+> 𝑖
+
+)
+
+s.t. 
+
+
+
+ℎ(𝒂 , 𝒙 ) ≥ 0, ∀𝒙 ∈ X,ℎ(𝒂 , 𝒙 ) ≥ 1, ∀𝒙 ∈ bX \ X,
+
+ˆℎ(𝒙 , 𝒂 , 𝜆 ) ≤ 0, ∀𝒙 ∈ X,𝜆 ∈ [ 0, 1]; ∥𝒂 ∥2 ≤ 𝑈 𝑎 ,
+
+(10) where ˆℎ(𝒙 , 𝒂 , 𝜆 ) := 1
+
+> 𝑀
+
+Í𝑀 𝑗 =1 ℎ(𝒂 , 𝒇 (𝒙 , 𝒅 ( 𝑗 ) )) − ( ℎ(𝒂 , 𝒙 ) + 𝜆 −𝜏 ),
+
+𝑈 𝑎 ≥ 1 is a user-defined scalar value, and {𝒙 ′ 
+
+> 𝑖
+
+}𝑁 𝑜  
+
+> 𝑖 =1
+
+is a family of specified states distributed evenly over X, which can be generated by random sampling from a uniform distribution over the state space X.In addition, we can demonstrate that (10) is feasible, i.e., there exists (𝜆, 𝒂 ) satisfying (10) . Any ℎ(𝒂 , 𝒙 ) ≡ 𝑈 𝑎 ∈ [ 0, 𝑈 𝑎 ]
+
+for 𝒙 ∈ X with 𝜆 = 𝜏 will be a solution (10). Before establishing the connection between the sample-based optimization (10) and Problem 1 with 𝑘 = 1, we first define a function class based on ℎ(𝒂 , 𝒙 ) as used in (10) . The Rademacher complexity of this function class provides a quantitative tool to link the empirical optimization with PAC finite-time safety guarantees. 
+
+Assumption 3. For a fixed 𝒙 , define the function class: 
+
+G𝒙 =
+
+n
+
+ℎ(𝒂 , 𝒇 (𝒙 , ·)) = 𝒂 𝑇 · 𝝓 (𝒙 , 𝒅 ) | ∥ 𝒂 ∥2 ≤ 𝑈 𝑎 
+
+o
+
+.
+
+This class is linear in 𝒂 : for fixed 𝒙 and 𝒅 , ℎ(𝒂 , 𝒇 (𝒙 , 𝒅 )) is linear in 𝒂 . Moreover, there exists a scalar value 𝑅 such that 
+
+∥𝝓 (𝒙 , 𝒅 )∥ 2 ≤ 𝑅 uniformly for all 𝒙 ∈ X and 𝒅 ∈ D.PAC Finite-Time Safety Guarantees for Stochastic Systems with Unknown Disturbance Distributions HSCC ’26, May 11–14,2026, Saint Malo, France 
+
+Under Assumption 3, a standard Rademacher complex-ity argument implies the following generalization guaran-tee. For each 𝒙 ∈ X, with confidence at least 1 − 𝛿 , the expected value E𝒅 
+
+ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒇 (𝒙 , 𝒅 ))  is less than or equal to its empirical counterpart 1
+
+> 𝑀
+
+Í𝑀 𝑗 =1 ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒇 (𝒙 , 𝒅 ( 𝑗 ) )) 
+
+plus 𝜏 , where 𝒂 ∗ (𝐷 𝑀 ) and 𝜆 ∗ (𝐷 𝑀 ) are obtained by solving (10) . Consequently, for each 𝒙 ∈ X, with the same confi-dence, the probability that the system (1) starting from 𝒙 
+
+remains within the safe set X at the next step is at least 
+
+1 − 𝜆 ∗ (𝐷 𝑀 ) − ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒙 ). The above statements hold pro-vided that the sample size satisfies 
+
+𝑀 ≥ 𝑈 2
+
+> 𝑎
+
+𝜏 2 2𝑅 +√︂ 2 ln 1
+
+𝛿 
+
+!2
+
+. (11) 
+
+Theorem 3 (State-pointwise PAC one-step safety guarantee II) . Let 𝛿 ∈ ( 0, 1), 𝑈 𝑎 ≥ 1, and 𝜏 ∈ [ 0, 1] be given constants. Let  𝒂 ∗ (𝐷 𝑀 ), 𝜆 ∗ (𝐷 𝑀 ) be the (locally/globally) optimal solu-tion to (10) with 𝐷 𝑀 = {𝒅 ( 𝑗 ) }𝑀 𝑗 =1
+
+> i.i.d.
+
+∼ P𝒅 , and let 
+
+A ( 𝐷 𝑀 ) := 1(certificate always accepted )
+
+be the certification procedure. Then, under Assumption 3, the following probabilistic guarantee holds: 
+
+P𝑀 
+
+> 𝒅
+
+
+
+E𝒅 [ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒇 (𝒙 , 𝒅 ))] ≤ 
+
+> 1
+> 𝑀 𝑀
+
+∑︁ 
+
+> 𝑗 =1
+
+ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒇 (𝒙 , 𝒅 ( 𝑗 ) )) + 𝜏 
+
+
+
+≥ 1 − 𝛿, ∀𝒙 ∈ X,
+
+provided that the sample size 𝑀 satisfies (11) . Further, 
+
+P𝑀 
+
+> 𝒅
+
+P𝒅 
+
+𝒇 (𝒙 , 𝒅 ) ∈ X ≥ 1 − 𝜆 ∗ (𝐷 𝑀 ) − ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒙 )
+
+≥ 1 − 𝛿, ∀𝒙 ∈ X
+
+holds. 
+
+The proof of Theorem 3 is presented in Appendix A.4. The SBF method provides a state-dependent one-step safety lower bound 1 −𝜆 ∗ (𝐷 𝑀 ) − ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒙 ). As with Theorem 1, the conclusion of Theorem 3 cannot be directly extended to multi-step safety guarantees. We will investigate this in the future work based on SBFs proposed in [ 49 ]. Nevertheless, the one-step safety certification can be applied recursively online, providing continuous assurance of safe operation at each time step, as long as the system remains within X.Unlike the RBF method, the SBF method does not generally yield a probabilistic invariant-type set X𝑠 . The main reason is that the guarantee provided by the SBF method depends strongly on the value of the state-dependent barrier function 
+
+ℎ. Note that the one-step lower bound represents a proba-bility and should therefore be non-negative; however, the expression 1 − 𝜆 ∗ (𝐷 𝑀 ) − ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒙 ) can become negative, in which case the bound is trivially true but uninformative. Hence, the bound is practically useful only when it is posi-tive. On the other hand, the SBF method relaxes the barrier condition: it does not require the condition to hold for every disturbance sample, but only in expectation (approximated using finitely many samples). This relaxation reduces the number of constraints in the optimization problem from 𝑀 
+
+constraints in the RBF formulation to a single expectation constraint and can thus significantly reduce computational overhead, especially when a large number of samples is used. The above Rademacher-complexity-based analysis applies to any class of barrier functions that possesses uniformly finite Rademacher complexity over all 𝒙 ∈ X, including, in particular, classes that are uniformly Lipschitz continuous or realized by neural networks with bounded weights and Lipschitz activations. The optimization problem (10) , formu-lated using disturbance samples, is not limited to convex forms and may, in general, be non-convex—posing intrinsic challenges for practical solution. The development of new algorithms to tackle such non-convex problems lies beyond the scope of this work. In the subsequent numerical study, we therefore concentrate on convex formulations, particu-larly semi-definite programs obtained via sum-of-squares decompositions of multivariate polynomials, owing to the availability of mature algorithms and software tools that can efficiently solve such problems. 
+
+Remark 4 (Relationship with existing works) . Based on the combination of scenario approach with piecewise affine stochastic barrier certificates (i.e., ℎ(𝒂 𝑖 , 𝑏 𝑖 , 𝒙 ) = 𝒂 ⊤ 
+
+> 𝑖
+
+𝒙 + 𝑏 𝑖 , 𝑖 =
+
+1, . . . , 𝑙 ), [23] considered piecewise affine systems, i.e., 
+
+𝒙 ( 𝑗 + 1) = 𝐴 𝑖 𝒙 ( 𝑗 ) + 𝒅 ( 𝑗 ), for 𝒙 ( 𝑗 ) ∈ P𝑖 , 𝑖 = 1, . . . , 𝑙, 
+
+where each region P𝑖 is a polytope. [ 24 ] further studied piece-wise affine approximations of nonlinear dynamics of the form 
+
+𝒙 ( 𝑗 + 1) = 𝒇 (𝒙 ( 𝑗 )) + 𝒅 ( 𝑗 ). As discussed in the related work, they relaxed the conditions for stochastic barrier certificates into a chance-constrained formulation and subsequently con-structed a scenario optimization problem that accounts for the worst-case disturbance samples—similar in spirit to our robust barrier certificate based approach proposed in this paper—for solving the chance-constrained problem. When considering piecewise affine systems or systems that can be discretized into piecewise affine forms, the use of piece-wise stochastic barrier certificates allows us to obtain stronger results than those in Theorem 3. In this context, the condition 
+
+E𝒅 [ℎ(𝒂 𝑖 , 𝑏 𝑖 , 𝐴 𝑖 𝒙 + 𝒅 )] ≤ ℎ(𝒂 𝑖 , 𝑏 𝑖 , 𝒙 ) + 𝜆, ∀𝒙 ∈ P𝑖 ,
+
+can be written as 𝒂 ⊤ 
+
+> 𝑖
+
+𝐴 𝑖 𝒙 +𝒂 ⊤ 
+
+> 𝑖
+
+E𝒅 [𝒅 ] + 𝑏 𝑖 ≤ ℎ(𝒂 𝑖 , 𝑏 𝑖 , 𝒙 ) + 𝜆, ∀𝒙 ∈
+
+P𝑖 , which is equivalent to 
+
+𝒂 ⊤ 
+
+> 𝑖
+
+E𝒅 [𝒅 ] ≤ ℎ(𝒂 𝑖 , 𝑏 𝑖 , 𝒙 ) + 𝜆 − 𝒂 ⊤ 
+
+> 𝑖
+
+𝐴 𝑖 𝒙 − 𝒃 𝑖 , ∀𝒙 ∈ P𝑖 ,
+
+where 𝒂 𝑖 ∈ [− 𝑈 𝑎 , 𝑈 𝑎 ]𝑛 and 𝑏 𝑖 ∈ [− 𝑈 𝑎 , 𝑈 𝑎 ] for 𝑖 = 1, . . . , 𝑙 ,and X = ∪𝑙 𝑖 =1P𝑖 with P◦ 
+
+> 𝑖
+
+∩ P◦ 
+
+> 𝑗
+
+= ∅ for 𝑖 ≠ 𝑗 .As a result, the discrepancy between the expected value, i.e., E𝒅 [ℎ(𝒂 𝑖 , 𝑏 𝑖 , 𝐴 𝑖 𝒙 + 𝒅 )] , and its empirical counterpart, i.e., 
+
+> 1
+> 𝑀
+
+Í𝑀 𝑗 =1 ℎ(𝒂 𝑖 , 𝑏 𝑖 , 𝐴 𝑖 𝒙 +𝒅 ( 𝑗 ) ), only involves the term 𝒂 ⊤ 
+
+> 𝑖
+
+E𝒅 [𝒅 ] − 
+
+𝒂 ⊤ 
+
+> 𝑖 1
+> 𝑀
+
+Í𝑀 𝑗 =1 𝒅 ( 𝑗 ) , which is independent of 𝒙 . Thus, the conclusion in Lemma 3 can be strengthened from a state-pointwise PAC HSCC ’26, May 11–14,2026, Saint Malo, France Taoran Wu, Dominik Wagner, C.-H. Luke Ong B, and Bai Xue B
+
+one-step safety guarantee to a state-uniform PAC one-step safety guarantee, as established in Lemma 2, i.e., 
+
+P𝑀 
+
+> 𝒅
+
+
+
+∀𝑖 ∈ { 1, . . . , 𝑙 },
+
+𝒂 ∗⊤  
+
+> 𝑖
+
+(𝐷 𝑀 )⊤E𝒅 [𝒅 ] ≤ 𝒂 ∗⊤  
+
+> 𝑖
+
+(𝐷 𝑀 ) 1
+
+𝑀 
+
+> 𝑀
+
+∑︁ 
+
+> 𝑗 =1
+
+𝒅 ( 𝑗 ) + 𝜏 
+
+
+
+≥ 1 − 𝛿, 
+
+and thus 
+
+P𝑀 
+
+> 𝒅
+
+"∀𝑖 ∈ { 1, . . . , 𝑙 }, ∀𝒙 ∈ P𝑖 , 𝒂 ∗⊤  
+
+> 𝑖
+
+(𝐷 𝑀 )⊤E𝒅 [𝒅 ] ≤ 𝜆 ∗ (𝐷 𝑀 )+ 
+
+ℎ(𝒂 ∗ 
+
+> 𝑖
+
+(𝐷 𝑀 ), 𝑏 ∗ 
+
+> 𝑖
+
+(𝐷 𝑀 ), 𝒙 ) − 𝒂 ∗⊤  
+
+> 𝑖
+
+(𝐷 𝑀 )𝐴 𝑖 𝒙 − 𝑏 ∗ 
+
+> 𝑖
+
+(𝐷 𝑀 )
+
+#
+
+≥ 1 − 𝛿, 
+
+implying 
+
+P𝑀 
+
+> 𝒅
+
+"∀𝑖 ∈ { 1, . . . , 𝑙 }, ∀𝒙 ∈ P𝑖 ,
+
+P𝒅 [𝒇 (𝒙 , 𝒅 ) ∈ X] ≥ 1 − 𝜆 ∗ (𝐷 𝑀 ) − ℎ(𝒂 ∗ 
+
+> 𝑖
+
+(𝐷 𝑀 ), 𝑏 ∗ 
+
+> 𝑖
+
+(𝐷 𝑀 ), 𝒙 )
+
+#
+
+≥ 1 − 𝛿, 
+
+holds under suitable conditions on the sample size 𝑀 . Corre-spondingly, the conclusion in Theorem 3 can be enhanced to the state-uniform multi-step safety guarantees: 
+
+P𝑀 
+
+> 𝒅
+
+
+
+∀𝑖 ∈ { 1, . . . , 𝑙 }, ∀𝒙 ∈ P𝑖 , P𝜋 
+
+"𝑘 −1Û
+
+> 𝑖 =0
+
+𝝓 𝒙  
+
+> 𝜋
+
+(𝑖 + 1) ∈ X
+
+#
+
+≥ 1 − 𝑘𝜆 ∗ (𝐷 𝑀 ) − ℎ(𝒂 ∗ 
+
+> 𝑖
+
+(𝐷 𝑀 ), 𝑏 ∗ 
+
+> 𝑖
+
+(𝐷 𝑀 ), 𝒙 )
+
+
+
+≥ 1 − 𝛿. 
+
+where A ( 𝐷 𝑀 ) := 1(certificate always accepted ) and 𝑘 > 1.In addition, compared with the chance-constrained opti-mization method, our approach does not require the barrier condition to hold for every sampled disturbance realization. Instead, it only requires the condition to hold in expectation (with a finite-sample approximation), thus significantly reduc-ing the computational burden, especially when a large number of samples is used. A detailed numerical comparison with the methods in [ 23 , 24 ] is deferred, as their implementation is not publicly available. Furthermore, we plan to combine VC di-mension /Rademacher complexity with a finite 𝜀 -covering (i.e., covering number) of the safe space X, along with Lipschitz continuity, to extend the current state-pointwise PAC safety guarantees in Theorem 1 and Theorem 3 to state-uniform PAC safety guarantees for nonlinear systems beyond the piecewise-affine setting in future work. 
+
+## 4 Examples 
+
+In this section, we demonstrate the effectiveness of the pro-posed approaches through several numerical examples. All examples involve polynomial systems, where each compo-nent of 𝒇 (𝒙 , 𝒅 ) is polynomial in 𝒙 and the safe set X is semi-algebraic. This choice allows us to leverage advanced com-putational tools such as sum-of-squares (SOS) programming, implemented via YALMIP [ 20 ] and Mosek 11.0.29 [ 3 ], to solve optimization problems (4) and (10) for polynomial barrier functions. For details on SOS programming, please refer to Appendix B. All computations are run on a machine equipped with an i7-13700 2.1GHz CPU with 32GB RAM. Although this work focuses on stochastic systems with unknown disturbance distributions, two non-data-driven baseline methods are included for comparison. When the dis-turbance set D is known and semi-algebraic, the constraint (2) can be reformulated as an SOS programming, yielding a robust invariant set that guarantees forward invariance under all disturbances in D. We refer to this baseline as the Robust-Set method and compare it with the proposed Data-Driven RBFs method. Similarly, if the disturbance dis-tribution is assumed to be known, the constraint (9) can be recast as an SOS programming. We refer to this baseline as the Distribution-Known method and compare it with the pro-posed Data-Driven SBFs method. To compare the Robust-Set method with the Data-Driven RBFs method, we estimate the relative volume of the resulting set X𝑠 using Monte Carlo sampling. Specifically, 10 7 samples are drawn uniformly from 
+
+X, and 𝑉 X𝑠 = 𝑁 X𝑠  
+
+> 10 7
+
+is computed, where 𝑁 X𝑠 is the number of samples contained in X𝑠 . A larger 𝑉 X𝑠 indicates a larger set X𝑠 . For comparison between the Distribution-Known and the proposed Data-Driven SBFs method, we use the op-timal value 𝐽 ∗ = 1
+
+> 𝑁 𝑜
+
+Í𝑁 𝑜 
+
+> 𝑖 =1
+
+ 𝜆 ∗ + ℎ(𝒂 ∗, 𝒙 ′ 
+
+> 𝑖
+
+) in (10) , where a smaller 𝐽 ∗ is preferred. We also report the total computa-tion time 𝑇 total = 𝑇 𝑠 + 𝑇 𝑐 , where 𝑇 𝑠 and 𝑇 𝑐 denote the sam-pling/preprocessing time and the optimization time, respec-tively. All times are measured in seconds. For the Data-Driven RBFs and Robust-Set methods, we fix 
+
+𝛾 = 0.99 and 𝑈 𝒂 = 10 4. In all experiments, we set 𝛿 = 0.001 
+
+for both Data-Driven RBFs and Data-Driven SBFs methods, corresponding to a 99 .9% confidence level according to The-orem 1, 2, and 3, ensuring a high level of reliability in the results. Since the sample-size requirement in Theorem 2 is always less restrictive than that in Theorem 1 under the same settings, the number of samples in all experiments is chosen as the smallest value that satisfies Theorem 2. 
+
+Example 1. Consider the following system adapted from [ 29 ], 
+
+(
+
+𝑥 (𝑡 + 1) = 𝑥 (𝑡 ) + 0.1(𝑦 (𝑡 ) + 𝑥 (𝑡 )𝑑 (𝑡 )) ,𝑦 (𝑡 + 1) = 𝑦 (𝑡 ) + 0.1(− 𝑥 (𝑡 ) + 13 𝑥 3 (𝑡 ) − 𝑦 (𝑡 )) ,
+
+where 𝑑 (𝑡 ) follows a symmetric Beta distribution scaled to the interval [− 0.6, 0.6], i.e., 𝑑 (𝑡 ) = 1.2 × Beta (20 , 20 ) − 0.6. The safe set is X = { ( 𝑥, 𝑦 )⊤ | 𝑥 2 + 𝑦 2 − 1 ≤ 0 }.
+
+In this example, we first apply the Robust-Set method to compute an RBF. Specifically, a polynomial template of degree 8 is adopted for ℎ(𝒂 , 𝒙 ). The resulting set X𝑠 = {𝒙 ∈
+
+X | ℎ(𝒂 ∗, 𝒙 ) > 0} is shown in Fig. 1(a), with an estimated volume of 0.4542 . While this yields a valid RBF, the result is relatively conservative since it enforces constraint (2) to hold under all disturbances in D. The proposed Data-Driven RBFs method mitigates this conservatism but does so at the cost of weakening the guarantees–from always-safety guarantees PAC Finite-Time Safety Guarantees for Stochastic Systems with Unknown Disturbance Distributions HSCC ’26, May 11–14,2026, Saint Malo, France 
+
+to PAC finite-step safety guarantees. For instance, when 
+
+𝜖 = 0.01 , the Data-Driven RBFs method provides a lower bound of 0.9509 for five-step safety with a confidence level of 
+
+99 .9% . Moreover, as 𝜖 increases, the lower bound decreases. Fig. 1(a) illustrates the resulting sets X𝑠 for different values of 𝜖 , along with three simulated trajectories starting from 
+
+(0.45 , 0.75 ). The corresponding volumes and computation times are listed in Table 1. Compared with the Robust-Set method, the data-driven approach enlarges X𝑠 , albeit at the cost of increased computation time. Furthermore, unlike the Robust-Set approach, our data-driven method does not require D to be explicitly known or semi-algebraic, thus enhancing its practical applicability. 
+
+Table 1. Results of Data-Driven RBFs method for varying 𝜖 .
+
+𝜖 𝑉 X𝑠 𝑇 𝑠 𝑇 𝑐 𝑇 𝑡𝑜𝑡𝑎𝑙 
+
+0.5 0.8579 1.9 1.6 3.5 0.4 0.7385 1.9 1.9 3.7 0.3 0.7144 1.9 2.2 4.1 0.2 0.7388 2.0 3.3 5.3 0.1 0.6911 2.4 7.2 9.6 0.05 0.6652 3.3 25.3 28.6 0.01 0.6452 9.6 453.1 462.7 We further examine the influence of polynomial degree on Data-Driven RBFs, as reported in Table 2. Since the objective function 1
+
+> 𝑁 𝑜
+
+Í𝑁 𝑜  
+
+> 𝑖 =1
+
+ℎ(𝒂 , 𝒙 ′ 
+
+> 𝑖
+
+) does not directly correspond to the volume of X𝑠 , a higher polynomial degree may improve the objective value but does not necessarily yield a larger X𝑠 .Moreover, although increasing the polynomial degree can enhance the expressive power of barrier functions, it also increases the dimension 𝑚 of 𝒂 , necessitating a larger sample size 𝑀 and thereby raising the computational burden. Since when all states in X are used for computations, the resulting set X𝑠 coincides with the robust invariant set obtained via the Robust-Set method. Consequently, using higher-degree polynomials may lead to a smaller invariant set X𝑠 , as illus-trated in Table 2. While this does not improve the accuracy of the PAC safety guarantees and, on the contrary, may lead to a smaller set X𝑠 , it could enhance robustness in certain practical applications. 
+
+Table 2. Results for different degrees ( 𝜖 = 0.2). Degree Robust-Set Data-Driven RBFs 
+
+𝑉 X𝑠 𝑇 𝑡𝑜𝑡𝑎𝑙 𝑉 X𝑠 𝑇 𝑠 𝑇 𝑐 𝑇 𝑡𝑜𝑡𝑎𝑙 
+
+4 0.0000 2.4 0.7388 2.0 3.3 5.3 6 0.0000 2.8 0.7283 3.3 14.1 17.4 8 0.4542 3.8 0.7030 11.9 57.2 69.1 Next, we evaluate Data-Driven SBFs setting with 𝑈 𝒂 = 8
+
+and 𝜏 = 0.01 . Table 3 lists the results for polynomial de-grees 4, 6, and 8, along with corresponding results from the Distribution-Known baseline. For the case where ℎ(𝒂 , 𝒙 ) is of degree 8, Data-Driven SBFs method yields 𝜆 ∗ (𝐷 𝑀 ) = 0.0107 ,and the contour of 1 − 𝜆 ∗ (𝐷 𝑀 ) − ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒙 ) is shown in Fig. 1(b). For the Distribution-Known method, the corre-sponding value is 𝜆 ∗ = 0.0007 , with the contour shown in Fig. 1(c). These results indicate that, regardless of the degree of ℎ(𝒂 , 𝒙 ), the proposed Data-Driven SBFs achieves perfor-mance close to that of the ideal known-distribution case. 
+
+Table 3. Results for different degrees. Degree Distribution-Known Data-Driven SBFs 
+
+𝐽 ∗ 𝑇 𝑡𝑜𝑡𝑎𝑙 𝐽 ∗ 𝑇 𝑠 𝑇 𝑐 𝑇 𝑡𝑜𝑡𝑎𝑙 
+
+4 0.5056 1.9 0.5155 6.1 0.6 6.7 6 0.2920 2.3 0.3019 6.3 0.6 6.9 8 0.1552 3.7 0.1651 12.6 1.2 13.8 It’s worth noting that in our Data-Driven RBFs method, the optimization step typically dominates the total compu-tation time, whereas in our Data-Driven SBFs method, the optimization time is relatively small. This difference arises because the number of constraints in the optimization prob-lem (4) grows with the number of samples, while the number of constraints in (10) remains independent of the sample size. Thus, Data-Driven SBFs method is more computationally ef-ficient for large-scale problems involving numerous samples, albeit at the cost of requiring more samples and providing only one-step safety guarantees. 
+
+Example 2. Consider the Lotka-Volterra model [22]: 
+
+(
+
+𝑥 (𝑡 + 1) = 𝑟𝑥 (𝑡 ) − 𝑎𝑦 (𝑡 )𝑥 (𝑡 ),𝑦 (𝑡 + 1) = 𝑠𝑦 (𝑡 ) + 𝑎𝑐𝑦 (𝑡 )𝑥 (𝑡 ),
+
+where 𝑟 = 0.5, 𝑎 = 1, 𝑠 = −0.5 +𝑑 (𝑡 ), and X = { ( 𝑥, 𝑦 )⊤ | 𝑥 2 +
+
+𝑦 2 ≤ 1 }. Besides, 𝑑 (𝑡 ) follows a truncated normal distribution, defined on [− 1, 1] with a mean of zero and a standard deviation of 0.15 .
+
+In this example, the Robust-Set method fails to obtain a non-empty set X𝑠 . By contrast, the proposed Data-Driven RBFs method works for this case. The results for different polynomial degrees are reported in Table 4, and Fig. 1(d) depicts the resulting set X𝑠 for degree 6 along with three simulated trajectories initialized at (0.15 , −0.4). The results demonstrate that our method is able to compute a non-conservative X𝑠 , whereas the Robust-Set method yields X𝑠 =
+
+∅. Moreover, contrary to Example 1, the size of X𝑠 increases as the degree increases for this example. For the Data-Driven SBFs method, we set 𝑈 𝒂 = 8, 𝜏 = 0.02 ,and use a polynomial template of degree 6 for ℎ(𝒂 , 𝒙 ). Our Data-Driven SBFs method yields 𝐽 ∗ = 0.5277 , and the con-tour of 1 − 𝜆 ∗ (𝐷 𝑀 ) − ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒙 ) is shown in Fig. 1(g). The total computation time is 52 seconds, of which 51 seconds are used for sampling and data preprocessing and 1 second for the optimization. For comparison, the Distribution-Known HSCC ’26, May 11–14,2026, Saint Malo, France Taoran Wu, Dominik Wagner, C.-H. Luke Ong B, and Bai Xue B-1 -0.5 0 0.5 1
+
+> x
+> -1 -0.8 -0.6 -0.4 -0.2 00.2 0.4 0.6 0.8 1
+> y
+
+(a) EX1: Data-Driven RBFs and Robust-Set -1 -0.5 0 0.5 1
+
+> x
+> -1 -0.8 -0.6 -0.4 -0.2 00.2 0.4 0.6 0.8 1
+> y
+> 0.1 0.1 0.1 0.1 0.1 0.1 0.3 0.3 0.3 0.3 0.3 0.5 0.5 0.5 0.5 0.5 0.7 0.7 0.7 0.7 0.8 0.8 0.8 0.8 0.9 0.9 0.9 0.98 0.98
+
+(b) EX1: Data-Driven SBFs -1 -0.5 0 0.5 1 
+
+> x
+> -1 -0.8 -0.6 -0.4 -0.2 00.2 0.4 0.6 0.8 1
+> y
+> 0.1 0.1 0.1 0.1 0.1 0.1 0.3 0.3 0.3 0.3 0.3 0.5 0.5 0.5 0.5 0.5 0.7 0.7 0.7 0.7 0.8 0.8 0.8 0.8 0.9 0.9 0.9 0.98 0.98
+
+(c) EX1: Distribution-Known -1 -0.5 0 0.5 1 
+
+> x
+> -1 -0.8 -0.6 -0.4 -0.2 00.2 0.4 0.6 0.8 1
+> y
+
+(d) EX2: Data-Driven RBFs -1 -0.5 0 0.5 1
+
+> x
+> -1 -0.8 -0.6 -0.4 -0.2 00.2 0.4 0.6 0.8 1
+> y
+> 0.1 0.1 0.1 0.1 0.1 0.1 0.3 0.3 0.3 0.3 0.3 0.3 0.5 0.5 0.5 0.5 0.5 0.7 0.7 0.7 0.7 0.7 0.8 0.8 0.8 0.8 0.9 0.9 0.9 0.95 0.95 0.95 0.97 0.97
+
+(e) EX2: Data-Driven SBFs -1 -0.5 0 0.5 1 
+
+> x
+> -1 -0.8 -0.6 -0.4 -0.2 00.2 0.4 0.6 0.8 1
+> y
+> 0.1 0.1 0.1 0.1 0.1 0.1 0.3 0.3 0.3 0.3 0.3 0.3 0.5 0.5 0.5 0.5 0.5 0.7 0.7 0.7 0.7 0.7 0.8 0.8 0.8 0.8 0.9 0.9 0.9 0.9 0.95 0.95 0.95 0.99 0.99
+
+(f) EX2: Distribution-Known -0.5 0 0.5  
+
+> x
+> -0.8 -0.6 -0.4 -0.2 00.2 0.4 0.6 0.8
+> y
+> 0.1 0.1 0.1 0.1 0.1 0.3 0.3 0.3 0.3 0.3 0.5 0.5 0.5 0.5 0.7 0.7 0.7 0.7 0.8 0.8 0.8 0.9 0.9 0.94 0.94
+
+(g) EX3: Data-Driven SBFs -0.5 0 0.5  
+
+> x
+> -0.8 -0.6 -0.4 -0.2 00.2 0.4 0.6 0.8
+> y
+> 0.1 0.1 0.1 0.1 0.1 0.3 0.3 0.3 0.3 0.3 0.5 0.5 0.5 0.5 0.7 0.7 0.7 0.7 0.8 0.8 0.8 0.9 0.9 0.9 0.94 0.94
+
+(h) EX3: Distribution-Known 
+
+Figure 1. Green curve represents the boundary of the safe set X. In Fig. 1(a), black curve represents the X𝑠 boundary obtained by the Robust-Set method, and blue and yellow curves represent the X𝑠 boundary obtained by Data-Driven RBFs when 𝜖 = 0.01 
+
+and 𝜖 = 0.5, respectively. Fig. 1(a) and 1(d) plot three systems simulation trajectories starting from (0.45 , 0.75 ) and (0.15 , −0.4).
+
+Table 4. Results for different degrees ( 𝜖 = 0.1). Degree Robust-Set Data-Driven RBFs 
+
+𝑉 X𝑠 𝑇 𝑡𝑜𝑡𝑎𝑙 𝑉 X𝑠 𝑇 𝑠 𝑇 𝑐 𝑇 𝑡𝑜𝑡𝑎𝑙 
+
+4 0.0000 2.3 0.0000 2.3 4.8 7.1 6 0.0000 2.7 0.7270 3.8 23.3 27.1 8 0.0000 3.4 0.7430 9.7 103.3 113.0 method produces 𝐽 ∗ = 0.5077 in 12 seconds. These results demonstrate that even without knowledge of the true dis-turbance distribution, our Data-Driven SBFs method can generate reliable and non-conservative probabilistic safety guarantees based solely on sampled data. In this example, the Data-Driven RBFs method provides a state-uniform lower bound on the 𝑘 -step safety probability for all states contained in its computed set X𝑠 . For instance, when 𝜖 = 0.05 , the method not only certifies a uniform lower bound of approximately 0.95 for one-step safety, but also a lower bound of 0.857 for 3-step safety, both with 99 .9% confi-dence. However, these safety guarantees apply only to states within X𝑠 . In contrast, the Data-Driven SBFs method pro-vides a state-wise probability lower bound for one-step safety only, while offering guarantees for every state in the entire safe set, as observed in Fig. 1(e). For instance, the Data-Driven SBFs method certifies a probability lower bound of 0.9573 
+
+for one-step safety at 99 .9% confidence for the initial state 
+
+(0.15 , −0.4) ∈ X𝑠 . These results show that the Data-Driven RBFs and Data-Driven SBFs methods offer complementary strengths, and the choice between them should be guided by the characteristics and requirements of the specific problem at hand. Furthermore, both certification procedures can be applied recursively to establish safety guarantees over longer horizons. 
+
+Example 3. Consider the discretization of Moore-Greitzer model of a jet engine [4]: 
+
+(
+
+𝑥 (𝑡 + 1) = 𝑥 (𝑡 ) + 0.1(− 𝑦 (𝑡 ) − 1.5𝑥 2 (𝑡 ) − 0.5𝑥 3 (𝑡 ) + 𝑑 (𝑡 )) ,𝑦 (𝑡 + 1) = 𝑦 (𝑡 ) + 0.1(3𝑥 (𝑡 ) − 𝑦 (𝑡 ) + 𝑑 (𝑡 )) ,
+
+where 𝑑 (·) is uniformly distributed over [− 1.5, 1.5]. The safe set is X = { ( 𝑥, 𝑦 )⊤ | 𝑥 2 + 𝑦 2 ≤ 0.64 }.
+
+In this example, the Robust-Set method fails to produce a valid robust barrier certificate. In addition, for 𝜖 ≤ 0.99 ,solving (4) always produces X𝑠 = ∅, indicating that Theo-rems 1 and 2 may not provide a meaningful guarantee. We therefore focus on the Data-Driven SBFs method. Setting 
+
+𝜏 = 0.01 , 𝑈 𝒂 = 30 , and using a polynomial template of degree 10 for ℎ(𝒂 , 𝒙 ), solving (10) yields 𝐽 ∗ = 0.4819 and 
+
+𝜆 ∗ (𝐷 𝑀 ) = 0.0479 , with a computation time of 51 s . The con-tour of 1−𝜆 ∗ (𝐷 𝑀 )− ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒙 ) is shown in Fig. 1(g). Under the same settings but assuming the disturbance distribution is known, the optimal value is 𝐽 ∗ = 0.4719 and 𝜆 ∗ = 0.0379 
+
+with a computation time of 19 s , and the contour is shown in Fig. 1(h). The results from our method closely follow those obtained under the known distribution assumption, with our PAC Finite-Time Safety Guarantees for Stochastic Systems with Unknown Disturbance Distributions HSCC ’26, May 11–14,2026, Saint Malo, France 
+
+Table 5. Additional experimental results. Example n Robust-Set Data-Driven RBFs Distribution-Known Data-Driven SBFs 
+
+𝑉 X𝑠 𝑇 𝑡𝑜𝑡𝑎𝑙 𝑉 X𝑠 𝑇 𝑠 𝑇 𝑐 𝑇 𝑡𝑜𝑡𝑎𝑙 𝐽 ∗ 𝑇 𝑡𝑜𝑡𝑎𝑙 𝐽 ∗ 𝑇 𝑠 𝑇 𝑐 𝑇 𝑡𝑜𝑡𝑎𝑙 
+
+4 2 0.0000 3.5 0.8571 3.3 7.8 11.1 0.2044 5.2 0.2144 26.1 1.7 27.8 5 2 0.0000 2.6 0.5286 2.6 7.3 9.9 0.3698 5.8 0.3798 8.4 0.9 9.3 6 2 0.8312 2.2 0.8521 2.7 5.7 8.4 0.2251 5.8 0.2351 17.7 1.5 19.2 7 3 0.7856 4.9 0.8633 9.6 95.0 104.6 0.3465 20.2 0.3565 31.2 1.0 32.2 8 3 0.0000 2.8 0.0000 5.8 316.1 321.9 0.1442 11.4 0.1542 8.0 5.3 13.3 9 4 0.0000 2.5 0.0000 2.2 12.8 15.0 0.3726 9.2 0.3826 6.6 4.5 11.1 10 6 0.0000 2.7 0.9692 5.3 104.0 109.3 0.1274 65.3 0.1374 27.6 36.5 64.1 estimated bound being on average about 0.01 lower, demon-strating the reliability of the proposed approach for one-step safety guarantees. Fig. 2 summarizes results under different hyperparam-eter settings. Increasing the polynomial degree of ℎ(𝒂 , 𝒙 )
+
+improves expressiveness but requires longer computation. Increasing 𝑈 𝒂 generally yields a larger probability lower bound, while the improvement becomes moderate once 𝑈 𝒂 
+
+is sufficiently large. The effect of 𝜏 is approximately linear, and smaller 𝜏 results in a larger lower bound. However, as shown in (11) , the minimum required sample size 𝑀 grows with larger 𝑈 𝒂 or smaller 𝜏 , which in turn increases com-putation time. In practice, these hyperparameters can be tuned to trade off computational efficiency and certificate quality. Other parameters have negligible impact on both the computed results and the overall computation time. 4 6 8 10 12        
+
+> Degree
+> 0.45 0.5 0.55
+> J$
+> 0100 200 300
+> Ttotal 510 15 20 25 30 35 40
+> Ua
+> 0.45 0.5 0.55
+> J$
+> 0100 200 300
+> Ttotal 0.005 0.01 0.015 0.02 0.025 0.03 0.035 0.04 0.045 0.05
+> =
+> 0.48 0.5 0.52
+> J$
+> 050 100
+> Ttotal
+
+Figure 2. Results under different hyperparameter. The solid line and dashed line correspond to the Data-Driven SBFs method and Distribution-Known method, respectively. The results of the remaining experiments are summarized in Table 5, with the corresponding settings provided in Ap-pendix C. In these experiments, we set 𝜖 = 0.1 for the pro-posed Data-Driven RBFs method. Compared with the Robust-Set method, Data-Driven RBFs method consistently yields larger sets X𝑠 and remains applicable even when the Robust-Set method fails to produce a valid certificate. Meanwhile, the proposed Data-Driven SBFs achieves performance close to the Distribution-Known baseline. Both proposed methods demonstrate good scalability and are capable of handling six-dimensional systems. 
+
+## 5 Conclusion 
+
+This work studied PAC finite-time safety guarantees for sto-chastic discrete-time systems with unknown disturbance distributions. By reformulating robust and stochastic barrier-certificate conditions as empirical optimization problems, we established three complementary characterizations: one based on VC dimension, one using the scenario approach, and one leveraging Rademacher complexity. Together, these results connect finite-sample feasibility with probabilistic safety, enabling sample-efficient and distribution-free certifi-cation of stochastic systems. Finally, we demonstrated the efficacy of the proposed approaches through several polyno-mial examples solved via semidefinite programming–based tools, illustrating both the practical performance and the in-herent trade-offs of each approach. The results confirm that these data-driven methods could provide reliable safety cer-tificates with high confidence, while highlighting the critical balance between conservatism, computational complexity, and sample efficiency. In this work, we consider PAC finite-time safety certifi-cation for discrete-time stochastic systems with known dy-namics but unknown disturbance distributions (i.e., 𝒇 (𝒙 , 𝒅 )
+
+is known). In many task-driven systems, however, not only safety but also successful reachability of a target set is es-sential. Accordingly, as a natural extension, we plan to gen-eralize our framework to reach-avoid certification for such systems. Further, in many applications, the dynamics them-selves are also unknown. In future work, in addition to the directions discussed in Remark 4, we plan to extend PAC HSCC ’26, May 11–14,2026, Saint Malo, France Taoran Wu, Dominik Wagner, C.-H. Luke Ong B, and Bai Xue B
+
+finite-time safety certification to systems with unknown dy-namics and develop a certification procedure for the nested PAC guarantee as proposed in [ 54 ]. Also, we aim to extend the proposed approaches to PAC-style verification for prob-abilistic programs [57] and quantum computations [55]. 
+
+## Acknowledgments 
+
+This work was partially supported by the National Research Foundation, Singapore, under its RSS Scheme (NRF-RSS2022-009), the CAS Pioneer Hundred Talents Program, and the Basic Research Program of the Institute of Software, Chinese Academy of Sciences (Grant No. ISCAS-JCMS-202302). 
+
+## References 
+
+[1] Alessandro Abate, Mirco Giacobbe, and Diptarko Roy. 2024. Stochas-tic omega-regular verification and control with supermartingales. In International Conference on Computer Aided Verification . Springer, 395–419. [2] Teodoro Alamo, Roberto Tempo, and Eduardo F Camacho. 2009. Ran-domized strategies for probabilistic solutions of uncertain feasibil-ity and optimization problems. IEEE Trans. Automat. Control 54, 11 (2009), 2545–2559. [3] Mosek ApS. 2019. Mosek optimization toolbox for matlab. User’s Guide and Reference Manual, Version 4, 1 (2019), 116. [4] Erin M Aylward, Pablo A Parrilo, and Jean-Jacques E Slotine. 2008. Stability and robustness analysis of nonlinear systems via contraction metrics and SOS programming. Automatica 44, 8 (2008), 2163–2170. [5] Christel Baier and Joost-Pieter Katoen. 2008. Principles of model checking. MIT press. [6] Mohamed Amin Ben Sassi and Sriram Sankaranarayanan. 2015. Stabil-ity and stabilization of polynomial dynamical systems using Bernstein polynomials. In Proceedings of the 18th International Conference on Hybrid Systems: Computation and Control. 291–292. [7] Dimitri Bertsekas and Steven E Shreve. 1996. Stochastic optimal control: the discrete-time case. Vol. 5. Athena Scientific. [8] Giuseppe C Calafiore. 2016. Repetitive scenario design. IEEE Trans. Automat. Control 62, 3 (2016), 1125–1137. [9] Giuseppe Carlo Calafiore and Marco C Campi. 2006. The scenario approach to robust control design. IEEE Transactions on automatic control 51, 5 (2006), 742–753. [10] Marco C Campi and Simone Garatti. 2018. Wait-and-judge scenario optimization. Mathematical Programming 167 (2018), 155–189. [11] Aleksandar Chakarov and Sriram Sankaranarayanan. 2013. Prob-abilistic program analysis with martingales. In Computer Aided Verification: 25th International Conference, CAV 2013, Saint Petersburg, Russia, July 13-19, 2013. Proceedings 25 . Springer, 511–526. [12] Yu Chen, Shaoyuan Li, and Xiang Yin. 2025. On the Construction of Barrier Certificate: A Dynamic Programming Perspective. arXiv preprint arXiv:2507.17222 (2025). [13] Masoumeh Ghanbarpour and Sriram Sankaranarayanan. 2025. Char-acterization of Safety in Stochastic Difference Inclusions using Barrier Functions. arXiv preprint arXiv:2508.20204 (2025). [14] Ibon Gracia, Dimitris Boskos, Luca Laurenti, and Morteza Lahijanian. 2024. Data-driven strategy synthesis for stochastic systems with un-known nonlinear disturbances. In 6th Annual Learning for Dynamics & Control Conference. PMLR, 1633–1645. [15] Pushpak Jagtap, Sadegh Soudjani, and Majid Zamani. 2018. Temporal logic verification of stochastic systems using barrier certificates. In International Symposium on Automated Technology for Verification and Analysis. Springer, 177–193. [16] Pushpak Jagtap, Sadegh Soudjani, and Majid Zamani. 2020. Formal synthesis of stochastic systems via control barrier certificates. IEEE Trans. Automat. Control 66, 7 (2020), 3097–3110. [17] Andrew Kenyon-Roberts and C-H Luke Ong. 2021. Supermartin-gales, ranking functions and probabilistic lambda calculus. In 2021 36th Annual ACM/IEEE Symposium on Logic in Computer Science (LICS). IEEE, 1–13. [18] Milan Korda, Didier Henrion, and Colin N Jones. 2014. Controller design and region of attraction estimation for nonlinear dynamical systems. IFAC Proceedings Volumes 47, 3 (2014), 2310–2316. [19] Harold J Kushner. 1967. Stochastic stability and control. New York: Academic. [20] Johan Lofberg. 2004. YALMIP: A toolbox for modeling and optimiza-tion in MATLAB. In 2004 IEEE international conference on robotics and automation (IEEE Cat. No. 04CH37508). IEEE, 284–289. [21] Edward N Lorenz. 1996. Predictability: A problem partly solved. In Proc. Seminar on predictability, Vol. 1. Reading. [22] Alfred J Lotka. 2002. Contribution to the theory of periodic reactions. The Journal of Physical Chemistry 14, 3 (2002), 271–274. [23] Frederik Baymler Mathiesen, Licio Romao, Simeon C Calvert, Alessan-dro Abate, and Luca Laurenti. 2023. Inner approximations of stochastic programs for data-driven stochastic barrier function design. In 2023 62nd IEEE Conference on Decision and Control (CDC) . IEEE, 3073– 3080. [24] Frederik Baymler Mathiesen, Licio Romao, Simeon C Calvert, Luca Laurenti, and Alessandro Abate. 2024. A data-driven approach for safety quantification of non-linear stochastic systems with unknown additive noise distribution. arXiv preprint arXiv:2410.06662 (2024). [25] Annabelle McIver, Carroll Morgan, Benjamin Lucien Kaminski, and Joost-Pieter Katoen. 2017. A new proof rule for almost-sure termina-tion. Proceedings of the ACM on Programming Languages 2, POPL (2017), 1–28. [26] Michael Mitzenmacher and Eli Upfal. 2017. Probability and computing: Randomization and probabilistic techniques in algorithms and data analysis. Cambridge university press. [27] Ameneh Nejati, Abolfazl Lavaei, Pushpak Jagtap, Sadegh Soudjani, and Majid Zamani. 2023. Formal verification of unknown discrete-and continuous-time systems: A data-driven approach. IEEE Trans. Automat. Control 68, 5 (2023), 3011–3024. [28] Ameneh Nejati and Majid Zamani. 2023. Data-driven synthesis of safety controllers via multiple control barrier certificates. IEEE Control Systems Letters 7 (2023), 2497–2502. [29] Stephen Prajna and Ali Jadbabaie. 2004. Safety verification of hybrid systems using barrier certificates. In International workshop on hybrid systems: Computation and control. Springer, 477–492. [30] Stephen Prajna, Ali Jadbabaie, and George J Pappas. 2007. A frame-work for worst-case and stochastic safety verification using barrier certificates. IEEE Trans. Automat. Control 52, 8 (2007), 1415–1428. [31] Stephen Prajna and Anders Rantzer. 2007. Convex programs for tem-poral verification of nonlinear dynamical systems. SIAM Journal on Control and Optimization 46, 3 (2007), 999–1021. [32] Luke Rickard, Alessandro Abate, and Kostas Margellos. 2025. Data-Driven Neural Certificate Synthesis. arXiv preprint arXiv:2502.05510 (2025). [33] Ali Salamati, Abolfazl Lavaei, Sadegh Soudjani, and Majid Zamani. 2024. Data-driven verification and synthesis of stochastic systems via barrier certificates. Automatica 159 (2024), 111323. [34] Ali Salamati and Majid Zamani. 2022. Data-driven safety verification of stochastic systems via barrier certificates: A wait-and-judge approach. In Learning for Dynamics and Control Conference. PMLR, 441–452. [35] Ali Salamati and Majid Zamani. 2022. Safety verification of stochastic systems: A repetitive scenario approach. IEEE Control Systems Letters 7 (2022), 448–453. PAC Finite-Time Safety Guarantees for Stochastic Systems with Unknown Disturbance Distributions HSCC ’26, May 11–14,2026, Saint Malo, France 
+
+[36] Behrad Samari, Omid Akbarzadeh, Mahdieh Zaker, and Abolfazl Lavaei. 2024. From a single trajectory to safety controller synthesis of discrete-time nonlinear polynomial systems. IEEE Control Systems Letters (2024). [37] Behrad Samari and Abolfazl Lavaei. 2025. Data-Driven Dynamic Controller Synthesis for Discrete-Time General Nonlinear Systems. In Proceedings of the 28th ACM International Conference on Hybrid Systems: Computation and Control. 1–12. [38] Sriram Sankaranarayanan, Xin Chen, et al . 2013. Lyapunov Func-tion Synthesis using Handelman Representations. IFAC Proceedings Volumes 46, 23 (2013), 576–581. [39] Cesar Santoyo, Maxence Dutreix, and Samuel Coogan. 2021. A barrier function approach to finite-time stochastic system verification and control. Automatica 125 (2021), 109439. [40] Shai Shalev-Shwartz and Shai Ben-David. 2014. Understanding machine learning: From theory to algorithms . Cambridge university press. [41] Andrew Sogokon, Khalil Ghorbal, and Taylor T Johnson. 2016. Non-linear continuous systems for safety verification (benchmark proposal). In ARCH@ CPSWeek 2016-3rd International Workshop on Applied Verification for Continuous and Hybrid Systems , Vol. 43. EasyChair, 42–51. [42] Jacob Steinhardt and Russ Tedrake. 2012. Finite-time regional verifi-cation of stochastic non-linear systems. The International Journal of Robotics Research 31, 7 (2012), 901–923. [43] Timothy John Sullivan. 2015. Introduction to uncertainty quantification. Vol. 63. Springer. [44] Scott Thiebes, Sebastian Lins, and Ali Sunyaev. 2021. Trustworthy artificial intelligence. Electronic Markets 31, 2 (2021), 447–464. [45] Thomas L Vincent and Walter J Grantham. 1997. Nonlinear and optimal control systems. John Wiley & Sons. [46] Peixin Wang, Jianhao Bai, Dapeng Zhi, Min Zhang, and Luke Ong. [n. d.]. Verifying Omega-regular Properties of Neural Network-Controlled Systems via Proof Certificates. In ICLR 2025 Workshop: VerifAI: AI Verification in the Wild. [47] Ben Wooding and Abolfazl Lavaei. 2024. Learning k-inductive control barrier certificates for unknown nonlinear dynamics beyond polyno-mials. arXiv preprint arXiv:2412.07232 (2024). [48] Taoran Wu, Yiling Xue, Jingduo Pan, Dejin Ren, Arvind Easwaran, and Bai Xue. 2025. Convex Computations for Controlled Safety Invariant Sets of Black-box Discrete-time Dynamical Systems. arXiv preprint arXiv:2504.01638 (2025). [49] Bai Xue. 2025. Finite-time safety and reach-avoid verification of stochastic discrete-time systems. Information and Computation 307 (2025), 105368. [50] Bai Xue. 2026. Sufficient and necessary barrier-like conditions for safety and reach-avoid verification of stochastic discrete-time systems. To appear in Automatica (2026). [51] Bai Xue, Martin Fränzle, Hengjun Zhao, Naijun Zhan, and Arvind Easwaran. 2019. Probably approximate safety verification of hybrid dy-namical systems. In International Conference on Formal Engineering Methods. Springer, 236–252. [52] Bai Xue, Renjue Li, Naijun Zhan, and Martin Fränzle. 2021. Reach-avoid Analysis for Stochastic Discrete-time Systems. In 2021 American Control Conference (ACC). IEEE, 4879–4885. [53] Bai Xue, Naijun Zhan, and Martin Fränzle. 2024. Reach-Avoid Analysis for Polynomial Stochastic Differential Equations. IEEE Trans. Automat. Control 69, 3 (2024), 1882–1889. [54] Bai Xue, Miaomiao Zhang, Arvind Easwaran, and Qin Li. 2020. PAC model checking of black-box continuous-time dynamical systems. IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems 39, 11 (2020), 3944–3955. [55] Mingsheng Ying. 2010. Quantum computation, quantum theory and AI. Artificial Intelligence 174, 2 (2010), 162–176. [56] Yiqing Yu, Taoran Wu, Bican Xia, Ji Wang, and Bai Xue. 2023. Safe probabilistic invariance verification for stochastic discrete-time dynam-ical systems. In 2023 62nd IEEE Conference on Decision and Control (CDC). IEEE, 5804–5811. [57] Fabian Zaiser, Andrzej S Murawski, and C-H Luke Ong. 2025. Guar-anteed Bounds on Posterior Distributions of Discrete Probabilistic Programs with Loops. Proceedings of the ACM on Programming Languages 9, POPL (2025), 1104–1135. [58] Yifan Zhang, Zhengfeng Yang, Wang Lin, Huibiao Zhu, Xin Chen, and Xuandong Li. 2018. Safety verification of nonlinear hybrid systems based on bilinear programming. IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems 37, 11 (2018), 2768–2778. [59] Dapeng Zhi, Peixin Wang, Si Liu, C-H Luke Ong, and Min Zhang. 2024. Unifying qualitative and quantitative safety verification of DNN-controlled systems. In International Conference on Computer Aided Verification. Springer, 401–426. [60] Ðorđe Žikelić, Mathias Lechner, Thomas A Henzinger, and Krishnendu Chatterjee. 2023. Learning control policies for stochastic systems with reach-avoid guarantees. In Proceedings of the AAAI Conference on Artificial Intelligence, Vol. 37. 11926–11935. 
+
+## Appendix A Proofs in the Paper 
+
+A.1 The proof of Theorem 1 
+
+Proof. Since E𝒅 ,𝑀 [ b𝑓 𝒂 ∗ (𝐷 𝑀 ) ) ] = 0, ∀𝒙 ∈ X holds, according to Lemma 1, we can obtain P𝑀 
+
+> 𝒅
+
+E𝒅 [ b𝑓 𝒂 ∗ (𝐷 𝑀 ) ] ≤ 𝜖 
+
+i
+
+≥ 1 − 𝛿, ∀𝒙 ∈ X.
+
+In addition, for each 𝒙 ∈ X, we can obtain 
+
+∧𝑀 𝑗 =1ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒇 (𝒙 , 𝒅 ( 𝑗 ) )) ≥ 𝛾ℎ (𝒂 ∗ (𝐷 𝑀 ), 𝒙 ).
+
+Thus, we have P𝑀 
+
+> 𝒅
+
+"
+
+X𝑠 ≠ ∅ ⇒ 
+
+
+
+P𝒅 
+
+"ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒇 (𝒙 , 𝒅 )) ≥ 𝛾ℎ (𝒂 ∗ (𝐷 𝑀 ), 𝒙 )
+
+#
+
+≥ 1 − 𝜖 
+
+#
+
+≥ 1 − 𝛿, ∀𝒙 ∈ X.
+
+On the other hand, ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒇 (𝒙 , 𝒅 )) ≥ 𝛾ℎ (𝒂 ∗ (𝐷 𝑀 ), 𝒙 )
+
+implies that if 𝒙 ∈ X𝑠 , 𝒇 (𝒙 , 𝒅 ) ≥ 0 holds and thus 𝒇 (𝒙 , 𝒅 ) ∈ 
+
+X𝑠 . Therefore, we have P𝑀 
+
+> 𝒅
+
+X𝑠 ≠ ∅ ⇒ P𝒅 [𝒇 (𝒙 , 𝒅 ) ∈ X𝑠 ] ≥ 1 − 𝜖 (𝒙 )
+
+≥ 1 − 𝛿, ∀𝒙 ∈ X.
+
+The proof is finished. □
+
+A.2 The proof of Lemma 2 
+
+Proof. Via treating 𝒅 ∈ D as uncertainty and 𝒂 as decision variables, we first show that (3) satisfies Assumption 1 in [ 9 ]. Since X is compact and 𝒇 (𝒙 , 𝒅 ) is continuous over (𝒙 , 𝒅 ),we have ℎ(𝒂 , 𝒇 (𝒙 , 𝒅 )) ≥ 𝛾ℎ (𝒂 , 𝒙 ), ∀𝒙 ∈ X is equivalent to 
+
+max   
+
+> 𝒙 ∈X
+
+[− ℎ(𝒂 , 𝒇 (𝒙 , 𝒅 )) + 𝛾ℎ (𝒂 , 𝒙 )] ≤ 0
+
+under Assumption 2. Thus, we just show that 
+
+max   
+
+> 𝒙 ∈X
+
+[− ℎ(𝒂 , 𝒇 (𝒙 , 𝒅 )) + 𝛾ℎ (𝒂 , 𝒙 )] 
+
+is continuous and convex over 𝒂 , for any fixed value of 𝒅 ∈ D.HSCC ’26, May 11–14,2026, Saint Malo, France Taoran Wu, Dominik Wagner, C.-H. Luke Ong B, and Bai Xue B
+
+1) Since 
+
+max   
+
+> 𝒙 ∈X
+
+[− ℎ(𝒂 1, 𝒇 (𝒙 , 𝒅 )) + 𝛾ℎ (𝒂 1, 𝒙 )] − max   
+
+> 𝒙 ∈X
+
+[− ℎ(𝒂 2, 𝒇 (𝒙 , 𝒅 )) + 𝛾ℎ (𝒂 2, 𝒙 )] 
+
+≤ max   
+
+> 𝒙 ∈X
+
+[− ℎ(𝒂 1, 𝒇 (𝒙 , 𝒅 )) + 𝛾ℎ (𝒂 1, 𝒙 )] − [− ℎ(𝒂 2, 𝒇 (𝒙 , 𝒅 )) + 𝛾ℎ (𝒂 2, 𝒙 )] ,
+
+according to Assumption 2, we can obtain 
+
+lim 
+
+> 𝒂 1→𝒂 2
+
+max   
+
+> 𝒙 ∈X
+
+[− ℎ(𝒂 1, 𝒇 (𝒙 , 𝒅 )) + 𝛾ℎ (𝒂 1, 𝒙 )] 
+
+= max   
+
+> 𝒙 ∈X
+
+[− ℎ(𝒂 2, 𝒇 (𝒙 , 𝒅 )) + 𝛾ℎ (𝒂 2, 𝒙 )] .
+
+This conclusion follows from the facts that ℎ(𝒂 , 𝒙 ) is con-tinuous over (𝒂 , 𝒙 ), 𝒇 (𝒙 , 𝒅 ) is continuous over (𝒙 , 𝒅 ), and 
+
+X is compact. Thus, max 𝒙 ∈X [− ℎ(𝒂 , 𝒇 (𝒙 , 𝒅 )) + 𝛾ℎ (𝒂 , 𝒙 )] is continuous over 𝒂 .2) Assume that ℎ1 (𝜶 1) := max 𝒙 ∈X [− ℎ(𝒂 1, 𝒇 (𝒙 , 𝒅 ))+ 𝛾ℎ (𝒂 1, 𝒙 )] 
+
+and ℎ2 (𝜶 2) := max 𝒙 ∈X [− ℎ(𝒂 2, 𝒇 (𝒙 , 𝒅 )) + 𝛾ℎ (𝒂 2, 𝒙 )] , we will show max 𝒙 ∈X [− ℎ(𝒄 , 𝒇 (𝒙 , 𝒅 )) + 𝛾ℎ (𝒄 , 𝒙 )] ≤ 𝜆ℎ 1 (𝜶 1) + ( 1 −
+
+𝜆 )ℎ2 (𝜶 2), where 𝒄 = 𝜆 𝒂 1 + ( 1 − 𝜆 )𝒂 2 with 𝜆 ∈ [ 0, 1].According to Assumption 2, we have 
+
+ℎ(𝒄 , 𝒇 (𝒙 , 𝒅 )) − 𝛾ℎ (𝒄 , 𝒙 )
+
+= 𝜆 (ℎ(𝒂 1, 𝒇 (𝒙 , 𝒅 )) − 𝛾ℎ (𝒂 1, 𝒙 )) + ( 1 − 𝜆 )( ℎ(𝒂 2, 𝒇 (𝒙 , 𝒅 )) − 𝛾ℎ (𝒂 2, 𝒙 )) .
+
+Thus, 
+
+max   
+
+> 𝒙 ∈X
+
+[− ℎ(𝒄 , 𝒇 (𝒙 , 𝒅 )) + 𝛾ℎ (𝒄 , 𝒙 )] ≤ 𝜆ℎ 1 (𝜶 1) + ( 1 − 𝜆 )ℎ2 (𝜶 2).
+
+Consequently, max 𝒙 ∈X [− ℎ(𝒂 , 𝒇 (𝒙 , 𝒅 )) + 𝛾ℎ (𝒂 , 𝒙 )] is con-vex over 𝒂 . Similarly, we can show max 𝒙 ∈bX\X ℎ(𝒂 , 𝒙 ) is con-vex and continuous over 𝒂 . Thus, (3) satisfies Assumption 1 in [9]. In addition, as mentioned before, there always exist solu-tions to (4) . 𝒂 = 0 is a solution. (4) satisfies Assumption 2 in [9]. Thus, according to Theorem 1 in [9], we have P𝑀 
+
+> 𝒅
+
+
+
+X𝑠 ≠ ∅ ⇒ 
+
+
+
+P𝒅 
+
+
+
+max   
+
+> 𝒙 ∈X
+
+[− ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒇 (𝒙 , 𝒅 )) + 𝛾ℎ (𝒂 ∗ (𝐷 𝑀 ), 𝒙 )] ≤ 0
+
+
+
+≥ 1 − 𝜖 
+
+
+
+≥ 1 − 𝛿, 
+
+implying P𝑀 
+
+> 𝒅
+
+"
+
+X𝑠 ≠ ∅ ⇒ 
+
+
+
+∀𝒙 ∈ X, P𝒅 
+
+"ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒇 (𝒙 , 𝒅 )) ≥ 𝛾ℎ (𝒂 ∗ (𝐷 𝑀 ), 𝒙 )
+
+#
+
+≥ 1 − 𝜖 
+
+#
+
+≥ 1 − 𝛿, 
+
+and P𝑀 
+
+> 𝒅
+
+h
+
+X𝑠 ≠ ∅ ⇒ 
+
+
+
+∀𝒙 ∈ X𝑠 , P𝒅 [𝒇 (𝒙 , 𝒅 ) ∈ X𝑠 ] ≥ 1 − 𝜖 
+
+i 
+
+≥ 1 − 𝛿. 
+
+The proof is finished. □
+
+A.3 The proof of Theorem 2 
+
+Proof. By Lemma 2 there exists at least 1 − 𝛿 -probability event over the sample 𝐷 𝑀 on which the one-step safety bound holds uniformly over X𝑠 . Define the uniform event 
+
+E :=
+
+n
+
+𝐷 𝑀 | ∀ 𝒚 ∈ X𝑠 , P𝒅 
+
+𝒇 (𝒚 , 𝒅 ) ∈ X𝑠 
+
+ ≥ 1 − 𝜖 
+
+o
+
+.
+
+Lemma 2 guarantees P 𝑀  
+
+> 𝒅
+
+(E) ≥ 1 − 𝛿 .Condition on any realization 𝐷 𝑀 ∈ E. Fix an arbitrary initial state 𝒙 ∈ X𝑠 and denote the trajectory by 𝒙 𝑡 := 𝝓 𝒙  
+
+> 𝜋
+
+(𝑡 ).By the law of total probability (tower property) we have the exact identity P𝜋 
+
+𝒙 𝑡 +1 ∈ X𝑠 | 𝒙 𝑡 ∈ X𝑠 
+
+
+
+=
+
+∫ 
+
+> 𝒚 ∈X𝑠
+
+P𝒅 
+
+𝒇 (𝑦, 𝒅 ) ∈ X𝑠 
+
+ 𝑑 P𝒙 𝑡 |𝒙 𝑡 ∈X𝑠 [𝒚 ]
+
+= E𝒚 ∼P𝒙 𝑡 |𝒙 𝑡 ∈X𝑠 
+
+P𝒅 [𝒇 (𝒚 , 𝒅 ) ∈ X𝑠 ],
+
+where P𝒙 𝑡 |𝒙 𝑡 ∈X𝑠 refers to the conditional distribution of the random variable 𝒙 𝑡 given that it belongs to X𝑠 . Formally, for any measurable subset B ⊆ X𝑠 , P𝒙 |𝒙 ∈X𝑠 [𝒙 ∈ B] =       
+
+> P𝒙 [𝒙 ∈B∩X𝑠 ]
+> P𝒙 [𝒙 ∈X𝑠 ]
+
+( The condition P𝒙 [𝒙 ∈ X𝑠 ] > 0 is required for the conditional probability P𝒙 𝑡 |𝒙 𝑡 ∈X𝑠 to be well-defined. In our method, we take P𝒙 to be a Lebesgue-type measure so that any nonempty open set has positive measure. Thus, this condition P𝒙 [𝒙 ∈ X𝑠 ] > 0 is satisfied by construc-tion. Since ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒙 ) is continuous with respect to 𝒙 , if 
+
+ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒙 ) > 0 at some point 𝒙 , then there exists a neigh-bourhood Δ of 𝒙 with positive (Lebesgue) measure such that 
+
+ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒚 ) > 0, ∀𝒚 ∈ Δ.
+
+Consequently, Δ ⊆ X𝑠 and P 𝒙 [Δ] > 0. Therefore, P𝒙 [𝑥 𝑡 ∈ X𝑠 ] ≥ P𝒙 [𝑥 𝑡 ∈ Δ] > 0,
+
+which ensures that P𝒙 [𝒙 ∈ X𝑠 ] > 0 holds automatically under the continuity of ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒙 ) ). Under 𝐷 𝑀 ∈ E the integrand satisfies P𝒅 [𝒇 (𝒚 , 𝒅 ) ∈ X𝑠 ] ≥ 
+
+1 − 𝜖 for every 𝒚 ∈ X𝑠 , hence the expectation (an average of values ≥ 1 − 𝜖 ) is itself at least 1 − 𝜖 . Therefore, for every time 𝑡 ,P𝜋 
+
+𝒙 𝑡 +1 ∈ X𝑠 | 𝒙 𝑡 ∈ X𝑠 
+
+ ≥ 1 − 𝜖. 
+
+Applying the Markov property to the 𝑘 -step conjunction yields P𝜋 
+
+h 𝑘 Û
+
+> 𝑖 =1
+
+𝒙 𝑖 ∈ X𝑠 | 𝒙 0 = 𝒙 
+
+i
+
+= 
+
+> 𝑘 −1
+
+Ö
+
+> 𝑖 =0
+
+P𝜋 
+
+𝒙 𝑖 +1 ∈ X𝑠 | 𝒙 𝑖 ∈ X𝑠 
+
+ ≥ ( 1−𝜖 )𝑘 .
+
+The preceding inequalities were derived under the con-ditioning 𝐷 𝑀 ∈ E. Removing that conditioning and using P𝑀  
+
+> 𝒅
+
+(E) ≥ 1 − 𝛿 gives the stated high-probability guarantee: P𝑀 
+
+> 𝒅
+
+h
+
+X𝑠 ≠ ∅ ⇒  ∀𝒙 ∈ X𝑠 , P𝜋 [∧ 𝑘 𝑖 =1𝝓 𝒙  
+
+> 𝜋
+
+(𝑖 ) ∈ X𝑠 ] ≥ ( 1 − 𝜖 )𝑘 i
+
+≥ 1 − 𝛿, 
+
+which completes the proof. □PAC Finite-Time Safety Guarantees for Stochastic Systems with Unknown Disturbance Distributions HSCC ’26, May 11–14,2026, Saint Malo, France 
+
+A.4 The proof of Theorem 3 
+
+Proof. The empirical Rademacher complexity is 
+
+ℜ𝑀 (G𝒙 ) = 1
+
+𝑀 E𝜎 
+
+h
+
+sup   
+
+> ∥𝒂 ∥2≤𝑈 𝑎
+> 𝑀
+
+∑︁ 
+
+> 𝑗 =1
+
+𝜎 𝑗 ℎ(𝒂 , 𝒇 (𝒙 , 𝒅 ( 𝑗 ) )) 
+
+i
+
+for any 𝒙 ∈ X, where 𝜎 𝑗 are independent Rademacher ran-dom variables ( P[𝜎 𝑖 = +1] = P[𝜎 𝑖 = −1] = 12 ) [ 40 ]. By stan-dard results for linear classes with ∥𝝓 (𝒙 , 𝒅 )∥ 2 ≤ 𝑅 , ∀( 𝒙 , 𝒅 ) ∈ 
+
+X × D, we obtain 
+
+ℜ𝑀 (G𝒙 ) ≤ 𝑈 𝑎 𝑅 
+
+√𝑀 , ∀𝒙 ∈ X.
+
+By the one-sided Rademacher concentration inequality [26], we conclude that, for any 𝑡 > 0,P𝑀 
+
+> 𝒅
+
+
+
+sup   
+
+> 𝒂 ∈ [− 𝑈 𝑎 ,𝑈 𝑎 ]𝑚
+
+ E𝒅 [ℎ(𝒂 , 𝒇 (𝒙 , 𝒅 ))] − 1
+
+> 𝑀 𝑀
+
+∑︁ 
+
+> 𝑗 =1
+
+ℎ(𝒂 , 𝒇 (𝒙 , 𝒅 ( 𝑗 ) )) 
+
+> 2ℜ𝑀 (G𝒙 ) + 𝑡 
+
+
+
+≤ 𝑒 − 𝑀𝑡 22𝑈 2 
+
+> 𝑎
+
+, ∀𝒙 ∈ X.
+
+Choose 𝑡 = 𝑈 𝑎 √︃ 2 
+
+> 𝑀
+
+ln 1 
+
+> 𝛿
+
+, so the deviation is 
+
+2ℜ𝑀 (G𝒙 ) + 𝑡 ≤ 𝜏, ∀𝒙 ∈ X.
+
+That is, 
+
+2𝑈 𝑎 𝑅 
+
+√𝑀 + 𝑈 𝑎 √︃ 2 
+
+> 𝑀
+
+ln 1 
+
+> 𝛿
+
+≤ 𝜏, ∀𝒙 ∈ X.
+
+Let 𝑠 = √𝑀 . Multiplying both sides by 𝑠 /𝑈 𝑎 , we get 
+
+2𝑅 +√︃ 2 ln 1 
+
+> 𝛿
+
+≤ 𝜏 𝑈 𝑎 𝑠, 
+
+which yields the condition 
+
+𝑀 = 𝑠 2 ≥ 2𝑅𝑈 𝑎 + 𝑈 𝑎 √︁ 2 ln (1/𝛿 )
+
+𝜏 
+
+!2
+
+.
+
+Thus, we can obtain P𝑀 
+
+> 𝒅
+
+
+
+E𝒅 [ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒇 (𝒙 , 𝒅 ))] ≤ 
+
+> 1
+> 𝑀 𝑀
+
+∑︁ 
+
+> 𝑗 =1
+
+ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒇 (𝒙 , 𝒅 ( 𝑗 ) )) + 𝜏 
+
+
+
+≥ 1 − 𝛿, ∀𝒙 ∈ X.
+
+On the other hand, if E𝒅 [ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒇 (𝒙 , 𝒅 ))] ≤ 1
+
+> 𝑀 𝑀
+
+∑︁ 
+
+> 𝑗 =1
+
+ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒇 (𝒙 , 𝒅 ( 𝑗 ) )) + 𝜏 
+
+holds, then E𝒅 [ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒇 (𝒙 , 𝒅 ))] ≤ ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒙 ) + 𝜆 ∗ (𝐷 𝑀 )
+
+holds from (10) . Further, under the condition that ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒙 ) ≥ 
+
+0 over X and ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒙 ) ≥ 1 over bX \ X, we have P𝒅 
+
+𝒇 (𝒙 , 𝒅 ) ∈ X ≥ 1 − 𝜆 ∗ (𝐷 𝑀 ) − ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒙 ).
+
+Consequently, we obtain P𝑀 
+
+> 𝒅
+
+P𝒅 [𝒇 (𝒙 , 𝒅 ) ∈ X] ≥ 1 − 𝜆 ∗ (𝐷 𝑀 ) − ℎ(𝒂 ∗ (𝐷 𝑀 ), 𝒙 )
+
+≥ 1 − 𝛿, ∀𝒙 ∈ X
+
+and finish the proof. □
+
+## B Implementation Details of the SOS Programming 
+
+In this subsection, we present the implementation details of the SOS programming. Without loss of generality, let 
+
+X = {𝒙 ∈ R𝑛 | 𝑔 (𝒙 ) < 0} and bX = {𝒙 ∈ R𝑛 | ˆ𝑔 (𝒙 ) < 0},where 𝑔 (𝒙 ) and ˆ𝑔 (𝒙 ) are polynomial functions. The SOS programmings corresponding to optimization problem (4) and (10) are formulated in (12) and (13) , respectively. The proposed Data-Driven RBFs method involves solving (12) ,while the Data-Driven SBFs method requires solving (13) . For comparison, when the disturbance set is given as D = {𝒅 ∈
+
+R𝑑 | 𝑝 (𝒅 ) ≤ 0}, where 𝑝 (𝒅 ) is a known polynomial function, (2) can be recast into (14) , i.e., the Robust-Set method. When both the D and the disturbance distribution P𝑑 are assumed to be known, (9) can be recast into (15) , corresponding to the Distribution-Known method. In the sequel, Í[𝒚 ] denotes the set of sum-of-squares polynomials over variables 𝒚 , i.e., ∑︁ 
+
+[𝒚 ] = {𝑝 ∈ R[𝒚 ] | 𝑝 =
+
+> 𝑘
+
+∑︁ 
+
+> 𝑖 =1
+
+𝑞 2 
+
+> 𝑖
+
+(𝒚 ), 𝑞 𝑖 (𝒚 ) ∈ R[𝒚 ], 𝑖 = 1, . . . , 𝑘 },
+
+where R[𝒚 ] denotes the ring of polynomials in variables 𝒚 .
+
+min − 1
+
+> 𝑁 𝑜
+
+Í𝑁 𝑜  
+
+> 𝑘 =1
+
+ℎ(𝒂 , 𝒙 ′ 
+
+> 𝑘
+
+) (12) s.t. 
+
+
+
+ℎ(𝒂 , 𝒇 (𝒙 , 𝒅 ( 𝑗 ) )) − 𝛾ℎ (𝒂 , 𝒙 ) + 𝑠 0 (𝒙 )𝑔 (𝒙 ) ∈ Í[𝒙 ],
+
+−ℎ(𝒂 , 𝒙 ) + 𝑠 1 (𝒙 ) ˆ𝑔 (𝒙 ) − 𝑠 2 (𝒙 )𝑔 (𝒙 ) ∈ Í[𝒙 ],𝑠 0 (𝒙 ), 𝑠 1 (𝒙 ), 𝑠 2 (𝒙 ) ∈ Í[𝒙 ],
+
+𝒂 [𝑙 ] ∈ [− 𝑈 𝑎 , 𝑈 𝑎 ],𝑗 = 1, . . . , 𝑀 ; 𝑙 = 1, . . . , 𝑚, 
+
+min 𝜆 + 1
+
+> 𝑁 𝑜
+
+Í𝑁 𝑜  
+
+> 𝑘 =1
+
+ℎ(𝒂 , 𝒙 ′ 
+
+> 𝑘
+
+) (13) s.t. 
+
+
+
+ℎ(𝒂 , 𝒙 ) + 𝑠 1 (𝒙 )𝑔 (𝒙 ) ∈ Í[𝒙 ],ℎ(𝒂 , 𝒙 ) − 1 + 𝑠 2 (𝒙 ) ˆ𝑔 (𝒙 ) − 𝑠 3 (𝒙 )𝑔 (𝒙 ) ∈ Í[𝒙 ],
+
+− ˆℎ(𝒙 , 𝒂 , 𝜆 ) + 𝑠 4 (𝒙 )𝑔 (𝒙 ) ∈ Í[𝒙 ],𝑠 1 (𝒙 ), 𝑠 2 (𝒙 ), 𝑠 3 (𝒙 ), 𝑠 4 (𝒙 ) ∈ Í[𝒙 ],𝜆 ∈ [ 0, 1]; 𝒂 [𝑙 ] ∈ [− 𝑈 𝑎 , 𝑈 𝑎 ]; 𝑙 = 1, . . . , 𝑚, HSCC ’26, May 11–14,2026, Saint Malo, France Taoran Wu, Dominik Wagner, C.-H. Luke Ong B, and Bai Xue B
+
+min − 1
+
+> 𝑁 𝑜
+
+Í𝑁 𝑜  
+
+> 𝑘 =1
+
+ℎ(𝒂 , 𝒙 ′ 
+
+> 𝑘
+
+) (14) s.t. 
+
+
+
+ℎ(𝒂 , 𝒇 (𝒙 , 𝒅 )) − 𝛾ℎ (𝒂 , 𝒙 ) + 𝑠 1 (𝒙 , 𝒅 )𝑔 (𝒙 )+𝑠 2 (𝒙 , 𝒅 )𝑝 (𝒅 ) ∈ Í[𝒙 , 𝒅 ],
+
+−ℎ(𝒂 , 𝒙 ) + 𝑠 3 (𝒙 ) ˆ𝑔 (𝒙 ) − 𝑠 4 (𝒙 )𝑔 (𝒙 ) ∈ Í[𝒙 ],𝑠 1 (𝒙 , 𝒅 ), 𝑠 2 (𝒙 , 𝒅 ) ∈ Í[𝒙 , 𝒅 ]; 𝑠 3 (𝒙 ), 𝑠 4 (𝒙 ) ∈ Í[𝒙 ],
+
+∥𝒂 ∥2 ≤ 𝑈 𝑎 ; 𝑙 = 1, . . . , 𝑚, 
+
+min 𝜆 + 1
+
+> 𝑁 𝑜
+
+Í𝑁 𝑜  
+
+> 𝑘 =1
+
+ℎ(𝒂 , 𝒙 ′ 
+
+> 𝑘
+
+) (15) s.t. 
+
+
+
+ℎ(𝒂 , 𝒙 ) + 𝑠 1 (𝒙 )𝑔 (𝒙 ) ∈ Í[𝒙 ],ℎ(𝒂 , 𝒙 ) − 1 + 𝑠 2 (𝒙 ) ˆ𝑔 (𝒙 ) − 𝑠 3 (𝒙 )𝑔 (𝒙 ) ∈ Í[𝒙 ],ℎ(𝒙 ) + 𝜆 − E𝒅 [ℎ(𝒇 (𝒙 , 𝒅 ))] + 𝑠 4 (𝒙 )𝑔 (𝒙 ) ∈ Í[𝒙 ],𝑠 1 (𝒙 ), 𝑠 2 (𝒙 ), 𝑠 3 (𝒙 ), 𝑠 4 (𝒙 ) ∈ Í[𝒙 ],𝜆 ∈ [ 0, 1]; ∥𝒂 ∥2 ≤ 𝑈 𝑎 ; 𝑙 = 1, . . . , 𝑚, 
+
+## C Additional Examples 
+
+In this subsection, we provide additional examples with spe-cific settings. 
+
+Example 4. Consider the following system adapted from [ 41 ]: 
+
+(
+
+𝑥 (𝑡 + 1) = 𝑥 (𝑡 ) + 0.01   − 2𝑥 (𝑡 ) + 𝑥 2 (𝑡 ) + 𝑦 (𝑡 ),𝑦 (𝑡 + 1) = 𝑦 (𝑡 ) + 0.01  𝑥 (𝑡 ) − 2𝑦 (𝑡 ) + 𝑦 2 (𝑡 ) + 𝑑 (𝑡 ),
+
+where 𝑑 (𝑡 ) follows a truncated normal distribution, defined on 
+
+[− 1, 1] with a mean of zero and a standard deviation of 0.15 .The safe set is X = { ( 𝑥, 𝑦 )⊤ | 𝑥 2 + 𝑦 2 ≤ 1 }.
+
+Example 5. Consider the following system adapted from [ 45 ]: 
+
+(
+
+𝑥 (𝑡 + 1) = 𝑥 (𝑡 ) + 0.01  𝑦 (𝑡 ) − 𝑥 (𝑡 )𝑑 (𝑡 ),𝑦 (𝑡 + 1) = 𝑦 (𝑡 ) + 0.01   − ( 1 − 𝑥 2 (𝑡 )) 𝑥 (𝑡 ) − 𝑦 (𝑡 ),
+
+where 𝑑 (𝑡 ) follows a symmetric Beta distribution scaled to the interval [− 2, 2], i.e., 𝑑 (𝑡 ) = 4 × Beta (250 , 250 ) − 2.. The safe set is X = { ( 𝑥, 𝑦 )⊤ | 𝑥 2 + 𝑦 2 ≤ 0.64 }.
+
+Example 6. Consider the following system adapted from [ 58 ]: 
+
+(
+
+𝑥 (𝑡 + 1) = 𝑥 (𝑡 ) + 0.01   − 𝑥 (𝑡 ) + 2𝑥 2 (𝑡 )𝑦 (𝑡 ) + 𝑥 (𝑡 )𝑑 1 (𝑡 ),𝑦 (𝑡 + 1) = 𝑦 (𝑡 ) + 0.01   − 𝑦 (𝑡 ) + 𝑦 (𝑡 )𝑑 2 (𝑡 ),
+
+where 𝑑 1 (𝑡 ) and 𝑑 2 (𝑡 ) are independent and follow the uniform distribution on the interval [− 0.5, 0.5]. The safe set is X =
+
+{ ( 𝑥, 𝑦 )⊤ | 𝑥 2 + 𝑦 2 ≤ 1 }.
+
+Example 7. Consider the following system adapted from [ 6 ]: 
+
+
+
+𝑥 (𝑡 + 1) = 𝑥 (𝑡 ) + 𝜏 𝑠 
+
+  − 𝑥 (𝑡 ) + 𝑦 (𝑡 ) − 𝑧 (𝑡 ) − 𝑑 1 (𝑡 ),𝑦 (𝑡 + 1) = 𝑦 (𝑡 ) + 𝜏 𝑠 
+
+  − 𝑥 (𝑡 )( 𝑧 (𝑡 ) + 1) − 𝑦 (𝑡 ) − 𝑑 2 (𝑡 ),𝑧 (𝑡 + 1) = 𝑧 (𝑡 ) + 𝜏 𝑠 
+
+ 0.76524 𝑥 (𝑡 ) − 4.7037 𝑧 (𝑡 ) − 𝑑 3 (𝑡 ),
+
+where 𝑑 1 (𝑡 ), 𝑑 2 (𝑡 ), and 𝑑 3 (𝑡 ) are independent and follow uni-form distributions on [− 0.5, 0.5]. The safe set is X = { ( 𝑥, 𝑦, 𝑧 )⊤ |
+
+𝑥 2 + 𝑦 2 + 𝑧 2 ≤ 1 }, and 𝜏 𝑠 = 0.01 .
+
+Example 8. Consider the following system adapted from [ 18 ]: 
+
+
+
+𝑥 (𝑡 + 1) = 𝑥 (𝑡 ) + 𝜏 𝑠 
+
+  − 2𝑦 (𝑡 ),𝑦 (𝑡 + 1) = 𝑦 (𝑡 ) + 𝜏 𝑠 
+
+ 0.8𝑥 (𝑡 ) − 2.1𝑦 (𝑡 ) + 𝑧 (𝑡 ) + 10 𝑥 2 (𝑡 )𝑦 (𝑡 ),𝑧 (𝑡 + 1) = 𝑧 (𝑡 ) + 𝜏 𝑠 
+
+  − 𝑧 (𝑡 ) + 𝑧 3 (𝑡 ) + 𝑑 (𝑡 ),
+
+where 𝑑 (𝑡 ) follows a uniform distribution on [− 0.5, 0.5]. The safe set is X = { ( 𝑥, 𝑦, 𝑧 )⊤ | 𝑥 2 + 𝑦 2 + 𝑧 2 ≤ 1 }, and 𝜏 𝑠 = 0.01 .
+
+Example 9. Consider a model adapted from [ 38 ] with a dis-crete time 0.01 ,
+
+
+
+𝑥 1 (𝑡 + 1) = 𝑥 1 (𝑡 ) + 𝜏 𝑠 (− 𝑥 1 (𝑡 ) + 𝑥 32 (𝑡 ) − 3𝑥 3 (𝑡 )𝑥 4 (𝑡 ) + 𝑑 (𝑡 )) ,𝑥 2 (𝑡 + 1) = 𝑥 2 (𝑡 ) + 𝜏 𝑠 (− 𝑥 1 (𝑡 ) − 𝑥 32 (𝑡 )) ,𝑥 3 (𝑡 + 1) = 𝑥 3 (𝑡 ) + 𝜏 𝑠 (𝑥 1 (𝑡 )𝑥 4 (𝑡 ) − 𝑥 3 (𝑡 )) ,𝑥 4 (𝑡 + 1) = 𝑥 4 (𝑡 ) + 𝜏 𝑠 (𝑥 1 (𝑡 )𝑥 3 (𝑡 ) − 𝑥 34 (𝑡 )) ,
+
+with 𝜏 𝑠 = 0.01 and the safe set X = { ( 𝑥 1, 𝑥 2, 𝑥 3, 𝑥 4)⊤ | Í4 
+
+> 𝑖 =1
+
+𝑥 2 
+
+> 𝑖
+
+≤
+
+1 }. The disturbance 𝑑 (𝑡 ) follows the uniform distribution on the interval [− 1, 1].
+
+Example 10. Consider a 6-dimensional Lorenz model adapted from [21]: 
+
+
+
+𝑥 1 (𝑡 + 1) = 𝑥 1 (𝑡 ) + 𝜏 𝑠 
+
+ (𝑥 2 (𝑡 ) − 𝑥 5 (𝑡 )) 𝑥 6 (𝑡 ) − 𝑥 1 (𝑡 ) + 𝑑 (𝑡 ),𝑥 2 (𝑡 + 1) = 𝑥 2 (𝑡 ) + 𝜏 𝑠 
+
+ (𝑥 3 (𝑡 ) − 𝑥 6 (𝑡 )) 𝑥 1 (𝑡 ) − 𝑥 2 (𝑡 ),𝑥 3 (𝑡 + 1) = 𝑥 3 (𝑡 ) + 𝜏 𝑠 
+
+ (𝑥 4 (𝑡 ) − 𝑥 1 (𝑡 )) 𝑥 2 (𝑡 ) − 𝑥 3 (𝑡 ),𝑥 4 (𝑡 + 1) = 𝑥 4 (𝑡 ) + 𝜏 𝑠 
+
+ (𝑥 5 (𝑡 ) − 𝑥 2 (𝑡 )) 𝑥 3 (𝑡 ) − 𝑥 4 (𝑡 ),𝑥 5 (𝑡 + 1) = 𝑥 5 (𝑡 ) + 𝜏 𝑠 
+
+ (𝑥 6 (𝑡 ) − 𝑥 3 (𝑡 )) 𝑥 4 (𝑡 ) − 𝑥 5 (𝑡 ),𝑥 6 (𝑡 + 1) = 𝑥 6 (𝑡 ) + 𝜏 𝑠 
+
+ (𝑥 1 (𝑡 ) − 𝑥 4 (𝑡 )) 𝑥 5 (𝑡 ) − 𝑥 6 (𝑡 ),
+
+with 𝜏 𝑠 = 0.01 . The disturbance 𝑑 (𝑡 ) follows a truncated normal distribution, defined on [− 3, 3] with a mean of zero and a standard deviation of 0.5. The safe set is defined as 
+
+X = { ( 𝑥 1, . . . , 𝑥 6)⊤ | Í6 
+
+> 𝑖 =1
+
+𝑥 2 
+
+> 𝑖
+
+≤ 1 }.
+
+Table 6. Parameter Settings for Data-Driven SBFs and Distribution-Known Methods. Examples Degree 𝜏 𝑈 𝒂 
+
+4 10 0.01 10 5 10 0.01 10 6 10 0.01 10 7 6 0.01 10 8 6 0.01 10 9 4 0.01 15 10 4 0.01 5For the Data-Driven RBFs and Robust-Set methods, the polynomial degree of ℎ(𝒂 , 𝒙 ) is set to 4 in Examples 4 - 8, and to 2 in Examples 9 and 10. The parameters used in the Data-Driven SBFs and Distribution-Known methods are sum-marized in Table 6.

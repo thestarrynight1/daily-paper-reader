@@ -1,0 +1,257 @@
+Title: Latent attention on masked patches for flow reconstruction
+
+URL Source: https://arxiv.org/pdf/2603.02028v1
+
+Published Time: Tue, 03 Mar 2026 03:51:50 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+# Latent attention on masked patches for flow reconstruction 
+
+Ben Eze 1[0009 −0009 −8594 −082 X], Luca Magri 1,2[0000 −0002 −0657 −2611] , and Andrea Nóvoa 1,3[0000 −0003 −0597 −8326]  
+
+> 1
+
+Aeronautics Dept., Imperial College London, Exhibition Rd, London SW7 2BX, UK  
+
+> 2
+
+DIMEAS, Politecnico di Torino, Corso Duca degli Abruzzi, 24, Torino, 10129, Italy  
+
+> 3
+
+I-X, Imperial College London, 84 Wood Lane, London W12 0BZ, UK 
+
+{ben.eze21,l.magri,a.novoa}@imperial.ac.uk 
+
+Abstract. Vision transformers have demonstrated outstanding perfor-mance on image generation applications, but their adoption in scien-tific disciplines, like fluid dynamics, has been limited. We introduce the 
+
+Latent Attention on Masked Patches (LAMP) model, an interpretable regression-based modified vision transformer designed for masked flow reconstruction. LAMP follows a three-fold strategy: (i) partition of each flow snapshot into patches, (ii) dimensionality reduction of each patch via patch-wise proper orthogonal decomposition, and (iii) reconstruction of the full field from a masked input using a single-layer transformer trained via closed-form linear regression. We test the method on two canonical 2D unsteady wakes: a wake past a bluff body, and a chaotic wake past a flat plate. We show that the LAMP accurately reconstructs the full flow field from a 90%-masked and noisy input, across signal-to-noise ra-tios between 10 and 30 dB. Incorporating nonlinear measurement states can reduce the prediction error by up to an order of magnitude. The learned attention matrix yields physically interpretable multi-fidelity op-timal sensor-placement maps. The modularity of the framework enables nonlinear compression and deep attention blocks, thereby providing an efficient baseline for nonlinear and high-dimensional masked flow recon-struction. 
+
+Keywords: Flow reconstruction · Vision Transformers · POD 
+
+## 1 Introduction 
+
+Reconstructing high-dimensional fields from sparse, noisy, and masked measure-ments is a central challenge in scientific machine learning and fluid mechanics [9, 21, 11]. In experimental settings, particle image velocimetry (PIV) measurements cover only a subset of the domain, and, since each run captures an independent realisation of the flow, PIV is often limited to mean-flow analyses rather than time-resolved full-field measurements in high-dimensional settings, e.g., [1]. To reconstruct full flow fields, data-driven approaches have been employed, such as convolutional neural networks (CNNs) [10, 12], generative adversarial net-works [13], or graph neural networks [16], among many others. However, these  
+
+> arXiv:2603.02028v1 [cs.LG] 2 Mar 2026 2Eze et al.
+
+methods typically assume that a large fraction of the field is observed and are primarily designed for super-resolution, in-painting, or mean-flow reconstruction tasks. Real-time full-field reconstruction from sparse measurements can alterna-tively be achieved by coupling reduced-order models with data assimilation [5, 14]. Vision Transformers (ViTs) [6], in particular, have become the state-of-the-art backbone for image generation and large language models [15], but have not been fully adopted yet in the fluid dynamics community. Here, we introduce the Latent Attention on Masked Patches (LAMP) model, inspired by ViTs and masked autoencoders [8]. The key idea is to (i) partition each flow snapshot into non-overlapping patches; (ii) compress each patch into a low-dimensional latent representation; here, patch-wise Proper Orthogonal Decomposition (POD) [2]; and (iii) reconstruct the full field from a subset of the patches, i.e., a masked input, using an attention-based patch-to-patch prediction mechanism; here, im-plemented as a single-layer transformer trained via closed-form linear regression. This design guarantees convergence to a global minimum, eliminates depen-dence on learning-rate schedules and random weight initialisation, and yields fast, reproducible and physically interpretable results. Further, the modular ar-chitecture allows expressive components to be incorporated where performance demands it—such as nonlinear autoencoders [7, 17] or multi-layer transformers. The paper is structured as follows. Section 2 details the proposed LAMP. Sec-tion 3 demonstrates LAMP on two canonical unsteady wakes: a laminar bluff-body wake and a temporally chaotic wake. Section 4 closes the paper with con-clusions and future work directions. 
+
+## 2 Latent Attention on Masked Patches (LAMP) 
+
+As illustrated in Fig. 1, LAMP consists of three stages: (i) data patching 
+
+Fig. 1: Pictorial illustration of the patch-wise latent attention model (LAMP). A linear autoencoder embeds the input in a lower-dimensional latent space, where predictions can be made efficiently. The predictions are pair-wise (i.e., each patch predicts every other patch) and weighted with a confidence score. Latent attention on masked patches for flow reconstruction 3
+
+and reshaping; (ii) patch-wise dimensionality reduction via linear autoencoding with proper orthogonal decomposition (POD); and (iii) attention-based patch-to-patch prediction in the latent space. 
+
+Patching. First, we divide the input 2D velocity data (of height H, width W
+
+and C components) Xin ∈ RH×W ×C into N patches of dimension D := CP 2,which are flattened to obtain the patched data X ∈ RN ×D (see [6] for more details). 
+
+Patch-wise POD. We apply dimensionality reduction to compress X into 
+
+Z ∈ RN ×Ne , with embedding (latent) dimension Ne ≪ D. Each patch vector 
+
+xn ∈ RD is compressed into zn ∈ RNe by minimizing 
+
+LAE =
+
+> N
+
+∑
+
+> n=1
+
+∥˜xn − xn∥22 , subject to ˜xn = UnU⊤ 
+
+> n
+
+xn. (1) The patch-wise optimal orthonormal bases Un ∈ RD×Ne are obtained from the training timeseries as Xtrain  
+
+> n
+
+≈ UnΣ(Vtrain  
+
+> n
+
+)⊤, where the approximation arises as we retain only the first Ne leading singular vectors. Finally, we construct the encoding and decoding operators, E and D, as block-diagonal matrices composed of the patch-wise bases {Un}Nn=1 such that 
+
+Z = EX , and ˜X = DZ , (2) where the n-th block in E and D contain U⊤ 
+
+> n
+
+and Un, respectively. The patched latent data Z is then passed to the transformer. A low reconstruction loss LAE 
+
+is a prerequisite for accurate masked predictions. 
+
+Masked prediction. We modify the attention equation presented in [20] for the task of single-layer reconstruction. The aim is to predict the full latent snapshot 
+
+Z⋆ from a masked input Zmasked , where Zmasked  
+
+> n
+
+= −∞ for all masked indices 
+
+n ∈ N masked . Each component in Z⋆ is 
+
+Z⋆me =
+
+> N
+
+∑
+
+> n=1
+
+softmax( am)nVmne , for 
+
+{ m = 1 , . . . , N, e = 1 , . . . , N e
+
+(3) where am is the m-th row of the log-attention matrix A ∈ RN ×N , and V ∈
+
+RN ×N ×Ne is the value tensor; these are defined as 
+
+Amn =
+
+> Ne
+
+∑
+
+> e=1
+
+W A 
+
+> mne
+
+Zmasked  
+
+> ne
+
+, and Vmne =
+
+> Ne
+
+∑ 
+
+> f=1
+
+W V 
+
+> mnef
+
+Zmasked  
+
+> nf
+
+, (4) where WV ∈ RN ×N ×Ne×Ne and WA ∈ RN ×N ×Ne are the value and attention weight-tensors, which are trained on unmasked data with a two-step approach: 1. The value tensor WV can be viewed as an N ×N grid of matrices: each block 
+
+WV 
+
+> mn
+
+∈ RNe×Ne defines a linear map that predicts patch zm from patch zn.These blocks are obtained by least-squares regression, 4 Eze et al. 
+
+(Ztrain )m ≈ WV
+
+> mn
+
+(Ztrain )n, (5a) where the corresponding linear prediction error is 
+
+Llin  
+
+> mn
+
+= ∥∥(Ztrain )m − WV
+
+> mn
+
+(Ztrain )n
+
+∥∥22 . (5b) 2. The attention tensor WA is learned in a second stage and can be decomposed analogously, as a N × N grid of vectors wA 
+
+> mn
+
+∈ RNe . The error Llin  
+
+> mn
+
+provides a prediction uncertainty measure, so that predictions with lower Llin  
+
+> mn
+
+are assigned higher attention weights. In practice, we regress the log-error ,
+
+−log( Llin 
+
+> mn
+
+) ≈ WA
+
+> mn
+
+(Ztrain )n. (6) At inference, the log-error is set to −∞ for masked patches, before softmax 
+
+converts the array into row-normalised attention values. Once Z⋆ is obtained, we test the LAMP architecture on unseen test data Xtest . The overall prediction error is defined as 
+
+Lpred = ∥∥ ˜X⋆ − Xtest ∥∥22 = ∥∥DZ ⋆ − Xtest ∥∥22. (7) 
+
+## 3 Results 
+
+We deploy the LAMP model to reconstruct the streamwise u and spanwise v
+
+velocity fields of two 2D unsteady wakes. First, we demonstrate the LAMP on the laminar wake of a triangular bluff body at Reynolds number Re = 100 [12], sampled at ∼ 32 snapshots per shedding period; 100 snapshots are used for training and 60 for testing. Section 3.1 analyzes how performance depends on latent-space complexity, noise level, and patch placement. Second, we showcase the LAMP on a chaotic wake behind a flat plate at an angle of attack of 15 ◦
+
+in Section 3.2, generated with an in-house solver based on [18] and comprising 2340 snapshots ( ∼ 1377 Lyapunov times[19]), with 75% used for training and 20% for testing. We standardize both datasets by subtracting the temporal mean for each velocity field; the chaotic wake is additionally normalised element-wise by the standard deviation. 
+
+3.1 Laminar wake results 
+
+First, we validate the patch-wise POD and examine the loss LAE (Eq. 1), which sets the lower bound for the masked reconstruction error. Figure 2 shows that (1) LAE saturates rapidly with Ne, which is consistent with the well-known energy concentration of laminar bluff-body wakes into a few dominant POD modes; and (2) larger patches reach the same LAE at higher compression factors, which indicates that using very small patches may fragment the coherent vortex structures into features that carry little dynamical information. Figure 3 shows the LAMP masked flow reconstruction results from randomly unmasked patches covering 10% of the domain for noise-free input (Fig. 3a) and Latent attention on masked patches for flow reconstruction 5
+
+Fig. 2: Patch-wise POD reconstruction performance for varying patch size P .Loss LAE versus (a) latent dimension Ne and (b) compression factor D/N e.noisy input data (Fig. 3b-c). In the noise-free case, the LAMP provides flow-field reconstructions with prediction errors Lpred consistently lower than the variance of the added noise. Increasing the latent dimension Ne reduces Lpred (Fig. 3a), with larger patches outperforming smaller ones once sufficient modes are retained to resolve the coherent shedding. However, adding Gaussian noise to the masked input data such that Xnoisy = Xmasked + ε, where ε ∼ N (0 , Pnoise ), and Pnoise =
+
+E[Xmasked ] · 10 −SNR /10 , shifts the Lpred minima toward lower Ne (Fig. 3b-d). Small patches are less robust because their local POD bases amplify sub-patch-scale noise. In contrast, larger patches act as spatial filters that preserve the dominant flow structures. Notably, for moderate SNR a broad range of (P, N e)
+
+yields Lpred below the noise variance σ2noise (horizontal dashed lines). Therefore, the proposed LAMP successfully achieves simultaneous noise removal and flow reconstruction from masked data. Next, we focus on the attention matrix, which yields as a by-product an interpretable method for sensor placement: the predictive-power maps shown in Fig. 4, which are computed by averaging the columns of − log Llin  
+
+> mn
+
+(6) and reshaping into the physical space. Patches with highest predictive power are those whose local dynamics most accurately predict the rest of the field, i.e., the optimal sensor placement for reconstruction. Beyond reducing the resolution, increasing the patch size predominantly reduces the range of values in the at-tention map. By contrast, as Ne increases, high-power regions multiply from 1-2 near-body patches to distributed coverage across shear layers and far wake, mir-roring the POD hierarchy. Placing sensors at persistent predictive-power peaks across Ne thus provides optimal multi-fidelity sensor layouts for both coarse and fine robust reconstructions. 
+
+3.2 Chaotic wake results 
+
+Because of the chaotic nature of the flow, the flat-plate wake requires larger patches and more POD modes than the laminar case, as shown in the prediction loss in Fig. 5a. We find that LAMP accurately captures the large-scale compo-nents of the flow, but underpredicts with regions of sharper gradients. Since the NavierStokes equations governing the flow dynamics are nonlinear, we may need 6 Eze et al. Truth 
+
+> Error Masked input Reconstruction
+
+Fig. 3: Reconstruction error Lpred for varying noise levels, patch size P and latent dimension Ne. The input is noisy masked data Xmasked + ε, with SNR = (a) ∞
+
+(noise-free), (b) 30 dB, (c) 20 dB, (d) 10 dB. The loss is computed against the noise-free target Xtest . Horizontal dashed lines show the noise variance σ2noise .
+
+Lpred is calculated for 25 random patch arrangements and the median is plotted. An example reconstruction for the noise-free case with P = 16 , Ne = 8 is shown. P = 8  Nembed = 4 Nembed = 6 Nembed = 8 Nembed = 10 Nembed = 12               
+
+> P = 16 P = 32
+> 6789810 810 12 10 12 14 10 12 14
+
+Fig. 4: Predictive-power maps for varying patch size and latent dimension. Patches with higher predictive power are better at predicting the full flow-field. an infinite number of nonlinear measurement states to exactly reconstruct the flow field with a linear model [3, 4]. Adding the nonlinear observable uv , which physically relates to the turbulent shear stress, reduces Lpred by up to an or-der of magnitude for small patches (dashed vs solid lines in Fig. 5a). Figure 5b shows a reconstruction with P = 48 , N e = 150 for masked input on 3 channels (u, v, uv ). This demonstrates the LAMP’s utility as a diagnostic for identifying effective measurement states ( uv , u2, v2, etc.) before deploying complex nonlin-ear autoencoders or deep transformer architectures. Latent attention on masked patches for flow reconstruction 7Truth Masked input Reconstruction 
+
+> Error
+
+Fig. 5: Masked reconstruction on the chaotic wake. Prediction error Lpred for varying patch size and latent dimension with input channels (u, v ) in dotted lines, and (u, v, uv ) in solid lines. An example of the masked reconstruction from 2/8 unmasked patches with P = 48 , N e = 150 , and three channels is shown. 
+
+## 4 Conclusion and future work 
+
+We introduce the Latent Attention on Masked Patches (LAMP) model, a regression-based architecture, inspired by Vision Transformers, designed to reconstruct high-dimensional flow fields from noisy and masked measurements. By integrat-ing patch-wise Proper Orthogonal Decomposition with a linearly decomposable attention mechanism, we provide a framework that avoids hefty hyperparam-eter tuning and back-propagation. We showcase the LAMP on two test cases: a laminar wake past a triangular bluff body, and a chaotic wake past a flat plate. The LAMP has robust performance on the laminar wake, in which it suc-cessfully reconstructs flow fields from only 10% unmasked patches even when the input patches are corrupted by noise levels up to SNR = 10 dB. The re-construction error remains an order of magnitude lower than the input noise variance, which shows that LAMP is both a reconstruction and de-noising tool. Beyond reconstruction, the attention maps from the LAMP provide an inter-pretable multi-fidelity sensor placement approach, which identifies the patches of highest importance for reconstruction. In the temporally chaotic wake, the LAMP maintains predictive accuracy, and we show that including additional input channels, such as the Reynolds stress component, can reduce error by up to an order of magnitude. This highlights the model’s utility in identifying ef-fective measurement states. In future work, LAMP will be extended to include nonlinear autoencoding methods and multi-layered attention blocks.  
+
+> Acknowledgments. LM acknowledges funding from ERC Starting Grant PhyCo 949388. AN is supported by the Eric and Wendy Schmidt AI in Science Fellowship.
+
+## References  
+
+> 1. Bekoglu, E., Bempedelis, N., Steiros, K.: Formation of turbulent secondary vortex street in absence of vortex shedding instability. Journal of Fluid Mechanics 1024 ,A7 (2025)
+
+8 Eze et al. 2. Berkooz, G., et al.: The proper orthogonal decomposition in the analysis of turbu-lent flows. Annual Review of Fluid Mechanics 25 , 539–575 (1993) 3. Birkhoff, G.D., Koopman, B.O.: Recent contributions to the ergodic theory. Pro-ceedings of the National Academy of Sciences 18 (3), 279–282 (1932) 4. Brunton, S.L., et al.: Modern koopman theory for dynamical systems. SIAM Re-view 42 (2), 229–340 (2022) 5. Cheng, S., Liu, C., Guo, Y., Arcucci, R.: Efficient deep data assimilation with sparse observations and time-varying sensors. Journal of Computational Physics 
+
+496 , 112581 (2024) 6. Dosovitskiy, A.: An image is worth 16 Œ 16 words: Transformers for image recog-nition at scale. In: Proceedings of the IEEE/CVF CVPR. pp. 45–67 (2021) 7. Fukami, K., Fukagata, K., Taira, K.: Super-resolution reconstruction of turbulent flows with machine learning. Journal of Fluid Mechanics 870 , 106–120 (2019) 8. He, K., Chen, X., Xie, S., Li, Y., Dollár, P., Girshick, R.: Masked autoencoders are scalable vision learners. In: Proceedings of the IEEE/CVF CVPR. pp. 16000–16009 (2022) 9. Lam, R., Sanchez-Gonzalez, A., Willson, M., Wirnsberger, P., Fortunato, M., Alet, F., Ravuri, S., Ewalds, T., Eaton-Rosen, Z., Hu, W., et al.: Learning skillful medium-range global weather forecasting. Science 382 (6677), 1416–1421 (2023) 10. Lee, Y., Yang, H., Yin, Z.: Piv-dcnn: cascaded deep convolutional neural networks for particle image velocimetry. Experiments in Fluids 58 (12), 171 (2017) 11. Mo, Y., Magri, L.: Reconstruction of three-dimensional turbulent flows from sparse and noisy planar measurements: a weight-sharing neural network approach. Data-Centric Engineering 7, e5 (2026). https://doi.org/10.1017/dce.2026.10038 12. Mo, Y., Traverso, T., Magri, L.: Decoder decomposition for the analysis of the latent space of nonlinear autoencoders with wind-tunnel experimental data (2024) 13. Nista, L., Pitsch, H., Schumann, C.D., Bode, M., Grenga, T., MacArt, J.F., Attili, A.: Influence of adversarial training on super-resolution turbulence reconstruction. Physical Review Fluids 9(6), 064601 (2024) 14. Özalp, E., Nóvoa, A., Magri, L.: Real-time forecasting of chaotic dynamics from sparse data and autoencoders. Computer Methods in Applied Mechanics and En-gineering 450 , 118600 (2026) 15. Peebles, W., Xie, S.: Scalable diffusion models with transformers. In: 2023 IEEE/CVF International Conference on Computer Vision (ICCV). pp. 4172–4182. Paris, France (2023) 16. Quattromini, M., Bucci, M.A., Cherubini, S., Semeraro, O.: Mean flow data assim-ilation using physics-constrained graph neural networks. Data-Centric Engineering 
+
+6, e48 (2025) 17. Racca, A., Doan, N.A.K., Magri, L.: Predicting turbulent dynamics with the con-volutional autoencoder echo state network. Journal of Fluid Mechanics 975 , A2 (2023) 18. Stam, J.: Stable fluids. In: Annual Conference on Computer Graphics and Inter-active Techniques. vol. 26, pp. 121–128 (1999) 19. Strogatz, S.H.: Nonlinear Dynamics and Chaos: With Applications to Physics, Biology, Chemistry, and Engineering. CRC Press (2018) 20. Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A.N., Kaiser, Ł., Polosukhin, I.: Attention is all you need. Advances in neural information pro-cessing systems 30 (2017) 21. Xia, C., Zhang, J., Kerrigan, E.C., Rigas, G.: Active flow control for bluff body drag reduction using reinforcement learning with partial measurements. Journal of Fluid Mechanics 981 , A17 (2024)

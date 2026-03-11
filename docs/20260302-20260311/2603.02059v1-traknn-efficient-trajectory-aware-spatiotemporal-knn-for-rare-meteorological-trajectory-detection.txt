@@ -1,0 +1,475 @@
+Title: 2603.02059v1.pdf
+
+URL Source: https://arxiv.org/pdf/2603.02059v1
+
+Published Time: Tue, 03 Mar 2026 03:55:00 GMT
+
+Number of Pages: 16
+
+Markdown Content:
+# TRAKNN: Efficient Trajectory Aware Spatiotemporal kNN for Rare Meteorological Trajectory Detection 
+
+Guillaume Coulaud 1 Davide Faranda 2,3,4 
+
+> 1
+
+University of Montpellier, Inria, CNRS, LIRMM, Montpellier, France 
+
+guillaume.coulaud@inria.fr  
+
+> 2
+
+Laboratoire des Sciences du Climat et de l’Environnement, UMR 8212 CEA-CNRS-UVSQ, Université Paris-Saclay & IPSL, CEA Saclay l’Orme des Merisiers, 91191 Gif-sur-Yvette, France  
+
+> 3
+
+London Mathematical Laboratory, 8 Margravine Gardens, London W6 8RH, UK  
+
+> 4
+
+LMD/IPSL, ENS, Université PSL, École Polytechnique, Institut Polytechnique de Paris, Sorbonne Université, CNRS, Paris France 
+
+davide.faranda@cea.fr 
+
+Abstract. Extreme weather events, such as windstorms and heatwaves, are driven by persistent atmospheric circulation patterns that evolve over several consecutive days. While traditional circulation-based studies of-ten focus on instantaneous atmospheric states, capturing the temporal evolution, or trajectory, of these spatial fields is essential for charac-terizing rare and potentially impactful atmospheric behavior. However, performing an exhaustive similarity search on multi-decadal, continental-scale gridded datasets presents significant computational and memory challenges. In this paper, we propose TRAKNN (TRajectory Aware KNN), a fully unsupervised and data-agnostic framework for detecting geomet-rically rare short trajectories in spatio-temporal data with an exact kNN approach. TRAKNN leverages a recurrence-based algorithm that decou-ples computational complexity from trajectory length and efficient batch operations, maximizing computational intensity. These optimizations en-able exhaustive analysis on standard workstations, either on CPU or on GPU. We evaluate our approach on 75 years of daily European sea-level pres-sure data. Our results illustrate that rare trajectories identified by TRAKNN correspond to physically coherent atmospheric anomalies and align with independent extreme-event databases. 
+
+Keywords: Spatio-temporal Data · k-Nearest Neighbors · Environmental Sci-ence · Climate · Analogues 
+
+## 1 Introduction 
+
+Extreme weather events such as storms, heatwaves or cold snaps have impor-tant impacts on ecosystems [31] and society [17]. In a context of human-induced  
+
+> arXiv:2603.02059v1 [stat.ML] 2 Mar 2026 2Guillaume Coulaud Davide Faranda
+
+climate change, their frequency and intensity are evolving [30] and their socio-economic cost has increased over recent decades [12], motivating sustained efforts to better understand their underlying physical drivers [19] and attribute the role of climate change [26]. In Europe, many extreme events are associated with persistent large-scale atmospheric circulation patterns whose evolution unfolds over several consecutive days [14]. While many existing circulation-based stud-ies [18,20] focus on instantaneous atmospheric states (i.e., a spatial field at a single time step), the temporal evolution of spatial fields plays a central role in the development, amplification, and persistence of extremes. Capturing short spatio-temporal trajectories rather than isolated snapshots is therefore essential for characterizing rare atmospheric behavior. Detecting rare trajectories enables the systematic identification of unusual dynamical evolutions, supports the re-trieval of historical analogues, and provides a principled basis for linking atmo-spheric dynamics to observed extreme impacts. Adopting a fully data-driven and unsupervised methodology further ensures that the approach remains problem-agnostic and data-agnostic, allowing systematic investigation without relying on predefined regimes, physical thresholds, or prior domain-specific knowledge. From a data mining perspective, this setting naturally leads to anomaly de-tection in high-dimensional spatio-temporal data. Distance-based approaches such as Nearest-neighbor–based approaches [3,27] are particularly attractive in this context due to their non-parametric nature, interpretability, and min-imal modeling assumptions. However, applying such methods systematically to multi-decadal, continental-scale datasets presents substantial computational challenges. An exhaustive, exact comparison of trajectories requires quadratic scaling in the number of time steps and significant memory to load the data, which can quickly become prohibitive for datasets spanning several decades of daily observations on standard hardware. In practice, these constraints often lead to subsampling, approximate similar-ity search, or reliance on specialized high-performance computing infrastructure. In contrast, we deliberately target a different design objective: enabling efficient, systematic, exhaustive trajectory-based analysis on standard hardware, with-out prohibitive memory requirements. Achieving this goal requires careful al-gorithmic design to eliminate redundant computations induced by overlapping temporal windows while preserving exactness. Existing work on anomaly detection addresses aspects of this problem but does not directly tackle the combination of high spatial dimensionality, multi-decadal time horizons, and trajectory-based comparison at the continental scale under practical hardware constraints. This motivates the development of an efficient and memory-aware algorithm tailored to gridded spatio-temporal data. This paper makes the following contributions: 
+
+– We formulate a generic, fully unsupervised framework for detecting geomet-rically rare short trajectories in gridded spatio-temporal data, independent of the underlying physical variable. 
+
+– We derive an exact recurrence-based algorithm for trajectory distance com-putation, making the computational cost independent of the trajectory length. TRAKNN for Rare Meteorological Trajectory Detection 3
+
+– We propose an TRAKNN efficient algorithm that enables exhaustive multi-decadal analysis on standard workstations with a CPU and a CPU+GPU version. 
+
+– We illustrate our approach on 75 years of European daily sea-level pressure data, showing that rare trajectories exhibit coherent atmospheric anomalies and show agreement with independent extreme-event databases. Together, these results illustrate that exact geometrically rare trajectories correspond to meaningful weather anomalies rarity, and the rarity estimation at continental and multi-decadal scales is computationally feasible and yields interpretable insights into extreme atmospheric behavior. The remainder of the paper is organized as follows. We present the related work in Section 2. The problem and our algorithm are then described in Section 3. A performance evaluation of the algorithm scaling is presented in Section 4. We illustrate the method on a real-world case study in Section 5 We discuss broader applications in Section 6 and conclude in Section 7. 
+
+## 2 Related Work 
+
+The detection of rare patterns in spatio-temporal datasets lies at the intersec-tion of climate science, machine learning, and anomaly detection. In atmospheric sciences, extreme events are traditionally identified either through impact-based thresholds or circulation-based diagnostics. Many studies rely on flow-analogue approaches [20,28,7], where analogues are defined as historical days whose large-scale fields are most similar to a target day under Euclidean distance. Such approaches focus primarily on instantaneous atmospheric states and do not ex-plicitly account for the temporal evolution of circulation patterns. Building on this existing work on analogue and similarity search, we investigate the potential of a distance-based method to retrieve geometrically rare trajectories. From a data mining perspective, rare trajectory detection can be formulated as unsupervised anomaly detection in high-dimensional time-series data. Clas-sical distance-based methods such as k-nearest neighbors ( kNN) [27,3], Local Outlier Factor [5], and Isolation Forest [23] define anomalies through geomet-ric isolation in feature space. These methods are attractive due to their minimal modeling assumptions and interpretability, but their application to multi-decadal spatio-temporal datasets is computationally challenging due to the cost of ex-haustive similarity search. Modern similarity search libraries such as FAISS [21,9] enable large-scale nearest-neighbor retrieval, often using approximate indexing structures or ded-icated computing hardware. However, they do not exploit the strong temporal overlap induced by sliding-window trajectory construction, resulting in redun-dant computations when applied directly to consecutive subsequences. Time-series data mining has addressed related challenges in subsequence sim-ilarity search and motif discovery. The Matrix Profile (MP) framework [34] in-troduced exact and scalable all-pairs similarity search for univariate time series using recurrence-based distance updates. Subsequent work extended this idea to 4 Guillaume Coulaud Davide Faranda 
+
+multidimensional and streaming settings. Nevertheless, these approaches do not directly address the challenge of spatio-temporal data. A key concern when applying distance-based methods in high dimensions is the phenomenon of distance concentration [4,1]. However, theoretical analyses have shown that nearest-neighbor methods remain meaningful when data lie on lower-dimensional structures or exhibit strong dependencies [10]. Climate reanal-ysis fields are characterized by substantial spatial correlation and low intrinsic dimensionality, as evidenced by empirical orthogonal function analyses [15]. More generally, intrinsic dimensionality estimation methods [22] provide tools to quan-tify the effective degrees of freedom underlying high-dimensional observations. Recent advances in deep learning have also been applied to spatio-temporal anomaly detection [33,6], including convolutional autoencoders, variational au-toencoders, and recurrent neural networks. While these approaches can capture complex nonlinear structure, they typically require substantial training data, model tuning, and computational resources. Several work has investigate deep learning methods for the detection of extreme weather events [24,25,32]. In summary, existing approaches either (i) focus on instantaneous states, (ii) rely on approximate similarity search without accounting for the temporal overlap, or (iii) require complex parametric modeling. Our work instead targets exact, trajectory-aware, and computationally efficient kNN-based rarity detection tai-lored to gridded spatio-temporal datasets without strong hardware requirements. Additionally, the goal of our study is not to directly detect the extreme weather events, but to detect rare trajectories and assess 1) if they correspond to meaningful physical patterns, and 2) if they can be linked to extreme events. 
+
+## 3 Methodology 
+
+3.1 Problem Overview 
+
+The core problem we address is how to systematically identify unusual atmo-spheric evolutions in large-scale gridded climate data. Consider a sequence of daily sea-level pressure maps over Europe spanning several decades. An extreme weather event, such as a windstorm or a heatwave, is rarely a single snapshot but rather a process that unfolds over multiple days. For example, an extratropical cyclone typically develops, matures, and decays over a period of three to seven days. During this evolution, the spatial pattern of pressure evolves in a coherent but potentially rare way. Our goal is to detect such rare temporal evolutions without relying on prede-fined thresholds, labeled events, or domain-specific physical indices. We adopt a purely data-driven, geometric perspective: a sequence of consecutive daily maps of shape h × w is treated as a trajectory in a high-dimensional space. A tra-jectory is considered rare if it lies in a region of this space that is far from all other trajectories, i.e., if it is geometrically isolated. This isolation is quantified by the average distance to its k-nearest neighbors: trajectories with high average nearest-neighbor distance are considered isolated and therefore rare. TRAKNN for Rare Meteorological Trajectory Detection 5
+
+This formulation is intuitive: if an atmospheric evolution is unusual, it should have few close counterparts in the historical record. The challenge lies in making this idea computationally feasible for datasets containing tens of thousands of time steps and thousands of spatial grid points. The remainder of this section formalizes the problem and presents an efficient algorithm that makes exhaustive trajectory analysis practical on standard hardware. 
+
+3.2 Problem Definition 
+
+We address the task of identifying rare temporal evolutions within high-dimensional spatio-temporal datasets. Let X = {X1, X 2, . . . , X n} be a discrete-time sequence of spatial fields, where each field Xt ∈ Rh×w is a h × w matix of a physical or abstract variable (e.g., pressure, temperature, or pixel intensities) observed at time t.We define a spatio-temporal trajectory T (d) 
+
+> t
+
+of duration d starting at time t as an ordered sequence of d consecutive spatial fields: 
+
+T (d) 
+
+> t
+
+= ( Xt, X t+1 , . . . , X t+d−1) ∈ Rd×h×w (1) A trajectory is a third-order tensor representing a path in the high-dimensional configuration space of the system over the time interval [t, t + d − 1] .To quantify the similarity between two trajectories T (d) 
+
+> i
+
+and T (d) 
+
+> j
+
+, we utilize the squared Euclidean distance D defined by the Frobenius norm of the difference of two trajectories. This captures the cumulative point-wise variance across both spatial and temporal dimensions: 
+
+D(T (d) 
+
+> i
+
+, T (d) 
+
+> j
+
+) = ∥T (d) 
+
+> i
+
+− T (d) 
+
+> j
+
+∥2 
+
+> F
+
+=
+
+> d−1
+
+X
+
+> m=0
+
+∥Xi+m − Xj+m∥2 
+
+> F
+
+(2) In many real-world systems, temporal persistence causes a trivial match ef-fect, where trajectories overlapping in time appear highly similar. To ensure the discovery of non-trivial isolation, we define an exclusion zone e. Two trajecto-ries Ti and Tj are only considered candidate neighbors if |i − j| > e .The objective is to compute a rarity score st, defined as the mean distance to the k-nearest neighbors (kNN) of T (d) 
+
+> t
+
+within the set of all non-overlapping trajectories. 
+
+st = 1
+
+k
+
+X
+
+> j∈N t
+
+D(T (d) 
+
+> t
+
+, T (d) 
+
+> j
+
+), (3) where Nt is the set of indices representing the k-nearest neighbors of T (d) 
+
+> t
+
+.
+
+3.3 Trajectory Aware KNN 
+
+We propose the TRajectory Aware KNN (TRAKNN ) algorithm described in Algorithm 1. It is divided into two parts: the efficient computation of all-pairs similarity between all spatial fields and the computation all the distance between trajectories with a recurrence-based optimization that decouples the computational complexity from the trajectory duration d.6 Guillaume Coulaud Davide Faranda 
+
+Algorithm 1: TRAKNN algorithm 
+
+Input: Sequence of fields X ∈ Rh×w×n, duration d, exclusion zone e,neighbors k, batch size b
+
+Output: Rarity scores s ∈ Rn−d+1 
+
+// 1. Symmetric Batched GeMM Spatial Distance Computation  
+
+> 1
+
+Precompute squared norms Ni = ∥Xi∥2 
+
+> F
+
+for i = 1 . . . n  
+
+> 2
+
+for batch index i ← 1, b + 1 , . . . , n do  
+
+> 3
+
+for batch index j ← i, i + b, . . . , n do  
+
+> 4
+
+G ← B⊤ 
+
+> i
+
+Bj // Compute only upper triangle  
+
+> 5
+
+for local indices u, v in batches do  
+
+> 6
+
+Su,v ← Nu + Nv − 2Gu,v  
+
+> 7
+
+Sv,u ← Su,v // Exploit symmetry // 2. Initialization and Recurrence  
+
+> 8
+
+for j ← 1 to n − d + 1 do  
+
+> 9
+
+D1,j ← Pd−1 
+
+> m=0
+
+S1+ m,j +m 
+
+> 10
+
+for t ← 2 to n − d + 1 do 
+
+// Vectorized update  
+
+> 11
+
+Dt, · ← Dt−1,prev − St−1,prev + St+d−1,curr 
+
+// 3. kNN Rarity Estimation  
+
+> 12
+
+Nt ← indices of k smallest in Dt where |t − j| > e  
+
+> 13
+
+st ← 1
+
+> k
+
+P 
+
+> j∈N t
+
+Dt,j 
+
+Optimized Spatial Distance Computation The TRAKNN algorithm first precom-putes a spatial squared distance matrix S ∈ Rn×n. This repeated evaluation of pairwise spatial distances between high-resolution fields constitutes the dominant computational bottleneck. We reformulate the squared distance computation be-tween two trajectories as a batch-wise General Matrix–Matrix Multiplication (GeMM) operation to maximize the computational intensity. Let Xi, X j ∈ Rh×w be two spatial fields. The squared Euclidean distance between them is computed as: 
+
+∥Xi − Xj ∥2 
+
+> F
+
+= ∥Xi∥2 
+
+> F
+
++ ∥Xj ∥2 
+
+> F
+
+− 2⟨Xi, X j ⟩F , (4) where 
+
+⟨Xi, X j ⟩F =
+
+> h
+
+X
+
+> p=1
+> w
+
+X
+
+> q=1
+
+(Xi)p,q (Xj )p,q and ∥X∥2 
+
+> F
+
+= ⟨X, X ⟩
+
+The norm of the spatial fields ∥Xi∥2 
+
+> F
+
+is precomputed and cached, reducing subsequent distance evaluations to inner-product computations and vector ad-ditions. By reshaping each field Xi into a vector xi ∈ Rm with m = h · w, we aggregate several space fields into batches of dense matrices B1, B 2 ∈ Rm×b.The batch of dot products is then obtained via a single Level-3 BLAS operation 
+
+G = B⊤ 
+
+> 1
+
+B2. Since the spatial squared distance matrix is symmetric ( Si,j = Sj,i ), TRAKNN for Rare Meteorological Trajectory Detection 7
+
+we only compute G for the upper triangular batches, effectively halving the num-ber of required GeMM operations and maximizing FLOP utilization on modern hardware. This step corresponds to lines 1-7 of Algorithm 1. 
+
+Constant-Time Trajectory Distance Recurrence Once S is computed, TRAKNN calculates trajectory distances. As two temporally consecutive trajectories T (d)
+
+> i
+
+and T (d) 
+
+> i−1
+
+share d − 1 spatial fields, the squared distance for any pair (i, j ) is updated in constant time O(1) :
+
+D(T (d) 
+
+> i
+
+, T (d) 
+
+> j
+
+) = D(T (d)
+
+> i−1
+
+, T (d)
+
+> j−1
+
+) − Si−1,j −1 + Si+d−1,j +d−1 (5) This recurrence must be explicitly initialized in lines 8-9, then is incrementally computed row-wise, leveraging vectorized operations in line 11. 
+
+Complexity analysis The computational complexity of TRAKNN is dominated by the initial spatial distance matrix calculation, which scales as O(hw · n2).The cost to compute all trajectories distance with Equation. 5 (line 6) is O(n2).The recurrence is initialized at a cost of O(d · n). The cost to retrieve the top 
+
+kNN in line 11 is O(n log k). Therefore TRAKNN computational complexity is O(hw · n2). In terms of memory, the algorithm requires storing the n × n
+
+spatial distance matrix S, a vector of length n for the precomputed norms, and two vectors of length (n − d + 1) , one for the trajectory distances and one for the scores. Since the algorithm also stores the spatio-temporal data of shape 
+
+h × w × n, the memory footprint is O(max ( hw, n ) · n).
+
+## 4 Performance Evaluation 
+
+Setup The code is written in Python 3.11 and Pytorch 2.5, allowing the algorithm to be executed seamlessly on both CPUs and GPUs. For the GPU version, only the batch-wise computation of the spatial matrix is done on the GPU, and the matrix is stored in the RAM. The code of the algorithms and all experiments is available on the following Github repository 5. The experiments are conducted on a laptop with an Intel CPU (i9-13900H@2.6GHz) with 32 GB of RAM and an NVIDIA GPU (RTX 2000 Ada, 8GB). The execution time and memory usage of the algorithm are evaluated on syn-thetic random spatio-temporal data. As a baseline, we compare the computation time to the FAISS algorithm [9,21], a state-of-the-art library allowing similarity search on both CPUs and GPUs. 
+
+Execution time Figure 1 highlights the strong scalability of TRAKNN with respect to the spatial dimension h × w(Fig. 1a), the number of time steps n
+
+(Fig. 1b), the trajectory duration d (Fig. 1c), and the number of neighbors k
+
+(Fig. 1d). For trajectories of length 1, TRAKNN achieves performance compara-ble to FAISS on GPU, while slightly outperforming it on CPU. More importantly,  
+
+> 5https://github.com/GuillaumeCld/Trajectory-kNN
+
+8 Guillaume Coulaud Davide Faranda 
+
+TRAKNN maintains nearly constant computation time as the trajectory length increases, demonstrating its efficiency for large-scale trajectory rarity analysis. In contrast, FAISS requires constructing and storing a database, which induces significant memory overhead and prevents it from scaling to longer trajectories. 50 100 150 200 250     
+
+> h(spatial dimension, with h=w)
+> 0
+> 100
+> 200
+> 300 Time (seconds)
+> TRAKNN (CPU) TRAKNN (GPU) FAISS (CPU) FAISS (GPU)
+
+(a) Varying spatial height h with w = h5000 10000 15000 20000 25000   
+
+> n(time dimension)
+> 0
+> 100
+> 200
+> 300 Time (seconds)
+> TRAKNN (CPU) TRAKNN (GPU) FAISS (CPU) FAISS (GPU)
+
+(b) Varying timestamp n1 2 4 8 16  
+
+> d(trajectory length)
+> 0
+> 100
+> 200
+> 300
+> 400 Time (seconds)
+
+(c) Varying trajectory length d0 10 20 30 40 50   
+
+> k(number of nearest neighbors)
+> 0
+> 100
+> 200
+> 300 Time (seconds)
+
+(d) Varying number of neighbors k
+
+Fig. 1: Execution time (in seconds) of TRAKNN compared to FAISS on both CPU and GPU as a function of (a) spatial dimension length, (b) number of time steps, (c) trajectory length, and (d) number of neighbors. The default parameters are n = 27 , 000 , h = 180 , w = 280 , d = 1 , and k = 1 .
+
+Memory usage Figure 2 displays the peak RAM usage of all algorithms on the 
+
+180 × 280 grid with 75 years of daily observations corresponding to n ≈ 27 , 000 ,with k = 10 , and d ∈ { 1, 5}. It highlights that TRAKNN uses 6 GB of memory independently of d, while for FAISS requires more memory, 10 GB for d = 1 ,and the memory usage is linear in d. For d = 2 FAISS, needs more than 20 GB and cannot be used on a GPU. 
+
+## 5 Case Study 
+
+We illustrate the pertinence of the method on mean sea level-pressure (SLP) data over Europe ( 30 ◦N − 75 ◦N, 30 ◦W − 40 ◦E) from 1950 to 2025. The data cor-responds to gridded maps with a resolution of 0.25 ◦ corresponding to images of TRAKNN for Rare Meteorological Trajectory Detection 9FAISS (d=1) TRAKNN (d=1) FAISS (d=2) TRAKNN (d=2) 0510 15 20 Memory Usage (GB) FAISS (CPU) FAISS (GPU) TRAKNN (CPU) TRAKNN (GPU) 
+
+Fig. 2: RAM peak memory usage per algorithm resolution 181 ×281 , i.e, approximately 50,000 spatial points, with daily observa-tions over 75 years corresponding to approximately 27 , 000 time points. In total, we process more than a billion data points. The data is directly downloadable from the C3S Climate Data Store [16]. Our experiments are designed to answer the following three questions: 1) Is the Euclidean distance still meaningful for high-dimensional trajectories? 2) Do the geometrically rare trajectories correspond to meaningful atmospheric anomalies? 3) Can rare trajectories correspond to extreme weather events? 
+
+5.1 Comparison with Dimension Reduction 
+
+Intrinsic dimension study To better understand the geometric structure of the high-dimensional atmospheric trajectories, we estimate the intrinsic dimension-ality (ID) of the trajectory space as a function of the trajectory duration d, i.e., the minimal number of variables needed to represent the data. Although each trajectory of length d resides in an ambient space of dimension d × h × w, the effective degrees of freedom may be substantially lower due to strong spatial and temporal correlations. We therefore compute the averaged local ID using the maximum-likelihood kNN estimator [22], which locally quantifies the ID. Given this estimator depends on the parameter k and TRAKNN allows to effi-ciently retrieves the k neighbors, we apply the estimator with k ∈ { 20 , 30 , 40 }.To reduce the impact of the selection of k, we report the macro averages and standard deviations of the local IDs. This analysis serves two purposes: (i) to assess whether Euclidean nearest-neighbor distances remain meaningful despite the high ambient dimensionality, and (ii) to characterize how dynamical com-plexity evolves with increasing temporal embedding length. The results shown in Table 1 reveal that the ID is two orders of magnitude lower than the ambient dimension, with a sub-linear growth and clear saturation of ID, increasing from 
+
+8 ± 7 for single-day fields to approximately 18 ± 5 for trajectories of length five days or longer. Notably, beyond five days, additional temporal context only in-crease slightly the ID, indicating that multi-day atmospheric evolutions remain confined to a structured low-dimensional manifold. 
+
+Impact of PCA on detection We now investigate if applying TRAKNN on the data with reduced spatial dimension impact the detection of the rarest trajecto-ries. To reduce the spatial dimension, we use the PCA low rank approximation 10 Guillaume Coulaud Davide Faranda 
+
+Table 1: Comparison of the ambient space dimension ( d × h × w) and the mean local intrinsic dimension (ID) as a function of the trajectory duration on the mean sea level pressure                       
+
+> dAmbient ID 150,000 8±7
+> 3150,000 16 ±6
+> 5250,000 18 ±5
+> 7350,000 19 ±4
+> 15 750,000 21 ±3
+
+from PyTorch [13], which performs a random SVD to approximate a lower rank 
+
+q of the matrix. We set q = 100 , then retain the components explaining 99% of the variance. This allows to reduce the dimension from approximately 50,000 to 33. We apply TRAKNN with d = 5 and k = 10 . Among the top 100 highest scores detected with and without dimension reduction, there are 99 common dates out of 100. The Spearman rank correlation between the common dates is 0.99, indicating almost the same rank ordering. Retaining 95% of explained variance lower the number of dimension to 13, and results to 93 common dates, with a rank correlation of 0.96. This result highlight with the previous result on the intrinsic dimension, highlights the pertinence of using the Euclidean distance to estimate the distance between trajectories despite the high dimension of the trajectories. 
+
+5.2 Composite Analysis 
+
+To assess the physical coherence of the detected trajectories, we perform a com-posite analysis of the top 100 rarest atmospheric trajectories identified for a tra-jectory length of d = 5 days with k = 10 . The objective is to examine whether high-rarity trajectories correspond to structured and interpretable large-scale circulation patterns, rather than isolated noise-driven configurations. To make the composite analysis, we use a standard procedure in atmospheric analysis and describe it in the next paragraph. For each trajectory, we consider the anomaly fields relative to the long-term climatology and vectorize each spatial field into a state vector of dimension h×w,corresponding to the number of grid points in the spatial domain. To account for the decreasing physical area of grid cells towards the poles, each grid point is weighted by the cosine of latitude. This area-weighting ensures that subsequent analysis reflects physically meaningful spatial structures and is not biased by higher grid density at high latitudes. The weighted anomaly vectors are then standardized by removing the mean and dividing by the standard deviation at each grid point. This step ensures that all spatial locations contribute compara-bly to the analysis, independent of their intrinsic variability. Then we reduce the dimensionality with the low rank PC and keep 95% of the explained variance. We regroup similar dates with a clustering step performed in the reduced PCA TRAKNN for Rare Meteorological Trajectory Detection 11 
+
+space using the k-means algorithm with squared Euclidean distance. This pro-cedure groups the rare trajectories into a small number of coherent dynamical regimes. For each cluster, composite anomaly maps are computed by averaging the original anomaly fields across all dates assigned to the cluster. The resulting composites, displayed in Figure 3, reveal persistent large-scale structures characterized by strong pressure gradients and spatially organized anomaly patterns. Especially, we find three relevant cluster of cluster size s. The first cluster ( s = 25 ) displays high positive pressure anomalies over northern Europe and low negative anomalies on the south part of the domain. The second cluster ( s = 41 ) is the opposite of the first, with high negative anomalies on the northern part and low positive anomalies in the lower part. The third cluster (s = 34 ) correspond to a large low pressure-regime regime (negative anomalies) covering almost all Europe. This analysis confirms that the highest-ranked rare trajectories correspond to dynamically coherent and physically interpretable circulation evolutions rather than random outliers. 20 °W 0° 20 °E40 °N60 °N        
+
+> Cluster 1 ( s=25)
+> 20 °W0°20 °E
+> Cluster 2 ( s=41)
+> 20 °W0°20 °E40 °N60 °N
+> Cluster 3 ( s=34)
+> −20 −10 010 20
+> msl anomalies
+
+Fig. 3: Composite analysis on the three main clusters of mean sea level (msl) pressure anomalies 
+
+5.3 Matching to Extreme Events 
+
+We now investigate if the top 100 trajectories correspond to known extreme weather events, especially wind storms. 
+
+Databases description We use three publicly accessible and independent databases: XWS [29], CLIMK-WINDS [11], and EM-DAT [8]. The XWS databases consists of the 50 most extremes winter European wind storms from 1979 to 2013 determined by a meteorological index based on the physical characteristics of the event. The analysis is conducted on the following domain 35 ◦N − 70 ◦N, 15 ◦W − 25 ◦E, among the 5730 detected storms, the 50 most extreme were retained for the catalog. The detected storms are split into two categories: the insurance storms , which consisted of 23 storms that caused high insurance losses, and the large storms , which comprise 27 storms selected 12 Guillaume Coulaud Davide Faranda 
+
+as the top “non-insurance” storms based on their ranking in the storm severity index. The CLIMK–WINDS database consists of the 50 most severe European win-ter wind storms from 1995 to 2015 detected over the following spatial domain 
+
+27 ◦N − 72 ◦N, 22 ◦W − 45 ◦E using a meteorological index. The EM-DAT database is a global database of natural and technological disasters; specifically, it contains meteorological extreme events such as storms, heat waves, and cold snaps. For this work, we collect only the European extreme events and compute the rarity score on the full spatial domain from 1950 to 2025. 
+
+Matching Methodology For fair comparison, we investigate the rare SLP trajec-tories on the same spatial domain and the same date range of each catalog. For each analysis, we retain the top 100 dates with the highest rarity score, an event is considered detected if it belongs to a rare trajectory, i.e., it belongs between the date and the date plus d days, corresponding to the trajectory duration. We always set k = 10 for the experiments. 
+
+Results Table 2 summarizes the number of dates associated with storms for different trajectory lengths d ∈ { 1, 3, 5, 7} across the three databases: XWS ,
+
+CLIMK–WINDS , and EM-DAT . The results highlight how detection varies both with trajectory duration and with the nature of the database (meteorological vs. impact-based). A general increase in the number of identified days is observed as the trajec-tory length d increases, particularly for the meteorological catalogs. For CLIMK–WINDS, detections steadily rise from 6 (1-day trajectories) to 12 (7-day trajectories) dates of the top 100 covering a storm. Similarly, for XWS 
+
+Large storms, the number increases from 3 (1-day) to 7 (7-day). This mono-tonic or near-monotonic growth suggests that longer trajectories better capture the temporal extent of severe winter wind storms. Since such systems typically evolve over several days, extending d increases the probability that at least one rare SLP configuration overlaps with a cataloged event. Nevertheless, increasing 
+
+d reduces the number of days corresponding to insurance storms. The differ-ence between Insurance and Large storms in XWS likely reflects the distinction between impact-based and purely meteorological severity rankings. Insurance storms may be more localized or associated with specific high-loss days, which explains their stronger representation at short durations. In contrast, some categories exhibit non-monotonic behavior. For instance, EM-DAT general storms decrease from 8 detections at d = 1 to 5 at d = 3 , then increase again for longer durations. This indicates that increasing trajectory duration does not uniformly improve detection across all datasets. As a comparison, a random selection of 100 dates would find, on average over 100 runs, 0.7 CLIMK-WINDS storms and 0.4 XWS storms (large + insurance). Additionally, when compared with the temperature extremes reported in EM-DAT, the instantaneous dimension ( d = 1 ) shows that, out of 100 dates, 9 coincide with severe winter conditions and 17 with cold waves. As d increases, the TRAKNN for Rare Meteorological Trajectory Detection 13 
+
+Table 2: Number of identified dates associated with a storm, as a function of the trajectory duration d (in days) with TRAKNN, by dataset and storm subtype, compared to an averaged random estimator.                             
+
+> Dataset Storm type dRandom 1 3 5 7
+> CLIMK-WINDS –6 9 11 12 0.7 XWS Insurance storms 6 5 240.2 Large storms 3 4 570.2 EM-DAT Storm (general) 8 5 740.9 Storm (tropical) 0 0 110.1 Storm (extratropical) 3 2 330.4
+
+correspondence with temperature extremes decreases substantially. For instance, at d = 5 , none of the 100 dates correspond to severe winter conditions, and only 7 correspond to cold waves. 
+
+Implications Overall, the results indicate that (i) longer trajectories improve detection for large-scale winter wind storms, particularly in meteorological cat-alogs; and (ii) detection is more consistent in catalogs constructed using me-teorological severity indices (CLIMK–WINDS and XWS) than in multi-hazard disaster databases such as EM-DAT, (iii) spatial maps snapshots are more rele-vant for extreme temperature events 
+
+## 6 Discussion 
+
+Practical Insight TRAKNN allows for the exhaustive analysis of multi-decadal, continental-scale datasets on standard workstations in a matter of minutes. This scalability enables practitioners to perform rapid “what-if” analyses, such as varying trajectory lengths or testing different variables, which was previously prohibitive due to the quadratic scaling of exact similarity searches. Furthermore, the method’s ability to handle gridded data directly for any trajectory length, without the need for dimensionality reduction or complex feature engineering, provides a transparent and accessible tool for historical analogue retrieval and extreme event attribution. A key consideration in kNN-based algorithms is the choice of k. One ad-vantage of this approach is that the value of k has minimal influence on the computational cost. Moreover, the top k results obtained for a larger value of k
+
+naturally include the top k results for any smaller value. Consequently, the rarity score can be evaluated for multiple values of k with only minor post-processing overhead, avoiding the need to recompute the entire procedure from scratch. This enables users to efficiently assess how different values of k affect the score and the identification of the rarest trajectories in an ensemble-like manner. 14 Guillaume Coulaud Davide Faranda 
+
+While the memory footprint can appear substantial, in practical analogue-based atmospheric studies the available record typically spans at most ≈75 years of daily data, and the spatial domain is constrained by the physical scale of the phenomenon under investigation. Therefore, the problem size considered in our case study reflects realistic upper bounds for real-world applications size rather than an artificial limitation of the method. 
+
+Relation to Matrix Profile The proposed recurrence-based optimization is, in spirit, an extension of the MP formalism to spatio-temporal data. By utilizing the recurrence relation in Eq. 5, we apply an update logic analogous to the MP efficient algorithms [34,2], but adapted for sequences of any dimension rather than scalar values. Consequently, for the special case where k = 1 , our rarity score st represents a Spatiotemporal Matrix Profile , scaling the all-pairs similarity search philosophy to spatio-temporal fields and providing a robust foundation for identifying non-trivial motifs and anomalies in complex physical systems. 
+
+## 7 Conclusion 
+
+We proposed TRAKNN to address a gap in climate science by allowing to shift the analytical focus from instantaneous atmospheric snapshots to the temporal evolution of spatial fields of any duration. Future work, if required by real-world applications, could investigate out-of-core computation to account for large spatial or temporal domains that 1) might not fit in memory, and 2) lead to an important data loading bottleneck. Additionally, future work will investigate the incorporation of trajectory-based analogues in the flow analogues analysis. 
+
+## Acknowledgment 
+
+We acknowledge funding by Région Occitanie, from the European Union’s Hori-zon 2020 research and innovation programme under grant agreement No. 101003469 (XAIDA), the ANR project TASE PowDev (Strategic Development of the Power Grids of the Future, ANR-22-PETA-0016), the ANR project Templex (ANR-23-CE56-0002), and the ANR project TRACCS, Transformer la modélisation du climat pour les services climatiques (ANR-22-EXTR-0005, Extending). 
+
+## References     
+
+> 1. Charu C. Aggarwal, Alexander Hinneburg, and Daniel A. Keim. On the Surprising Behavior of Distance Metrics in High Dimensional Space. In Jan Van den Buss-che and Victor Vianu, editors, Database Theory — ICDT 2001 , pages 420–434. Springer. 2. Reza Akbarinia and Bertrand Cloez. Efficient matrix profile computation using different distance functions. arXiv preprint arXiv:1901.05708 , 2019.
+
+TRAKNN for Rare Meteorological Trajectory Detection 15 3. Fabrizio Angiulli and Clara Pizzuti. Fast outlier detection in high dimensional spaces. In European conference on principles of data mining and knowledge dis-covery , pages 15–27. Springer, 2002. 4. Kevin Beyer, Jonathan Goldstein, Raghu Ramakrishnan, and Uri Shaft. When Is “Nearest Neighbor” Meaningful? In Catriel Beeri and Peter Buneman, editors, 
+
+Database Theory — ICDT’99 , pages 217–235. Springer. 5. Markus M. Breunig, Hans-Peter Kriegel, Raymond T. Ng, and Jörg Sander. Lof: Identifying density-based local outliers. In Proceedings of the ACM SIGMOD In-ternational Conference on Management of Data , pages 93–104. ACM, 2000. 6. Raghavendra Chalapathy and Sanjay Chawla. Deep learning for anomaly detec-tion: A survey. arXiv preprint arXiv:1901.03407 , 2019. 7. Soledad Collazo, Solange Suli, Pablo G Zaninelli, Ricardo García-Herrera, David Barriopedro, and José M Garrido-Perez. Influence of large-scale circulation and local feedbacks on extreme summer heat in argentina in 2022/23. Communications Earth & Environment , 5(1):231, 2024. 8. Damien Delforge, Valentin Wathelet, Regina Below, Cinzia Lanfredi Sofia, Margo Tonnelier, Joris A. F. van Loenhout, and Niko Speybroek. The EM-DAT Emer-gency Events Database Archive. 9. Matthijs Douze, Alexandr Guzhva, Chengqi Deng, Jeff Johnson, Gergely Szilvasy, Pierre-Emmanuel Mazaré, Maria Lomeli, Lucas Hosseini, and Hervé Jégou. THE FAISS LIBRARY. pages 1–17. 10. Robert J. Durrant and Ata Kabán. When is ‘nearest neighbour’ meaningful: A converse theorem and implications. 25(4):385–397. 11. Clare M. Flynn, Julia Moemken, Joaquim G. Pinto, Michael K. Schutte, and Gabriele Messori. CLIMK–WINDS: A new database of extreme European win-ter windstorms. 17(9):4431–4453. 12. Giovanni Forzieri, Alessandra Bianchi, Filipe Batista e Silva, Mario A Marin Her-rera, Antoine Leblois, Carlo Lavalle, Jeroen CJH Aerts, and Luc Feyen. Escalating impacts of climate extremes on critical infrastructures in europe. Global environ-mental change , 48:97–107, 2018. 13. N. Halko, P. G. Martinsson, and J. A. Tropp. Finding Structure with Randomness: Probabilistic Algorithms for Constructing Approximate Matrix Decompositions. 53(2):217–288. 14. John Hanley and Rodrigo Caballero. The role of large-scale atmospheric flow and Rossby wave breaking in the evolution of extreme windstorms over Europe. 39(21). 15. Abdel Hannachi, Ian T Jolliffe, David B Stephenson, et al. Empirical orthogonal functions and related techniques in atmospheric science: A review. International journal of climatology , 27(9):1119–1152, 2007. 16. Hans Hersbach, Bill Bell, Paul Berrisford, Gionata Biavati, András Horányi, Joaquín Muñoz Sabater, Julien Nicolas, Carole Peubey, Raluca Radu, Iryna Rozum, Dinand Schepers, Adrian Simmons, Cornel Soci, Dick Dee, and Jean-Noël Thépaut. ERA5 hourly data on single levels from 1940 to present. Coper-nicus Climate Change Service (C3S) Climate Data Store (CDS), 2023. doi: 10.24381/cds.adbb2d47 (Accessed on 10-06-2024). 17. Peter Hoeppe. Trends in weather related disasters – Consequences for insurers and society. 11:70–79. 18. Daniel E Horton, Nathaniel C Johnson, Deepti Singh, Daniel L Swain, Bala Ra-jaratnam, and Noah S Diffenbaugh. Contribution of changes in atmospheric circu-lation patterns to extreme temperature trends. Nature , 522(7557):465–469, 2015. 16 Guillaume Coulaud Davide Faranda 19. Radley M. Horton, Justin S. Mankin, Corey Lesk, Ethan Coffel, and Colin Ray-mond. A Review of Recent Advances in Research on Extreme Heat Events. 2(4):242–259. 20. Aglaé Jézéquel, Pascal Yiou, and Sabine Radanovics. Role of circulation in euro-pean heatwaves using flow analogues. Climate dynamics , 50(3):1145–1159, 2018. 21. Jeff Johnson, Matthijs Douze, and Hervé Jégou. Billion-Scale Similarity Search with GPUs. 7(3):535–547. 22. Elizaveta Levina and Peter Bickel. Maximum Likelihood Estimation of Intrinsic Dimension. In Advances in Neural Information Processing Systems , volume 17. MIT Press. 23. Fei Tony Liu, Kai Ming Ting, and Zhi-Hua Zhou. Isolation forest. In Proceedings of the IEEE International Conference on Data Mining (ICDM) , pages 413–422. IEEE, 2008. 24. Yunjie Liu, Evan Racah, Joaquin Correa, Amir Khosrowshahi, David Lavers, Ken-neth Kunkel, Michael Wehner, William Collins, et al. Application of deep convo-lutional neural networks for detecting extreme weather in climate datasets. arXiv preprint arXiv:1605.01156 , 2016. 25. Mayur Mudigonda, Prabhat Ram, Karthik Kashinath, Evan Racah, Ankur Ma-hesh, Yunjie Liu, Christopher Beckham, Jim Biard, Thorsten Kurth, Sookyung Kim, et al. Deep learning for detecting extreme weather patterns. Deep Learning for the Earth Sciences: A Comprehensive Approach to Remote Sensing, Climate Science, and Geosciences , pages 161–185, 2021. 26. National Academies of Sciences, Medicine, Division on Earth, Life Studies, Board on Atmospheric Sciences, Committee on Extreme Weather Events, and Cli-mate Change Attribution. Attribution of extreme weather events in the context of climate change . National Academies Press, 2016. 27. Sridhar Ramaswamy, Rajeev Rastogi, and Kyuseok Shim. Efficient algorithms for mining outliers from large data sets. In Proceedings of the 2000 ACM SIGMOD international conference on Management of data , pages 427–438, 2000. 28. Liwen Ren, Tianjun Zhou, and Wenxia Zhang. Attribution of the record-breaking heat event over northeast asia in summer 2018: the role of circulation. Environ-mental Research Letters , 15(5):054018, 2020. 29. J. F. Roberts, A. J. Champion, L. C. Dawkins, K. I. Hodges, L. C. Shaffrey, D. B. Stephenson, M. A. Stringer, H. E. Thornton, and B. D. Youngman. The XWS open access catalogue of extreme European windstorms from 1979 to 2012. 14(9):2487– 2501. 30. Peter Stott. How climate change affects extreme weather events. 352(6293):1517– 1518. 31. Caroline C. Ummenhofer and Gerald A. Meehl. Extreme weather and climate events with ecological relevance: A review. 372(1723):20160135. 32. Shikha Verma, Kuldeep Srivastava, Akhilesh Tiwari, and Shekhar Verma. Deep learning techniques in extreme weather events: A review. arXiv preprint arXiv:2308.10995 , 2023. 33. Senzhang Wang, Jiannong Cao, and S Yu Philip. Deep learning for spatio-temporal data mining: A survey. IEEE transactions on knowledge and data engineering ,34(8):3681–3700, 2020. 34. Yan Zhu, Zachary Zimmerman, Nader Shakibay Senobari, Chin-Chia Michael Yeh, Gareth Funning, Abdullah Mueen, Philip Brisk, and Eamonn Keogh. Matrix profile ii: Exploiting a novel algorithm and gpus to break the one hundred million barrier for time series motifs and joins. In 2016 IEEE 16th international conference on data mining (ICDM) , pages 739–748. Ieee, 2016.

@@ -1,0 +1,541 @@
+Title: Vortical similarities across laminar and turbulent extreme gust encounters
+
+URL Source: https://arxiv.org/pdf/2603.02472v1
+
+Published Time: Wed, 04 Mar 2026 01:24:02 GMT
+
+Number of Pages: 9
+
+Markdown Content:
+# Vortical similarities across laminar and turbulent extreme gust encounters 
+
+Hiroto Odaka ∗, Barbara Lopez-Doriga, and Kunihiko Taira 
+
+Department of Mechanical and Aerospace Engineering, University of California, Los Angeles, CA 90095, USA March 4, 2026 
+
+## Abstract 
+
+This study uncovers a striking similarity between massively separated laminar and turbulent flows that develop over a square wing during extreme vortex gust encounters. The evolving large-scale, vortical core structures responsible for significant transient lift variations exhibit remarkable similarity across 
+
+𝑅𝑒 = 600 and 10,000. The formation of these structures is attributed to a substantial gust-induced vorticity flux produced at the wing surface, resulting in shared large-scale topological features between the low- and high-Reynolds-number flows. Although fine-scale vortical structures quickly emerge in the 𝑅𝑒 = 10,000 case, the large-scale structures identified by scale decomposition of the turbulent flow resemble those observed at 𝑅𝑒 = 600 . These findings suggest that large-scale vortical features present in laminar extreme aerodynamic flows provide key insights into their higher Reynolds number counterparts, potentially reducing the complexity of flow modeling and control for extreme aerodynamics. 
+
+## 1 Introduction 
+
+Modern small-scale aircraft, such as drones, are increasingly utilized in a range of operations, including logistics, emergency response, infrastructure inspection, and national security. However, aerodynamically challenging flight environments have been reluctantly avoided [Jones et al., 2022, Gianfelice et al., 2022, Mohamed et al., 2023]. In particular, airspace with high occurrences of gusts, such as urban canyons and mountainous areas, is hazardous because the gust disturbances can be relatively strong due to the small size and low velocity of the aircraft [Mueller and DeLaurier, 2003, Jones et al., 2022]. Such strong gust encounters lead to unsteady, complex dynamics with strong nonlinearities in the flowfield around the vehicles and exert significantly large transient forces on their bodies. To deepen our understanding of aerodynamics in such severely gusty environments, there have been recent studies in extreme aerodynamics , where the gust ratio 𝐺 , the ratio between gust velocity and free-stream velocity, is larger than 1 [Jones et al., 2022, Taira, 2026]. Recent studies have analyzed and modeled two-dimensional extreme vortex-gust encounters by an airfoil at 𝑅𝑒 = 100 [Fukami and Taira, 2023, Fukami et al., 2024]. In these studies, a machine-learned model was used to implement lift attenuation control in low-dimensional latent space during the encounters. Building on this latent space model, Mousavi and Eldredge [2025] performed flow estimation with uncertainty quantification using sparse sensor measurements. Furthermore, Fukami et al. [2025] presented machine-learning-based data compression of extreme gust encounters by a spanwise periodic wing at a Reynolds number of 5000 . To further investigate wingtip effects on the extreme aerodynamic events, Odaka et al. [2025] conducted direct numerical simulations (DNS) of extreme vortex-gust encounters by a square wing at 𝑅𝑒 = 600 and analyzed the complex three-dimensional vortex dynamics and the modified lift loads. Most of these studies in extreme aerodynamics with massive flow separation have been performed at low Reynolds numbers [Jones, 2020, Taira, 2026]. A critical question that follows is: How can we apply insights from massively separated flows in the laminar regime of extreme aerodynamics to their turbulent regime counterpart? The current study answers this question by performing numerical simulations of extreme vortex-gust-square-wing interaction using 
+
+> ∗
+
+Email for correspondence: hodaka@g.ucla.edu 
+
+> arXiv:2603.02472v1 [physics.flu-dyn] 2 Mar 2026
+
+A preprint - March 4, 2026 𝑄 = 5𝑅 
+
+𝑦 
+
+𝑥 
+
+## 𝑐 
+
+𝑧 
+
+## 𝑢 ∞
+
+𝑢 𝜃 
+
+(𝑎 )
+
+𝑟 
+
+𝑢 𝜃 ,max 
+
+𝑢 𝜃 
+
+𝑅 
+
+Taylor vortex (𝑏 )
+
+## 𝑐 
+
+𝛼 
+
+𝜔 𝑧 
+
+0
+
+28 𝑐 
+
+34 𝑐 
+
+20 𝑐 
+
+17 𝑐 
+
+−10 
+
+10 
+
+Figure 1: (a) A square NACA0015 wing encountering a gust vortex. Q-criterion isosurface 𝑄 = 5 is shown. (b) Computational domain and spatial discretization. DNS at 𝑅𝑒 = 600 and large eddy simulation (LES) at 𝑅𝑒 = 10,000. We in particular focus on the vortex dynamics and the pressure evolution around the wing in the extreme flows. We further identify vortical structures that play aerodynamically important roles in the unsteady flowfield using the force element method [Chang, 1992], showing that the prominent structures are shared across the low and high Reynolds numbers. Moreover, scale decomposition analysis [Motoori and Goto, 2019, Fujino et al., 2023] is performed on the 𝑅𝑒 =10,000 flow to extract large-scale, dominant flow structures, where a quantitative similarity to those observed at 𝑅𝑒 = 600 is uncovered. This work shows that insights from laminar extreme aerodynamics can be extended to turbulent cases, suggesting that we can potentially simplify flow analysis, modeling, and control for turbulent extreme aerodynamics. The remainder of the paper is organized as follows. The problem setup for the extreme vortex-gust-square-wing interaction for a gust ratio of ±2 is provided in §2. In §3, we present vortex dynamics and identify vortical structures responsible for large transient lift change for both laminar and turbulent conditions at 𝑅𝑒 = 600 and 10,000, respectively. This study reveals striking similarity of large-scale flow structures between the two Reynolds numbers. In §4, a summary of our findings is offered. 
+
+## 2 Problem setup 
+
+We consider a vortex gust, modeled as a spanwise-oriented Taylor vortex [Taylor, 1918], impacting a full-span square wing (aspect ratio 𝐴𝑅 = 1), as shown in figure 1 (𝑎 ). The azimuthal velocity of this vortex is 
+
+𝑢 𝜃 = 𝑢 𝜃 , max 
+
+𝑟 𝑅 exp 
+
+ 12
+
+
+
+1 − 𝑟 2
+
+𝑅 2
+
+ 
+
+, (1) where 𝑢 𝜃 , max is the maximum velocity at radius 𝑟 = 𝑅 . The profiles of the tangential velocity 𝑢 𝜃 and the spanwise vorticity 𝜔 𝑧 are also presented in figure 1 (𝑎 ). The strength of this vortex is characterized by the gust ratio, 
+
+𝐺 ≡ 𝑢 𝜃 , max /𝑢 ∞, (2) where 𝑢 ∞ is the free-stream velocity. We choose two gust ratios 𝐺 = {2, −2} and set the radius to 𝑅 /𝑐 = 0.25 . The square wing has a straight-cut tip with a chord length 𝑐 and an angle of attack 𝛼 = 14 ◦. We examine the flows at chord-based Reynolds numbers 𝑅𝑒 = 𝑢 ∞𝑐 /𝜈 = 600 and 10,000, where 𝜈 is the kinematic viscosity. We select these values of 𝑅𝑒 to characterize the extreme aerodynamic flows in laminar and turbulent regimes. We perform DNS for 𝑅𝑒 = 600 and LES for 𝑅𝑒 = 10,000 with a compressible flow solver CharLES [Brès et al., 2017] – a finite-volume solver with second-order accuracy in space and third-order accuracy in time. For LES, the Vreman subgrid-scale model [Vreman, 2004] is used. The Mach number 𝑢 ∞/𝑎 ∞ = 0.1 is set to minimize compressible effects. The computational domain is presented in figure 1 (𝑏 ). We define 𝑥 , 𝑦 , and 𝑧 in the streamwise, transverse, and spanwise directions, respectively, with the leading edge of the wing root placed at the origin. We prescribe adiabatic wall boundary condition at the wing surface, a Dirichlet boundary condition of 𝑢 ∞/𝑎 ∞ = 0.1 at the inlet and farfield boundaries, and a sponge zone next to the outlet boundary. At the spanwise boundaries along 𝑧 /𝑐 = ±10 , we apply a symmetry boundary condition to maintain the form of the gust vortex column far from the wing. 2A preprint - March 4, 2026 𝜏 = 𝜏 2
+
+# 𝜏 2
+
+(𝑎 )
+
+0
+
+## 2
+
+𝐶 𝐿 , 𝐿 𝐸 
+
+## 1
+
+## (𝑏 ) 𝜏 = 0.7
+
+−1−2 1 20
+
+𝐺 = 2
+
+(𝑏 )
+
+> 𝑅𝑒  = 10 , 000 𝑅𝑒  = 600
+
+## 𝜏 = 𝜏 1𝑄 = 10 
+
+# 𝜏 1
+
+𝑅𝑒 = 10 , 000 𝑅𝑒 = 600 
+
+𝑦 
+
+𝑥 
+
+𝑧 
+
+# 𝜏 3
+
+Figure 2: (a) Lift history for the 𝐺 = 2 case at 𝑅𝑒 = 600 (light red) and 10,000 (dark red). (b) Top-port view of the Q-criterion isosurface 𝑄 = 10 , colored in gray, at 𝜏 = 𝜏 1 and 𝜏 2 noted in (a). The Q-criterion isosurface 𝑄 = 10 of the large-scale structures extracted by the scale decomposition analysis with 𝜎 /𝑐 = 0.05 in the 𝑅𝑒 = 10,000 case is superposed in green. The grid and domain setups have been carefully verified. The current mesh has 31 million control volumes with 
+
+𝑛 airfoil = 480 , 𝑛 𝑧 = 90 , and 𝑦 + 
+
+> 0
+
+= 0.24 , where 𝑛 airfoil and 𝑛 𝑧 are the grid points along the wing tangent (around the upper and lower surfaces) and the wingspan, and 𝑦 + 
+
+> 0
+
+is the first grid off the wall surface in viscous wall units at 𝑅𝑒 = 10,000. The refined mesh used for verification has 62 million cells with 𝑛 airfoil = 760 , 𝑛 𝑧 = 144 , and 𝑦 + 
+
+> 0
+
+= 0.15 . The time step is chosen to ensure that the local Courant number is smaller than 1 over the entire computational domain. The current simulation setup has been carefully validated with Fukami et al. [2025]. The gust vortex is introduced at (𝑥 0/𝑐, 𝑦 0/𝑐 ) = (− 3, 0) in the undisturbed flow at a reference time of 𝜏 = 𝑢 ∞𝑡 /𝑐 = −3
+
+and convects with the freestream. Time of 𝜏 = 0 corresponds to the moment at which the center of the gust vortex would reach the leading edge of the wing if there were no wing. 
+
+## 3 Results and discussion 
+
+We begin by presenting the lift fluctuation for the 𝐺 = 2 case in the laminar and turbulent regimes. In figure 2 (𝑎 ), the light and dark red lines represent the lift histories for 𝑅𝑒 = 600 and 10,000, respectively. The lift coefficient is defined as 𝐶 𝐿 = 𝐹 𝐿 /( 12 𝜌𝑢 2
+
+> ∞
+
+𝑏𝑐 ), where 𝐹 𝐿 is the lift force on the wing, 𝜌 is the fluid density, and 𝑏 is the span length. Before the gust vortex is introduced in the flowfield, the flow is steady at 𝑅𝑒 = 600 with 𝐶 𝐿, base = 0.22 , while it is unsteady at 
+
+𝑅𝑒 = 10,000 with a time-averaged lift coefficient of ¯𝐶 𝐿, base = 0.32 . As the gust vortex approaches the wing, the wing experiences a substantial lift increase, which peaks at 𝜏 = 𝜏 1 for both 𝑅𝑒 = 600 and 10,000. After the positive peak, the lift drops and reaches its negative peak at 𝜏 = 𝜏 2. Subsequent to these lift fluctuations, the lift recovers to the baseline values. The time evolution of the vortex cores is presented in figure 2 (𝑏 ), where we visualize the Q criterion isosurface at 
+
+𝑅𝑒 = 600 and 10,000 in gray. For the 𝑅𝑒 = 10,000 case, the Q criterion isosurface of large-scale structures extracted through scale decomposition [Motoori and Goto, 2019, Fujino et al., 2023] is also visualized in green, where we decompose a velocity component 𝑢 𝑖 into the large-scale e𝑢 𝑖 𝐿 and the small-scale e𝑢 𝑖 𝑆 by applying a Gaussian filter 𝐾 in three spatial directions such that 
+
+e𝑢 𝑖 𝐿 (𝑥, 𝑦, 𝑧 ; 𝜎 ) =∑︁ 
+
+> 𝑥 𝑝
+
+∑︁ 𝑦 𝑝 ∑︁ 𝑧 𝑝 
+
+𝑢 𝑖 (𝑥 𝑝 , 𝑦 𝑝 , 𝑧 𝑝 )𝐾 (𝑥 𝑝 , 𝑦 𝑝 , 𝑧 𝑝 ; 𝑥, 𝑦, 𝑧 ), (3) 
+
+e𝑢 𝑖 𝑆 (𝑥, 𝑦, 𝑧 ; 𝜎 ) = 𝑢 𝑖 − e𝑢 𝑖 𝐿 (𝑥, 𝑦, 𝑧 ; 𝜎 ). (4) Here, 𝑥 𝑝 , 𝑦 𝑝 , and 𝑧 𝑝 are the coordinates of grid points. The Gaussian kernel is 
+
+𝐾 (𝑥 𝑝 , 𝑦 𝑝 , 𝑧 𝑝 ; 𝑥, 𝑦, 𝑧 ) = 𝐶 (𝑥, 𝑦, 𝑧 ) exp 
+
+"
+
+− (𝑥 𝑝 − 𝑥 )2 + ( 𝑦 𝑝 − 𝑦 )2 + ( 𝑧 𝑝 − 𝑧 )2
+
+2𝜎 2
+
+#
+
+Δ𝑥 Δ𝑦 Δ𝑧 (5) 3A preprint - March 4, 2026 𝜏 = 𝜏 2
+
+# 𝜏 2
+
+> 𝑅𝑒  = 10 , 000 𝑅𝑒  = 600
+
+𝐺 = −2 𝑅𝑒 = 10 , 000 𝑅𝑒 = 600 
+
+(𝑎 )
+
+0
+
+## 2
+
+𝐶 𝐿 , 𝐿 𝐸 
+
+## 1
+
+## (𝑏 ) 𝜏 = 0.7
+
+−1−2 1 20
+
+(𝑏 ) 𝜏 = 𝜏 1𝑄 = 10 
+
+# 𝜏 1
+
+𝑦 
+
+𝑥 
+
+𝑧 
+
+𝑦 
+
+𝑥 
+
+𝑧 
+
+−1
+
+# 𝜏 3
+
+Figure 3: Same plot as figure 2 for the negative gust vortex case with 𝐺 = −2.and the coefficient 𝐶 (𝑥, 𝑦, 𝑧 ) is selected to ensure the sum of the kernel is unity; ∑︁ 
+
+> 𝑥 𝑝
+
+∑︁ 𝑦 𝑝 ∑︁ 𝑧 𝑝 
+
+𝐾 (𝑥 𝑝 , 𝑦 𝑝 , 𝑧 𝑝 ; 𝑥, 𝑦, 𝑧 ) = 1. (6) Parameter 𝜎 is the effective size of the Gaussian filter, where information approximately smaller than 𝜎 is smoothed out in the filtered velocity e𝑢 𝑖 | 𝐿 [Motoori and Goto, 2019]. Here, 𝜎 /𝑐 = 0.05 is chosen to uncover the large-scale vortical structures that are primarily responsible for the lift peaks, shown in figure 2 (𝑏 ). The influence of 𝜎 /𝑐 is examined later. As shown in figure 2 (𝑏 ), the large-scale flow structures between the laminar and turbulent flows are strikingly similar. At the first lift peak 𝜏 = 𝜏 1, we observe the development of a large leading-edge vortex (LEV) for both 𝑅𝑒 = 600 
+
+and 10,000. This results from a substantial amount of gust-induced wall-normal vorticity production at the leading edge [Taira, 2026]. Notably, these accentuated vorticity production levels at the leading edge are directly related to the enhanced surface pressure gradients caused by the incoming gust vortex [Lopez-Doriga et al., 2025]. During the gust-leading-edge interaction, which is up until the impingement, viscous effects are not prominent [Peng and Gregory, 2015], and similar large-scale topological features are observed across the two Reynolds numbers. Even at 𝑅𝑒 =
+
+10,000, the locally accelerated flow near the leading edge experiences stabilizing effects [Linot et al., 2024], producing large-scale, laminar flow structures. Furthermore, the tip vortices (TiVs) grow in size near the leading edge for both Reynolds-number flows during the encounter. This is because the impacting gust vortex induces a large vorticity flux at the tip near the leading edge while increasing the pressure difference between the two sides of the wing [Odaka et al., 2025]. Similar to the LEV, the large-scale features of the TiVs are shared across the Reynolds numbers since the formation of the vortices is pressure-driven. Around the negative lift peak 𝜏 = 𝜏 2, we observe the LEV transforms into an arch vortex and a large trailing-edge vortex (TEV) shed for both 𝑅𝑒 = 600 and 10,000. Despite the presence of finer-scale vortical structures at 
+
+𝑅𝑒 = 10,000, the large-scale structures are remarkably similar to those observed at 𝑅𝑒 = 600 .Next, let us examine the negative gust vortex case with 𝐺 = −2. During the encounter, the wing experiences a sharp lift decrease with its negative peak at 𝜏 = 𝜏 1 followed by a rapid increase with its positive peak around 𝜏 = 𝜏 2, as shown in figure 3 (𝑎 ). Lift gradually recovers to its baseline value afterward. These trends are shared across the laminar and turbulent flow cases. In figure 3 (𝑏 ), we visualize the Q criterion isosurface for the 𝐺 = −2 cases at 𝑅𝑒 = 600 and 10,000. At 𝜏 = 𝜏 1, an LEV develops below the wing due to a large vorticity flux at the leading edge induced by the approaching negative gust vortex. Furthermore, the impacting gust vortex increases the pressure on the upper surface while decreasing it below the wing, inverting the suction and pressure sides of the wing. This causes the TiVs to weaken and even reverse their orientation [Odaka et al., 2025]. As discussed in the positive gust vortex case, the gust-induced, large wall-normal vorticity production and flow acceleration near the leading edge lead to these similar core vortical structures across the Reynolds numbers. 4A preprint - March 4, 2026 (𝑎 )
+
+(𝑏 ) 𝜏 = 𝜏 2
+
+## 𝜏 = 𝜏 2𝜏 = 𝜏 1
+
+𝑧 /𝑐 = 0
+
+𝑧 /𝑐 = 0.48 𝑧 /𝑐 = 0 𝑧 /𝑐 = 0.48 𝑧 /𝑐 = 0
+
+> 𝑅𝑒  = 600 𝑅𝑒  = 10 , 000
+
+## 𝜏 = 𝜏 1
+
+𝑧 /𝑐 = 0.48 𝑧 /𝑐 = 0 𝑧 /𝑐 = 0.48 𝑧 /𝑐 = 0
+
+> 𝑅𝑒  = 600 𝑅𝑒  = 10 , 000
+
+0
+
+−5
+
+5
+
+## LEV 
+
+## LEV 
+
+## LEV 
+
+## LEV 
+
+> 𝐺  = −2 𝐺  = 2
+
+𝐶 𝑝 TiV and gust vortex 
+
+TiV and gust vortex 
+
+Figure 4: Spanwise slices of 𝐶 𝑝 (color contours) with 𝜔 𝑧 (line contours) along the root 𝑧 /𝑐 = 0 and near the tip 
+
+𝑧 /𝑐 = 0.48 at 𝜏 = 𝜏 1 and 𝜏 2 for (a) 𝐺 = 2 and (b) 𝐺 = −2. Dashed line contours indicate negative 𝜔 𝑧 .Over time, the LEV below the wing forms an arch vortex, while the gust vortex convects above the wing. At the positive lift peak around 𝜏 = 𝜏 2, the legs of the arch vortex are pushed toward the wing root, transforming into a hairpin vortex [Odaka et al., 2025]. Although there is an increased number of finer structures around the wing in the turbulent flow, the hairpin vortex is clearly observed in the large-scale structures at 𝑅𝑒 = 10,000. Again, we observe strong similarities in large-scale vortical structures across the two Reynolds numbers throughout the encounter. Furthermore, we confirm strong similarity in the pressure fields at 𝑅𝑒 = 600 and 10,000 influenced by their respective large-scale vortical structures. In figure 4, we show the spanwise slices of the pressure coefficient 𝐶 𝑝 ≡ ( 𝑝 − 𝑝 ∞)/( 12 𝜌𝑢 2
+
+> ∞
+
+)
+
+and the spanwise vorticity 𝜔 𝑧 along the wing root 𝑧 /𝑐 = 0 and near the tip 𝑧 /𝑐 = 0.48 , where 𝑝 ∞ is the farfield pressure. For the 𝐺 = 2 case (figure 4 (𝑎 )), the LEV carries a low-pressure core around the leading edge at 𝜏 = 𝜏 1 at both 𝑅𝑒 .Moreover, the stronger spanwise vorticity of the gust vortex at 𝜏 = 𝜏 1 for the 𝑅𝑒 = 10,000 case is observed in the denser contour lines of 𝜔 𝑧 , because there is lower viscous diffusion at the higher Reynolds number, enabling the gust vortex to retain higher intensity in the spanwise vorticity. This leads to a higher first lift peak at 𝜏 = 𝜏 1 for the 𝑅𝑒 = 10,000 case than that for the 𝑅𝑒 = 600 case, as shown in figure 2 (𝑎 ).At 𝜏 = 𝜏 2 for the 𝐺 = 2 case, the lowest-pressure regions are above the wing near the tips for both laminar and turbulent flows, as shown in figure 4 (𝑎 ). These regions correspond to the TiVs and the gust vortex near the wingtips, as seen in the visualized Q criterion at 𝜏 = 𝜏 2 in figure 2 (𝑏 ). The 𝑅𝑒 = 10,000 case exhibits lower-pressure regions above the wing near the tips, resulting in a smaller negative lift peak compared to the 𝑅𝑒 = 600 case, as seen in figure 2 (𝑎 ). At 
+
+𝑅𝑒 = 10,000, fine-scale structures are present over a broad region above the wing, but are absent below it at 𝜏 = 𝜏 2, as seen in the contour lines of 𝜔 𝑧 in figure 4 (𝑎 ). This is due to the flow below the wing having been accelerated by the lower portion of the gust vortex. As discussed previously, accelerated flows have the tendency to be stabilized with coherent, laminar features, whereas decelerated flows tend to trigger instabilities with flow structures broken into finer structures [Linot et al., 2024]. For the negative gust vortex case with 𝐺 = −2 shown in figure 4 (𝑏 ), the LEV below the wing at 𝜏 = 𝜏 1 and the gust vortex convecting above the wing at 𝜏 = 𝜏 2 create low-pressure cores at both Reynolds numbers. At 𝜏 = 𝜏 2, the intensity 5A preprint - March 4, 2026 𝜏 = 𝜏 2
+
+## 𝜏 = 𝜏 2
+
+(𝑎 )
+
+(𝑏 )
+
+## 𝜏 = 𝜏 1
+
+𝑧 /𝑐 = 0.48 𝑧 /𝑐 = 0 𝑧 /𝑐 = 0.48 𝑧 /𝑐 = 0
+
+> 𝑅𝑒  = 600 𝑅𝑒  = 10 , 000
+
+𝐿 𝑒 TiV 
+
+TiV 
+
+## 𝜏 = 𝜏 1
+
+𝑧 /𝑐 = 0.48 𝑧 /𝑐 = 0 𝑧 /𝑐 = 0.48 𝑧 /𝑐 = 0
+
+> 𝑅𝑒  = 600 𝑅𝑒  = 10 , 000
+> 𝐺  = −2 𝐺  = 2
+
+0
+
+0.1
+
+−0.1
+
+𝐿 𝑒 𝐿 ,𝐿 
+
+0
+
+0.1
+
+−0.1
+
+𝐿 𝑒 
+
+0
+
+0.1
+
+−0.1
+
+𝐿 𝑒 𝐿 ,𝐿 
+
+0
+
+0.1
+
+−0.1
+
+Figure 5: Spanwise slices of 𝐿 𝑒 (color contours) with 𝜔 𝑧 (line contours) at 𝑅𝑒 = 600 and 𝐿 𝑒 𝐿,𝐿 with e𝜔 𝑧 𝐿 extracted with 𝜎 /𝑐 = 0.05 in the 𝑅𝑒 = 10,000 flow along the root 𝑧 /𝑐 = 0 and near the tip 𝑧 /𝑐 = 0.48 at 𝜏 = 𝜏 1 and 𝜏 2 for (a) 𝐺 = 2 and (b) 𝐺 = −2. Dashed contour lines indicate negative 𝜔 𝑧 and e𝜔 𝑧 𝐿 .of the gust vortex convecting above the wing is larger in the turbulent case than in the laminar case, due to lower vortex diffusion at the higher Reynolds number. This leads to lower-pressure regions above the wing for the 𝑅𝑒 = 10,000 flow compared to the 𝑅𝑒 = 600 flow at 𝜏 = 𝜏 2 (figure 4 (𝑏 )), contributing to the larger second lift peak seen in figure 3 (𝑎 ).These findings suggest that the effects of extreme gusts are pressure-dominated, driven by large-scale vortices, whose primary dynamics are similar across laminar and turbulent regimes. Next, let us extract the vortical structures responsible for the large lift change during the encounters. To identify vortical structures responsible for the lift, we use the force element analysis [Chang, 1992]. An auxiliary potential 𝜙 𝑦 is defined for a boundary condition of −𝒏 · ∇ 𝜙 𝑦 = 𝒏 · 𝒆 𝑦 on the wing surface. Here, 𝒆 𝒚 is the unit vector in the 𝑦 direction. Integrating the inner product of the Navier-Stokes equations with the gradient of the auxiliary potential over the fluid domain, the lift force can be expressed as 
+
+𝐹 𝐿 =
+
+∫
+
+> 𝑉
+
+𝝎 × 𝒖 · ∇ 𝜙 𝑦 𝑑𝑉 + 1
+
+𝑅𝑒 
+
+∫
+
+> 𝑆
+
+𝝎 × 𝒏 ·  ∇𝜙 𝑦 + 𝒆 𝑦 
+
+ 𝑑𝑆. (7) The first and second integrands represent volume and surface lift elements, respectively. The unsteady lift force is primarily attributed to the volume lift elements for the present flows at 𝑅𝑒 = 600 and 10,000 [Ribeiro et al., 2023, Odaka et al., 2025]. As such, the volume lift element is hereafter referred to as lift element 𝐿 𝑒 .We can further decompose the lift element field for the 𝑅𝑒 = 10,000 case such that 
+
+𝝎 × 𝒖 · ∇ 𝜙 𝑦 = ( e𝝎 𝐿 + e𝝎 𝑆 ) × ( e𝒖 𝐿 + e𝒖 𝑆 ) · ∇ 𝜙 𝑦 
+
+= e𝝎 𝐿 × e𝒖 𝐿 · ∇ 𝜙 𝑦 
+
+| {z }
+
+> 𝐿 𝑒 𝐿,𝐿
+
++ ( e𝝎 𝑆 × e𝒖 𝐿 ) · ∇ 𝜙 𝑦 
+
+| {z }
+
+> 𝐿 𝑒 𝑆,𝐿
+
++ ( e𝝎 𝐿 × e𝒖 𝑆 ) · ∇ 𝜙 𝑦 
+
+| {z }
+
+> 𝐿 𝑒 𝐿,𝑆
+
++ e𝝎 𝑆 × e𝒖 𝑆 · ∇ 𝜙 𝑦 
+
+| {z }
+
+> 𝐿 𝑒 𝑆,𝑆
+
+, (8) where e𝝎 𝐿 = ∇ × e𝒖 𝐿 and e𝝎 𝑆 = ∇ × e𝒖 𝑆 . The terms of 𝐿 𝑒 𝐿,𝐿 , 𝐿 𝑒 𝑆,𝐿 , 𝐿 𝑒 𝐿,𝑆 , and 𝐿 𝑒 𝑆,𝑆 represent the lift contribution from interactions between i) large-scale vorticity and large-scale velocity, ii) small-scale vorticity and large-scale velocity, iii) 6A preprint - March 4, 2026 𝜏 = 𝜏 2 𝜏 = 𝜏 2
+
+𝐺 = −2
+
+𝜎 /𝑐 
+
+## 𝜏 = 𝜏 1
+
+0.01 0.03 0.05 
+
+2
+
+0
+
+1
+
+−1
+
+𝜎 /𝑐 0.01 0.03 0.05 
+
+2
+
+0
+
+1
+
+−1()
+
+(𝑎 ) 𝐺 = 2
+
+> 
+> 𝑉
+> 𝐿 𝑒  𝑑𝑉
+
+𝜎 /𝑐 
+
+## 𝜏 = 𝜏 1
+
+0.01 0.03 0.05 
+
+2
+
+## 0
+
+1
+
+−1
+
+𝜎 /𝑐 0.01 0.03 0.05 
+
+2
+
+0
+
+1
+
+−1
+
+𝐿 𝑒 𝑆 ,𝐿 
+
+𝐿 𝑒 𝐿 ,𝑆 
+
+𝐿 𝑒 𝐿 ,𝐿 𝐿 𝑒 𝑆 ,𝑆 
+
+Figure 6: Volume integral of 𝐿 𝑒 𝐿,𝐿 , 𝐿 𝑒 𝑆,𝐿 , 𝐿 𝑒 𝐿,𝑆 , and 𝐿 𝑒 𝑆,𝑆 at 𝜏 = 𝜏 1 and 𝜏 2 over 𝜎 /𝑐 for (a) 𝐺 = 2 and (b) 𝐺 = −2
+
+at 𝑅𝑒 = 10,000. large-scale vorticity and small-scale velocity, and iv) small-scale vorticity and small-scale velocity, respectively. Here, we expect dominance of 𝐿 𝑒 𝐿,𝐿 over 𝐿 𝑒 𝑆,𝑆 , since large-scale vortices are the primary structures. In addition, we expect the contribution of 𝐿 𝑒 𝑆,𝐿 (small-scale vorticity and large-scale velocity) to be larger than that of 𝐿 𝑒 𝐿,𝑆 (large-scale vorticity and small-scale velocity) because the vorticity distribution is more spatially compact than the velocity profile. In figure 5, the spanwise slices of 𝐿 𝑒 and 𝜔 𝑧 at 𝑅𝑒 = 600 and 𝐿 𝑒 𝐿,𝐿 and e𝜔 𝑧 𝐿 extracted with 𝜎 /𝑐 = 0.05 at 𝑅𝑒 = 10,000 along the wing root 𝑧 /𝑐 = 0 and near the tip 𝑧 /𝑐 = 0.48 are shown for 𝐺 = 2 and −2. For the positive gust vortex case shown in figure 5 (𝑎 ), the LEV and TiVs are responsible for lift generation at 𝜏 = 𝜏 1 in both laminar and turbulent flows. Similar to the discussion in our previous work [Odaka et al., 2025], the enhanced TiVs at 𝜏 = 𝜏 1 have large low-pressure cores above the wing, contributing to lift near the tips. At the negative lift peak around 𝜏 = 𝜏 2, the bottom-surface boundary layer strongly contributes to negative lift. We further examine the dominant structures in terms of lift production for the negative gust vortex case shown in figure 5 (𝑏 ). The LEV below the wing contributes to the negative lift peak at 𝜏 = 𝜏 1. On the other hand, the positive lift peak around 𝜏 = 𝜏 2 is attributed to the vortical structure generated from the leading edge and the gust vortex convecting above the wing. These coherent large-scale structures responsible for the lift peaks are similar between the low- and high-Reynolds number flows. Let us also note that the extracted large-scale vortical structures at 𝑅𝑒 = 10,000 are primarily responsible for the significant lift peaks during the gust encounters. In figure 6, we present the volume integral of each term in equation 8 at 𝜏 = 𝜏 1 and 𝜏 2 for 𝐺 = 2 and −2 with varying 𝜎 /𝑐 . Here, the lift contribution from 𝐿 𝑒 𝐿,𝐿 accounts for the majority of the lift peak values at 𝜏 = 𝜏 1 and 𝜏 2 for both 𝐺 = 2 and −2. Note that, for the minimum lift peaks at 𝜏 = 𝜏 2 for 
+
+𝐺 = 2 and at 𝜏 = 𝜏 1 for 𝐺 = −2, the total lift values are negative, to which 𝐿 𝑒 𝐿,𝐿 contributes the most. This means that the extracted large-scale structures are the main contributors to the significant lift changes during the extreme gust encounters in the turbulent flow. As 𝜎 increases, a wider range of scales is incorporated as “small-scale” structures, while the coverage of “large-scale” structures decreases. Consequently, as 𝜎 increases, the contribution of 𝐿 𝑒 𝐿,𝐿 decreases, while that of 𝐿 𝑒 𝑆,𝑆 increases, as seen for both gust ratios at 𝜏 = 𝜏 1 and 𝜏 2 in figure 6. Furthermore, the contribution of 𝐿 𝑒 𝑆,𝐿 rises as 𝜎 increases. This term holds components based on the spatially compact vorticity field with spatially non-compact velocity field. With increased value of e𝝎 𝑆 for a larger 𝜎 , the contribution of 𝐿 𝑒 𝑆,𝐿 increases slowly, even with more components being smoothed out for e𝒖 𝐿 . For instance, at 𝜏 = 𝜏 2 for the 𝐺 = 2 case (figure 6 (𝑎 )), while 𝐿 𝑒 𝐿,𝐿 remains the largest contributor among the four terms for 𝜎 /𝑐 ≲ 0.05 , 𝐿 𝑒 𝑆,𝐿 becomes the most dominant past 𝜎 /𝑐 ≈ 0.06 . On the contrary, the contribution of 𝐿 𝑒 𝐿,𝑆 does not grow as much with 𝜎 . The larger 𝜎 is, the less local motion of the fluid is contained in e𝒖 𝐿 , causing e𝝎 𝐿 to decrease significantly. Physically speaking, there cannot be a non-compact vorticity field producing a compact velocity field. As a result, the lift contribution of 𝐿 𝑒 𝐿,𝑆 remains low. Based on the observation of 𝐿 𝑒 𝐿,𝐿 being the most responsible for the lift peaks at 𝜎 /𝑐 ≲ 0.05 with both gust ratios, we have visualized the flowfield evaluated on e𝒖 𝐿 with 𝜎 /𝑐 = 0.05 in figures 2, 3, and 5. These findings show that the large-scale vortical structures in extreme gust encounters in turbulent regimes of at least ∼ O( 10 4) are not only similar to those observed in the laminar regimes, but also primarily responsible for the substantial transient lift changes, suggesting that studies in extreme aerodynamics at low Reynolds numbers can provide critical insights into those at higher Reynolds numbers. Next, to mathematically quantify the similarity between these large-scale structures, we assess the similarity in the velocity field between the flows at 𝑅𝑒 = 600 and 10,000. Here, we use the cosine similarity in 𝐿 2 between velocity fields 𝒖 𝐴 and 𝒖 𝐵 defined as 
+
+𝑆 𝑐 (𝒖 𝐴 , 𝒖 𝐵 ) =
+
+∫ 
+
+> 𝑉
+
+𝒖 𝐴 · 𝒖 𝐵 𝑑𝑉 
+
+(∫ 
+
+> 𝑉
+
+|| 𝒖 𝐴 || 2 𝑑𝑉 )1/2 (∫ 
+
+> 𝑉
+
+|| 𝒖 𝐵 || 2 𝑑𝑉 )1/2 . (9) 7A preprint - March 4, 2026 𝜏 = 𝜏 3𝜏 = 𝜏 3𝒖 𝐵 = ˜𝒖 𝑆 
+
+𝒖 𝐵 = ˜𝒖 𝐿 − 𝒖 ∞
+
+𝒖 𝐵 = 𝒖 − 𝒖 ∞
+
+## 𝜏 2
+
+## (𝑏 ) 𝜏 = 0.7
+
+1
+
+0.75 
+
+0.5
+
+0.25 
+
+−1 1 20
+
+0
+
+## 𝜏 1 𝜏 3𝑆 𝑐 ()(𝑎 ) 𝜏 2
+
+## (𝑏 ) 𝜏 = 0.7
+
+1
+
+0.75 
+
+0.5
+
+0.25 
+
+−1 1 20
+
+0
+
+## 𝜏 1 𝜏 3𝑆 𝑐 𝑄 = 10 
+
+Figure 7: Time history of 𝑆 𝑐 for (a) 𝐺 = 2 and (b) 𝐺 = −2. The Q criterion isosurface of the 𝑅𝑒 = 600 case (gray) and extracted large-scale structures of the 𝑅𝑒 = 10,000 case with 𝜎 /𝑐 = 0.05 (green) at 𝜏 = 𝜏 3 are visualized on the right of each subplot. In this study, 𝑉 = [0, 3] × [− 1, 1] × [− 0.8, 0.8] and we set 𝒖 𝐴 = 𝒖 − 𝒖 ∞ in the 𝑅𝑒 = 600 flow. We present the time history of 𝑆 𝑐 (𝒖 𝐴 , 𝒖 𝐵 ) in figure 7 with 𝒖 𝐵 = 𝒖 − 𝒖 ∞, 𝒖 𝐵 = e𝒖 𝐿 − 𝒖 ∞, and 𝒖 𝐵 = e𝒖 𝑆 for the 𝑅𝑒 = 10,000 flow with 
+
+𝜎 /𝑐 = 0.05 when filtering is considered. High level of quantitative similarity 𝑆 𝑐 of the 𝑅𝑒 = 10,000 case to the 𝑅𝑒 = 600 case is presented for both 𝐺 = 2
+
+and −2 in figure 7. As shown, the similarity is attributed to the large-scale structures in the 𝑅𝑒 = 10,000 flow, and not the small-scale structures. 𝑆 𝑐 with 𝒖 𝐵 = 𝒖 − 𝒖 ∞ or 𝒖 𝐵 = e𝒖 𝐿 − 𝒖 ∞ rises toward around 𝜏 = 0. This is due to an increasing level of shared large-scale topological features, e.g., LEV, toward the initial interaction, where the incoming gust vortex mainly interacts with the leading edge of the wing. Past 𝜏 ≈ 0, we notice that 𝑆 𝑐 with 𝒖 𝐵 = 𝒖 − 𝒖 ∞ and 
+
+𝒖 𝐵 = e𝒖 𝐿 − 𝒖 ∞ begin to decrease. This is caused by the differences in the evolution of the large-scale structures at different Reynolds numbers, as shown on the right of each subpanel in figure 7 that visualizes the Q criterion isosurface at 𝑅𝑒 = 600 and 10,000 (for 𝜎 /𝑐 = 0.05 ) at 𝜏 = 𝜏 3. For instance, in the case with 𝐺 = 2 (figure 7 (𝑎 )), the TEV is located further downstream at 𝜏 = 𝜏 3 for the 𝑅𝑒 = 10,000 case compared to 𝑅𝑒 = 600 . Nevertheless, the quantitative similarity remains high with 𝑆 𝑐 above 0.6 even at 𝜏 = 2. The resemblance of the large-scale structures identified at higher Reynolds numbers to those observed at lower Reynolds numbers underscores the importance of laminar flow analysis for deepening our fundamental understanding of the dominant dynamics in extreme aerodynamic flows. We note that the cosine similarity is a strict measure, since even the slightest difference in vortex position can significantly reduce the similarity. Other approaches such as the optimal transport analysis [Tran et al., 2026] can also be considered for convective physics highlighting similarities in a more generalized manner. 
+
+## 4 Concluding remarks 
+
+This study revealed a high degree of similarity in extreme vortex-gust encounters by a square wing between 𝑅𝑒 = 600 
+
+and 10,000. We first presented similar coherent vortex cores initially formed via a significant vorticity production from the wing surface induced by the impacting gust vortex at both Reynolds numbers. Through the use of scale decomposition, the large-scale flow structures were extracted at 𝑅𝑒 = 10,000. The identified large-scale vortical structures in the 𝑅𝑒 = 10,000 flow exhibit qualitative and quantitative similarity to those observed at 𝑅𝑒 = 600 . The similar pressure fields dominated by these large-scale vortical structures were also found, resulting in comparable lift fluctuations across the two Reynolds numbers. Moreover, with the force element analysis, we presented that the prominent vortical structures responsible for the significant lift change during the extreme gust encounters are similar between the low and high Reynolds numbers. Our findings also showed that the large-scale structures are the main contributors to significant lift peaks in the turbulent extreme flow. The current insights serve as a crucial bridge for understanding extreme gust encounters at high Reynolds numbers of at least ∼ O( 10 4) through those with laminar cores, potentially paving the way to reduce the complexity of flow analysis, modeling, and control of massively separated flows in extreme aerodynamics. Future efforts at much higher Reynolds numbers are warranted to further examine the laminar core dynamics during violent extreme aerodynamic gust encounters. 
+
+## Acknowledgments 
+
+This work was supported by the US Department of Defense Vannevar Bush Faculty Fellowship (N00014-22-1-2798). H.O. acknowledges partial support from Honjo International Scholarship Foundation. 8A preprint - March 4, 2026 
+
+## References 
+
+G. A. Brès, F. E. Ham, J. W. Nichols, and S. K. Lele. Unstructured large-eddy simulations of supersonic jets. AIAA J. ,55:1164–1184, 2017. C.-C. Chang. Potential flow and forces for incompressible viscous flow. Proc. R. Soc. Lond. A , 437(1901):517–525, 1992. J. Fujino, Y. Motoori, and S. Goto. Hierarchy of coherent vortices in turbulence behind a cylinder. J. Fluid Mech. , 975: A13, 2023. K. Fukami and K. Taira. Grasping extreme aerodynamics on a low-dimensional manifold. Nat. Commun. , 14:6480, 2023. K. Fukami, H. Nakao, and K. Taira. Data-driven transient lift attenuation for extreme vortex gust-airfoil interactions. 
+
+J. Fluid Mech. , 992:A17, 2024. K. Fukami, L. Smith, and K. Taira. Extreme vortex-gust airfoil interactions at Reynolds number 5000. Phys. Rev. Fluids ,10(8):084703, 2025. M. Gianfelice, H. Aboshosha, and T. Ghazal. Real-time wind predictions for safe drone flights in Toronto. Results Eng. ,15:100534, 2022. A. R. Jones. Gust encounters of rigid wings: Taming the parameter space. Phys. Rev. Fluids , 5(11):110513, 2020. A. R. Jones, O. Cetiner, and M. J. Smith. Physics and modeling of large flow disturbances: Discrete gust encounters for modern air vehicles. Annu. Rev. Fluid Mech. , 54:469–493, 2022. A. J. Linot, P. J. Schmid, and K. Taira. On the laminar solutions and stability of accelerating and decelerating channel flows. J. Fluid Mech. , 999:A43, 2024. B. Lopez-Doriga, A. R. Jones, and K. Taira. On the effect of airfoil geometry on extreme vortex-gust encounters. J. Fluid Mech. , 2025. in review (arXiv preprint arXiv:2510.15154). A. Mohamed, M. Marino, S. Watkins, J. Jaworski, and A. Jones. Gusts encountered by flying vehicles in proximity to buildings. Drones , 7(1):22, 2023. Y. Motoori and S. Goto. Generation mechanism of a hierarchy of vortices in a turbulent boundary layer. J. Fluid Mech. ,865:1085–1109, 2019. H. Mousavi and J. D. Eldredge. Low-order flow reconstruction and uncertainty quantification in disturbed aerodynamics using sparse pressure measurements. J. Fluid Mech. , 1013:A41, 2025. T. J. Mueller and J. D. DeLaurier. Aerodynamics of small vehicles. Annu. Rev. Fluid Mech. , 35(1):89–111, 2003. H. Odaka, L. Smith, and K. Taira. Extreme vortex gust encounters by a square wing. J. Fluid Mech. , 2025. in review (arXiv preprint arXiv:2511.17845). D. Peng and J. W. Gregory. Vortex dynamics during blade-vortex interactions. Phys. Fluids , 27(5), 2015. J. H. M. Ribeiro, J. Neal, A. Burtsev, M. Amitay, V. Theofilis, and K. Taira. Laminar post-stall wakes of tapered swept wings. J. Fluid Mech. , 976:A6, 2023. K. Taira. Extreme aerodynamics: A data-driven perspective. Phys. Rev. Fluids , 11(1):014702, 2026. G. I. Taylor. On the dissipation of eddies. Meteorology, Oceanography and Turbulent Flow , pages 96–101, 1918. J. Q. Tran, C.-A. Yeh, and K. Taira. Using optimal transport aligned latent embeddings for separated flow analysis. J. Fluid Mech , 1027:A24, 2026. A. W. Vreman. An eddy-viscosity subgrid-scale model for turbulent shear flow: Algebraic theory and applications. 
+
+Phys. Fluids , 16(10):3670–3681, 2004. 9
