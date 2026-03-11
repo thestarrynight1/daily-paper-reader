@@ -1,0 +1,963 @@
+Title: A Passivity-Agnostic Framework for Distributed Adaptive Synchronization under Unknown Leader Dynamics
+
+URL Source: https://arxiv.org/pdf/2603.02344v1
+
+Published Time: Wed, 04 Mar 2026 01:06:12 GMT
+
+Number of Pages: 14
+
+Markdown Content:
+# A P ASSIVITY -A GNOSTIC FRAMEWORK FOR 
+
+# DISTRIBUTED ADAPTIVE SYNCHRONIZATION UNDER 
+
+# UNKNOWN LEADER DYNAMICS ∗
+
+Moh Kamalul Wafi, Milad Siami 
+
+Department of Electrical and Computer Engineering Northeastern University Boston, MA, USA 
+
+{wafi.m, m.siami}@northeastern.edu 
+
+## ABSTRACT 
+
+We present a passivity-agnostic framework for distributed adaptive synchronization under position-only communication, bounded disturbances, and unknown leader dynamics. By passivity-agnostic we mean the design does not require the closed loop system to be strictly positive real (SPR) a priori: it certifies SPR when present and recovers it by frequency shaping when absent. Followers are heterogeneous second-order systems with unknown (possibly unstable) dynamics. In the SPR regime, a structured reparameterization yields gradient-based adaptive error dynamics; Lyapunov analysis guarantees global asymptotic synchronization in the disturbance-free case, exact rejection of constant disturbances, and bounded responses to time-varying disturbances, with parameter con-vergence under persistent excitation. In the non-SPR regime, frequency shaping recovers effective passivity of the unshaped transfer function, enabling the same stability guarantees via standard pas-sivity/Lyapunov arguments using Meyer-Kalman-Yakubovich (MKY) Lemma. Simulations across star, cyclic, path, and arbitrary graphs demonstrate scalable synchronization, robust tracking, and parameter adaptation under multiple disturbance profiles, confirming that the frequency-shaped non-SPR designs match the performance of the SPR case. 
+
+## 1 Introduction 
+
+Distributed cooperative control of multi-agent systems (MAS) underpins consensus, synchronization, and formation in robotics, autonomous vehicles, smart grids, and sensor networks [1]. Beyond the classical assumption of iden-tical agent dynamics [2, 3], practical systems are heterogeneous [3–5]. Recent work addresses this heterogeneity under varied tasks and constraints: time-varying output formation with a nonautonomous leader of unknown input [6], robust distributed PID consensus via weighted edge dynamics [7], optimization-based formation with dynamic event-triggered communication [8], robustness to uncertain communication links [9], and network-adapted guaranteed-cost designs [10]. These directions span realistic communication limits and architectures. However, the multi-agent dy-namics are rarely known exactly in practice as parameters drift and unmodeled effects persist. This motivates addressing uncertain dynamics with adaptive, scalable designs. Within this setting, many distributed adaptive methods [11–17], explicitly or implicitly, rely on a strictly positive real (SPR) error channel because SPR implies passivity. By the Meyer–Kalman–Yakubovich (MKY) lemma, a quadratic storage function exists that yields a clean dissipation inequality. Practically, this lets one build a Lyapunov function in which the plant–controller cross terms cancel with a gradient update, ensuring bounded parameter estimates and convergence of the synchronization error. Related structural stability mechanisms based on positivity and Lur’e systems have also been studied in [18, 19]. In networked settings, however, SPR often fails—e.g., relative-degree/phase lags from limited communication ex-change, unmodeled actuator/sensor effects, sampling or delays, and graph-induced lightly damped modes [20, 21]. 
+
+> ∗
+
+This material is based upon work supported in part by the U.S. Office of Naval Research under Grant Award N00014-21-1-2431; and in part by the U.S. National Science Foundation under Grant Award 2208182. 
+
+> arXiv:2603.02344v1 [eess.SY] 2 Mar 2026
+
+Distributed Adaptive Synchronization When the channel is non-SPR, standard adaptive arguments typically require strong PE, leakage ( σ-modification), or extra damping that may conflict with decentralization [22]. Existing compensator-based work on non-SPR is largely single-agent [23–25]; in networked settings, phase-lead/lag designs typically assume known dynamics [26]. A uni-fied adaptive treatment that accommodates both SPR and non-SPR regimes for heterogeneous networks under limited communication and unknown dynamics remains largely open. This paper develops a passivity-agnostic framework for distributed adaptive synchronization under position-only com-munication, bounded disturbances, and unknown leader dynamics. This passivity-agnostic design does not require a priori SPR of the closed-loop error channel. Furthermore, our main contributions are the followings. 1. SPR reparameterization. A structured reparameterization in SPR design that yields gradient-type adaptive error dynamics (as opposed to [11–17]); Lyapunov analysis gives global asymptotic synchronization (disturbance-free), exact rejection of constant disturbances, bounded responses to time-varying disturbances, and parameter conver-gence under persistent excitation. 2. Non-SPR shaping. A frequency-shaping design that recovers effective passivity of the error channel, enabling the same stability guarantees via the MKY connection. 3. Decentralized architecture. No leader dynamics; compatible with heterogeneous (possibly unstable) second-order followers under position-only exchanges. 4. Scalable validation. Comprehensive simulations on star, cyclic, path, and arbitrary graphs show robust tracking and parameter adaptation under multiple disturbance profiles; runtime benchmarking confirms favorable scaling as followers grow, alongside a complexity analysis. In conclusion, compared with SPR-based designs for known dynamics [2–10], SPR-based adaptive methods for un-known dynamics [11–17], and non-SPR approaches [23–26], which address the two regimes in isolation, the proposed passivity-agnostic framework handles both within one architecture, without a priori SPR certification and without a leader model, yielding a unified, position-only solution for synchronization in heterogeneous networks. 
+
+Notation. For p ∈ N, Rp denotes the p-dimensional Euclidean space and Ip ∈ Rp×p the identity. The term diag {Ai}
+
+is the block-diagonal matrix with diagonal blocks Ai. The all-ones and all-zeros vectors in Rp are 1p = [1 , . . . , 1] ⊤ and 
+
+0p = [0 , . . . , 0] ⊤. The Kronecker product is A ⊗ B. We use tr( A) for the trace, σ(A) for the spectrum (eigenvalues) of A, and vec( A) for vectorization. Vector inequalities >, ≥, <, ≤ are understood elementwise. For any square (not necessarily symmetric) matrix A, A ≻ 0 ( A  0) means ℜ{ σi(A)} > 0 (respectively ℜ{ σi(A)} ≥ 0) for all eigenvalues σi(A); for symmetric A this coincides with positive (semi)definiteness. 
+
+## 2 Communication Network 
+
+We model a network of m + 1 agents, with m followers and a leader denoted as agent 0, by a directed graph G =
+
+{V , E, W} with vertices V = {0, 1, . . . , m }, edges E ⊆ V × V , and weights W = {wij }. An edge (i, j ) ∈ E means agent j communicates to i (not necessarily bidirectional). The weights quantify the interaction strength between agents and satisfy wij > 0 if (i, j ) ∈ E and wij = 0 otherwise. The in-neighborhood (the set of incoming edges) of agent 
+
+i is defined as Ni := { j | (i, j ) ∈ E } . Furthermore, for analysis, we decompose G into two induced subgraphs: the follower-only subgraph Gm = {V m, Em, Wm} with Vm = {1, . . . , m } and the leader–follower subgraph G0 =
+
+{V 0, E0, W0} with V0 = {0} ∪ { i : ( i, 0) ∈ E 0}, capturing edges from the leader to followers (see Fig. 1). In the subgraph Gm, we define the degree matrix Dm := diag {d1, . . . , d m}, where each entry di represents the total weight of the neighbors of follower i, i.e., di = ∑ 
+
+> j: ( i,j )∈E m
+
+wij . The adjacency matrix Am is denoted as 
+
+Am(i, j ) = wij if (i, j ) ∈ E m and 0 otherwise, while the Laplacian matrix is expressed as Lm = Dm − Am. In the subgraph G0, the leader-weight matrix is diagonal and is defined as A0(i, i ) = wi0 if (i, 0) ∈ E 0, and 0 otherwise. This matrix governs the influence of the leader on each follower, playing a role in defining the network’s connectivity. Let W := diag {w1, . . . , w m} = Dm + A0, with wi = di + wi0. We adopt the balance condition W = Im, under which 
+
+L := Lm + A0 = W − Am,
+
+satisfies 
+
+(L − A0)1m = 0m. (1) Therefore, (Am + A0)1m = 1m. If initially W 6 = Im, we apply a normalization 2 of edge weights (without altering connectivity) to enforce W = Im and thus (1). We formalize the network topology assumptions as follows.                           
+
+> 2Set ˜wij =wij /w ifor (i, j )∈ E mand ˜wi0=wi0/w iwith wi=di+wi0; then ˜W=Imand (˜L−˜A0)1m=0m.
+
+2Distributed Adaptive Synchronization    
+
+> w10
+> w30
+> w50
+> w21
+> w32
+> w43
+> w14
+> w15
+> G
+> 0
+> 12
+> 34
+> 5
+> w21
+> w32
+> w43
+> w14
+> w15
+> Gm
+> 12
+> 34
+> 5w10
+> w30
+> w50
+> G0
+> 0
+> 1
+> 3
+> 5
+
+Figure 1: An example of the graph G and two induced graphs Gm and G0 with m = 5 , illustrating the decoupling of G and the assignment of wij —not actual communication. 
+
+Remark 1 (Network Connectivity Conditions) . The leader-weight matrix A0 is positive semi-definite, i.e., A0  0,with entries 0 ≤ wi0 ≤ 1 for all i ∈ V m, and ∃wi0 6 = 0 for at least one follower with (i, 0) ∈ E 0. The leader is reachable (there exists a directed path from the leader to every follower), so that L = Lm + A0 is positive stable , i.e., all eigenvalues satisfy ℜ{ σi(L)} > 0.
+
+In the following remark, we clarify the information flow. 
+
+Remark 2 (Information Flow) . Leader autonomy: Only the leader’s state is broadcast through the network; its dy-namics are unknown and not identified. Information exchange : Followers exchange positions with local neighbors only, as defined by the network topology G. Local measurements: When additional measurements (e.g., velocities) are available to individual agents, they are utilized locally without being transmitted, preserving the distributed archi-tecture. 
+
+Finally, for the control objective, all followers must track the leader’s trajectory to achieve network synchronization, provided G satisfies the connectivity conditions in Remark 1. To handle unknown follower dynamics and time-varying disturbances, passivity-agnostic distributed adaptive laws are employed; the next two sections discuss the SPR regime (Section 3) and the non-SPR regime (Section 4). 
+
+## 3 Passivity-Certified (SPR) Synchronization 
+
+3.1 Theoretical Concepts 
+
+For clarity of exposition, we develop the results on second-order followers for the passivity-certified and the passivity-recovered construction. The dynamics are given by 
+
+J ¨¯x + B ˙¯x = ¯ u, ¨¯x, ˙¯x, ¯x, ¯u ∈ Rm (2) where ¯x = [ x1, . . . , x m]⊤ and ˙¯x = [ ˙ x1, . . . , ˙xm]⊤ represent the vectors of follower position and velocity, respectively. The diagonal matrices J = diag {J1, . . . , J m} with Ji > 0, ∀i and B = diag {b1, . . . , b m} are unknown constants related to inertia and damping coefficients, while ¯u = [ u1, . . . , u m]⊤ defines the control input vector. Although both 
+
+¯x and ˙¯x are measurable locally, only positions are exchanged across the network. The transfer function of (2) is therefore denoted by M = diag {M1, . . . , M m}. Given the communication structure encoded by Am and A0, and letting ¯x0 = 1m ⊗ x0 be the replicated leader position, the total information received (incoming arrows) by follower 
+
+i, for all i ∈ V m, from its neighbors j ∈ N i, is given by 
+
+¯z := Am ¯x + A0 ¯x0, (3) where ¯z = [ z1, . . . , z m]⊤. The corresponding synchronization error (with position feedback ¯x) is therefore 
+
+¯e = [ e1, . . . , e m]⊤ = −L¯x + A0 ¯x0 =: ¯ z − ¯x. (4) We employ the following distributed control law: 
+
+¯u := cu(¯ e) = 2ΦΛ¯ e + ΦΛ 2I{¯e} + Φ ˙ ¯e, (5) where Φ = diag {φ1, . . . , φ m} and Λ = diag {λ1, . . . , λ m} are both positive definite gain matrices, i.e., φi, λ i > 0, ∀i.Here, I{¯e} denotes the elementwise time integral 3 of ¯e. The closed-loop transfer function, indexed 4 by u, associated 
+
+> 3
+
+I{¯e} := 
+
+∫
+
+¯e(τ ) dτ 
+
+> 4
+
+The subscript u tags all quantities under the (unshaped) control input in (5) in the SPR analysis—e.g., Wu, Cu, Πu, ru, Ωu ,etc. In the non–SPR analysis given in Section 4, the subscript w designates shaped-objects, e.g., Ww , Cw , Πw, rw , Ωw . This convention applies to scalars, vectors, and matrices, and is used solely to separate the SPR and the non–SPR analyses and avoid symbol overloading. 
+
+3Distributed Adaptive Synchronization         
+
+> Eq. (3) W−1
+> u
+> Ideal
+> Σ
+> M1
+> MmM
+> Followers
+> C1
+> u
+> CmuCu
+> Control
+> ¯z¯ru¯e¯u
+> ¯x
+> ¯x
+> ¯x0
+> Figure 2: Block diagram of (2)–(6). Solid lines depict the nominal loop. The dashed “Ideal” region indicates preprocessing W−1
+> u
+> acting on ¯z(cf. (8)).
+
+with (2)–(5) can be written as 
+
+Wu = Φ( sI m + Λ) 2 Π−1
+
+> u
+
+= Cu
+
+[J(s2Im) + B(sI m) + Cu
+
+]−1, (6) where 
+
+Πu = J(s3Im) + ( B + Φ)( s2Im) + 2ΦΛ( sI m) + ΦΛ 2,
+
+and Cu denotes the Laplace transform of cu defined in (5). Note that we design ¯u so that Wu is SPR according to Definition 1; (5) is one such choice. 
+
+Definition 1. A real-rational transfer matrix W(s) is positive real (PR) if: 
+
+• W(s) is analytic in ℜ(s) > 0; and 
+
+• the Hermitian part is positive semidefinite, W(s) + W∗(s)  0, ∀s with ℜ(s) > 0.It is strictly positive real (SPR) if there exists ǫ > 0 such that W(s − ǫ) is PR. 
+
+The transfer Wu = diag {Wu,i } is diagonal, each Wu,i is proper with relative degree 1, and is stable if 
+
+Φ ≻ 1 
+
+> 2
+
+JΛ − B, (7) equivalently 2( bi + φi) > J iλi for all i = 1 , . . . , m . Condition (7) (see Remark 3) is the Routh–Hurwitz inequality for the cubic denominator, hence Wu,i is analytic in ℜ(s) > 0. For scalar Wu,i of relative degree 1, Definition 1 reduces to: Wu,i is analytic in ℜ(s) > 0 and ℜ{ Wu,i (jω )} ≥ 0 for all ω (PR), with strict inequality for SPR. Under (7), the even-polynomial representation of ℜ{ Wu,i (jω )} is strictly positive for all ω; therefore ℜ{ Wu,i (jω )} > 0.Consequently, each Wu,i is SPR, and thus Wu is SPR. 
+
+Remark 3 (Routh–Hurwitz Gain) . The inequality in (7) is equivalent to φi > 1 
+
+> 2
+
+Jiλi − bi, ∀i = 1 , . . . , m . Thus, no “upper bound” on Φ is required: any larger φi preserves the condition and increases the margin. A convenient uniform 
+
+sufficient design is 2σmin (Φ) > σ max (JΛ − 2B), which guarantees (7) for all agents simultaneously. 
+
+Equations (2)-(6) specify the setup; we now present the method. We further design the reference signals ¯ru for the followers as shown in Fig. 2. If Wu were known, an ideal (exact-tracking) choice is 
+
+¯ru := W−1 
+
+> u
+
+¯z = ˆJ ¨Ωu + ˆB ˙Ωu + ¯ z, (8) where ¯z is defined in (3) and Ωu := C−1 
+
+> u
+
+¯z is the internal signal generated by the inverse of the control law in (5). Here 
+
+ˆJ = diag { ˆJ1, . . . , ˆJm} and ˆB = diag {ˆb1, . . . , ˆbm} are parameter estimates used in place of the unknown J, B . The inverse of Wu in (8) is 
+
+W−1 
+
+> u
+
+= Im + [ ˆJ(s2Im) + ˆB(sI m)]C−1 
+
+> u
+
+. (9) This construction “matches” the network signal ¯z through the (estimated) plant dynamics so that, with exact param-eters, the closed-loop transfer function is inverted and ¯e = ¯ z − ¯x → 0m (exact synchronization). However, the implementation of (8) requires ˙Ωu and ¨Ωu, which would entail exchanging neighbor derivatives, and violates position-only communication. The next lemma recasts the input into an implementable form; the subsequent remark specifies the substitutions. 
+
+Lemma 1. Consider ¯ru in (8) , the control law ¯cu(¯ e) in (5) , a feedback signal ¯x, and a network G satisfying Remark 1. Then, ¯u = ˆJ ¨¯z + ˆB ˙¯z + Cu ¯e. Under position-only exchange as in Remark 4 yields the implementable form 
+
+¯u = Cu ¯e + ˆJ ¨¯x0 + ˆB ˙¯x. (10) 4Distributed Adaptive Synchronization 
+
+Proof. By definition, ¯u := Cu(¯ ru − ¯x) = Cu ¯ru − Cu ¯x. Substituting (8), using Ωu = C−1 
+
+> u
+
+¯z and CuC−1 
+
+> u
+
+= Im, gives 
+
+¯u = ˆJCuC−1 
+
+> u
+
+¨¯z + ˆBCuC−1 
+
+> u
+
+˙¯z + Cu(¯ z − ¯x)= ˆJ ¨¯z + ˆB ˙¯z + Cu ¯e. 
+
+Applying the replacements stated in Remark 4 due to limited accessibility yields (10). 
+
+Remark 4 (Position-only Exchange) . To preserve position-only communication, we substitute both neighbor deriva-tives ˙¯z = Am ˙¯x + A0 ˙¯x0 and ¨¯z = Am ¨¯x + A0 ¨¯x0, with ˙¯x and ¨¯x0, in turn, which are locally measurable for ˙¯x (moving the feedforward ˆB ˙¯z into the feedback ˆB ˙¯x) and leader-disseminated for ¨¯x0.
+
+Building on Lemma 1, we reparameterize the control law to incorporate the estimate ˆJ, yielding standard gradient-type error dynamics while preserving the SPR structure (see Remark 5). With this reparameterization, Cu is redefined as 
+
+Cu = [(Φ + 2 ˆJΛ)( s2Im) + (2ΦΛ + ˆJΛ2)(sI m) + ΦΛ 2](sI m)−1. (11) Correspondingly, the modified reference is 
+
+¯ru = ¯ z + ˆJ(s2Im) C−1 
+
+> u
+
+¯z =: ˆ J ¨Ωu + ¯ z. (12) Using (10), the follower input becomes 
+
+¯u = Cu ¯e + ˆJ ¨¯x0 + ˆB ˙¯x
+
+= (Φ + 2 ˆJΛ) ˙ ¯e + (2ΦΛ + ˆJΛ2)¯e + ΦΛ 2 I{¯e} + ˆJ ¨¯x0 + ˆB ˙¯x =: Φ ϑu + ˆΞuηu, (13) in which the two terms ˆΞu ∈ Rm×2m, η u ∈ R2m are defined as ˆΞu = [ ˆJ, ˆB] and ηu = [ ζ⊤ 
+
+> u
+
+, ˙¯x⊤]⊤ where ζu =¨¯x0 + 2Λ ˙ ¯e + Λ 2 ¯e while the term ϑu ∈ Rm is given by ϑu = ˙ ¯e + 2Λ¯ e + Λ 2I{¯e}. The idea of (13) is to decouple the adaptive parameters ˆΞu from the time-varying regressor ηu explicitly, while Φ shapes the error combination ϑu to be driven to zero. To proceed with the stability analysis, we define the parameter estimation error as ˜Ξu = ˆΞu − Ξu, and analyze the evolution of ϑu over the network characterized by L and A0. The corresponding error dynamics, expressed as the gradient of ϑu, is derived as follows 
+
+˙ϑu = ¨ ¯e + 2Λ ˙ ¯e + Λ 2 ¯e (14a) 
+
+= −L¨¯x + A0 ¨¯x0 + 2Λ ˙ ¯e + Λ 2 ¯e
+
+= ¨ ¯z − ¨¯x + 2Λ ˙ ¯e + Λ 2 ¯e (14b) 
+
+= ζu + [B ˙¯x − Φϑu − ˆJζ u − ˆB ˙¯x]J−1
+
+= −J−1Φϑu + J−1[−˜Ξuηu
+
+]. (14c) which shows the standard error dynamics for the networked adaptive system. In the following subsection, we analyze the stability of the follower dynamics based on (14c). 
+
+Remark 5 (Why reparameterization?) . The reparameterization in (11) brings ˆJ inside the feedback operator via 
+
+Cu so that the regressor ζu in (14b) appears explicitly, resulting (13) . Without (11) , using Cu in (5) , one obtains 
+
+¯u = Φ ϑu + ˆJ ¨¯x0 + ˆB ˙¯x where ζu cannot be recovered and as a result, the terms ¨¯x0 and 2Λ ˙ ¯e + ΛΛ ⊤¯e cannot be grouped into a unified regressor, complicating the stability analysis. The structure introduced in (11) is therefore a deliberate design choice, enabling a clean separation under position-only communication while preserving the SPR design. 
+
+3.2 Stability Analysis 
+
+In the networked setting, our goal is to ensure parameter convergence and asymptotic synchronization, i.e., xi(t) →
+
+x0(t) for all i (equivalently, ¯e(t) → 0m). Because the true parameters are unknown (no explicit form of ˜Ξu), we work with the measurable error dynamics in (14c), capturing the influence of ˜Ξu, and design distributed adaptive laws using only measurable signals. 
+
+Theorem 1. Consider the follower dynamics (2) controlled by (13) over a communication network G satisfying Re-mark 1. Let the adaptive law (15c) be applied to the parameter estimates ˆΞu in (13) . Then the origin of the error system (ϑu, ˜Ξu) = ( 0m, 0) is globally asymptotically stable. In particular, all closed-loop signals remain bounded and the synchronization error satisfies ¯e(t) → 0m as t → ∞ .
+
+5Distributed Adaptive Synchronization 
+
+Proof. Let Vu(ϑu, ˜Ξu) > 0 be a Lyapunov function candidate inspired by the error dynamics in (14c) of the form 
+
+Vu = ϑ⊤ 
+
+> u
+
+Puϑu + tr [˜Ξ⊤ 
+
+> u
+
+J−1Γ−1 
+
+> ξ
+
+˜Ξu
+
+] (15a) where Γξ ∈ Rm×m ≻ 0. From (14c), 
+
+˙ϑu = −J−1Φ ϑu − J−1 ˜Ξu ηu =: Au ϑu + Bu ˜Ξuηu,
+
+where Au = −J−1Φ ≺ 0 and Bu = −J−1. Since Au is Hurwitz, there exist Qu = Q⊤ 
+
+> u
+
+≻ 0 and Pu = P⊤ 
+
+> u
+
+≻ 0
+
+solving the Lyapunov equation A⊤ 
+
+> u
+
+Pu + PuAu = −Qu. Taking the time derivative of (15a) along the trajectories of (14c), we obtain 
+
+˙Vu = ϑ⊤
+
+> u
+
+[A⊤ 
+
+> u
+
+Pu + PuAu
+
+]ϑu − 2ϑ⊤ 
+
+> u
+
+PuJ−1 ˜Ξuηu
+
++ 2 tr [ ˙˜Ξ⊤ 
+
+> u
+
+J−1Γ−1 
+
+> ξ
+
+˜Ξu
+
+]
+
+= −ϑ⊤ 
+
+> u
+
+Quϑu − 2ϑ⊤ 
+
+> u
+
+PuJ−1 ˜Jζ u − 2ϑ⊤ 
+
+> u
+
+PuJ−1 ˜B ˙¯x
+
++ 2 tr [ηuϑ⊤ 
+
+> u
+
+PuΓξJ−1Γ−1 
+
+> ξ
+
+˜Ξu
+
+]
+
+= −ϑ⊤ 
+
+> u
+
+Quϑu ≤ 0 (15b) if the adaptive law is suitably chosen as ˙˜Ξu = Γ ξ Puϑuη⊤ 
+
+> u
+
+. Alternatively, to account for heterogeneity in agent dynamics and potential asymmetries in network topologies, the term Γξ can be decoupled using independent gains as 
+
+˙˜Ξu = [Γξ1 , Γξ2
+
+](I2 ⊗ Puϑu) diag {ζ⊤ 
+
+> u
+
+, ˙¯x⊤} (15c) where Γξ1 , Γξ2 ∈ Rm×m ≻ 0 serve as independent adaptation gains for ˆJ and ˆB, in turn, and diag {ζ⊤ 
+
+> u
+
+, ˙¯x⊤} ∈ R2×2m.This formulation enables more flexible adaptation tailored to individual agent characteristics and improves robustness in non-uniform or sparse network configurations, where a shared adaptation rate may be suboptimal. Therefore Vu(t)
+
+is nonincreasing and bounded below, i.e., Vu(t) ≤ Vu(0) , and ˙Vu → 0 as t → ∞ , implying ϑu ∈ L 2 ∩ L ∞ and 
+
+˜Ξu ∈ L ∞. Since ˙ϑu is bounded under the closed-loop (from (14c) with bounded signals), Barbalat’s lemma gives 
+
+ϑu(t) → 0. By the definition of ϑu (a strictly proper, stable filter of ¯e), this implies ¯e(t) → 0m.
+
+Remark 6. By (2) , (14c) , (15a) , and (15b) , LaSalle’s invariance principle implies that trajectories converge to the largest invariant subset of 
+
+S = {(ϑu, ˜Ξu) : ˙Vu(ϑu, ˜Ξu) = 0 } = {(ϑu, ˜Ξu) : ϑu = 0m, ˙˜Ξu = 0}.
+
+Thus ϑu → 0m (hence ¯e → 0m). If, in addition, the regressor ηu is persistently exciting, then ˜Ξu → 0; otherwise ˜Ξu
+
+converges to a constant. 
+
+3.3 Exact Cancellation of Disturbance 
+
+Before proceeding, recall that for the disturbance-free case, the error dynamics in (14c) can be rewritten as 
+
+[ ˙ϑu
+
+vec( ˙˜Ξu)
+
+]
+
+=
+
+[ Au Bu(Im ⊗ η⊤ 
+
+> u
+
+)Γξ ⊗ Puηu 0
+
+] [ ϑu
+
+vec( ˜Ξu)
+
+]
+
+,
+
+which we compactly express as 
+
+˙βu = F(ηu)βu (16) where βu = [ ϑ⊤ 
+
+> u
+
+, vec( ˜Ξu)⊤]⊤, and ˙ϑu = Auϑu + Bu ˜Ξuηu with Au = −J−1Φ and Bu = −J−1. We now examine the closed loop in the presence of exogenous disturbances. The follower dynamics in (2) become 
+
+J ¨¯x + B ˙¯x = ¯ u + ¯δ, ¯δ ∈ L ∞ (17) where ¯δ = [ δ1, . . . , δ m]⊤ is a bounded disturbance (e.g., constant or time-varying; see Fig. 4b). With the control law (13), the error dynamics (14c) acquire an additive input channel 
+
+˙¯ϑu = Au ¯ϑu + Bu ˜Ξu ¯ηu + J−1 ¯δ, (18) as shown in the Appendix. We distinguish two scenarios according to network connectivity and the leader signal. 6Distributed Adaptive Synchronization 
+
+Case 1: disconnected network ( ¯x0 = 0, ¯z = 0, ∀t). Here ¯e = −¯x, so (13) simplifies to ¯u = Φ ¯ϑu + ˆΞu ¯ηu where 
+
+¯ϑu(¯ x) = − ˙¯x − 2Λ¯ x − ΛΛ ⊤I{¯x} and ¯ηu = [ ¯ζ⊤ 
+
+> u
+
+, ˙¯x⊤]⊤ with ¯ζu = −2Λ ˙ ¯x − ΛΛ ⊤ ¯x. Considering (16) and stacking 
+
+¯βu = [ ¯ϑ⊤ 
+
+> u
+
+, vec( ˜Ξu)⊤]⊤ yield 
+
+˙¯βu = F(¯ ηu) ¯βu +
+
+[J−1 ¯δ
+
+02m2
+
+]
+
+. (19) In disconnected settings the regressor lacks richness; if ¯x, ˙¯x / ∈ L 2 (e.g., due to persistent inputs at the disturbance channel), then ¯δ / ∈ L 2. Without projection or σ–modification, vec( ˜Ξu) can drift—this is the well-known lack-of-PE pathology in disconnected networks. 
+
+Case 2: connected network ( ¯x0 6 = 0, ¯z 6 = 0). Using the Lyapunov function in (15a) and the disturbed dynamics (18) which is an SPR-driven, strictly proper, stable filter of ¯δ in the ϑu-channel, one obtains 
+
+˙Vu = −ϑ⊤ 
+
+> u
+
+Qu ϑu + 2 ϑ⊤ 
+
+> u
+
+PuJ−1 ¯δ ≤ − λmin (Qu ) 
+
+> 4
+
+‖ϑu‖2 + κ ‖¯δ‖2, (20) for some κ > 0 (Young’s inequality). Thus the ϑu–subsystem is ISS with respect to ¯δ. In particular, • If ¯δ is constant, then the integral term in (13) provides an internal model for step signals, ensuring that 
+
+Wu ¯δ decays exponentially to zero. In particular, under the same adaptive law (15c) used in Theorem 1, the Lyapunov analysis carries through with an extra bounded input term, yielding ϑu ∈ L 2 ∩ L ∞ and ¯e(t) → 0m.Thus constant disturbances are exactly rejected (zero steady-state synchronization error). • If ¯δ ∈ L 2, then ϑu ∈ L ∞ and ¯e ∈ L ∞, with ¯e(t) → 0m.• For bounded, time-varying ¯δ, both ϑu and ¯e are bounded. The steady-state synchronization error is attenuated according to the (stable) disturbance-to-error map induced by (18); exact cancellation holds for the constant component, while higher-frequency content is filtered. When the leader trajectory ¯x0 is sufficiently rich (persistently exciting in the standard sense 5), the regressor ηu is PE, implying ˜Ξu(t) → 0; without such richness, ˜Ξu remains bounded and converges to a constant. Equations (18)–(20) show that the SPR design ensures exact rejection of constant disturbances and input-to-state stability with respect to bounded time-varying disturbances, with parameter convergence guaranteed under persistent excitation of the leader signal. 
+
+## 4 Passivity-Recovered (Non-SPR) Synchronization via Frequency Shaping 
+
+Building on the passivity-certified design in Section 3, we now address cases where the closed-loop transfer function is 
+
+not strictly positive real (non-SPR). The goal and the constraint remain the same: to synchronize all agents to a leader trajectory under dynamics in (2), with unknown J and B. To illustrate a non-SPR case, we introduce a networked adaptive law based on phase-lead compensation denoted by ¯w, while preserving the same communication constraint (position exchange only; no neighbor velocities/accelerations). To motivate our development, consider a controller of the form ¯w = ¯ cw (¯ e), with controller transfer function 
+
+Cw = Φ ND −1, pi < q i, ∀i (21) where N := sI m + diag {¯p} and D := sI m + diag {¯q} with ¯p = [ p1, . . . , p m]⊤ and ¯q = [ q1, . . . , q m]⊤. Although (21) is attractive for transient shaping and phase margin improvement, the resulting closed-loop transfer function (denote the unshaped map by W− 
+
+> w
+
+) is not SPR even under nominal conditions, with ¯δ = 0 and fixed feedback K =diag {κi}. The obstruction is structural: Cw is proper and the dynamics in (2) has relative degree nd = 2 , so W−
+
+> w
+
+inherits relative degree nd > 1, violating the necessary SPR condition for the standard Lyapunov/adaptive proofs. Unlike the SPR case—where reparameterization (see (11)-(14c) and Remark 5) yields the SPR transfer Wu—a direct reparameterization with (21) does not fix this non-SPR issue; a more fundamental modification is required. To resolve non-SPR while retaining distributed implementation, we develop two complementary designs: Scenario 1 assumes local velocity availability and applies output shaping to construct an SPR transfer function; Scenario 2 enforces position-only exchange and shapes the regressor via stable filtering so that the induced map is SPR. Both preserve distributed implementability, require no prior knowledge of J, B , and enable the same Lyapunov/adaptive          
+
+> 5∃T, α > 0 :
+> ∫t+Tt
+> diag {¯x0(τ)}2dτ αI m,∀t≥t0.
+
+7Distributed Adaptive Synchronization analysis used in the SPR section after shaping. We analyze both scenarios in the disturbance-free setting; once SPR is established, disturbance handling follows directly from Subsection 3.3. 
+
+Scenario 1 (output shaping; ˙¯x available locally). Define the shaped network outputs 
+
+¯y = ( sI m + Θ)¯ x, Θ = diag {θi} ≻ 0 (22) where Θ defines tunable parameters and ¯y = [ y1, . . . , y m]⊤. Given (2), (21), and a feedback gain K∗, the closed-loop transfer function is written as 
+
+Ww = Cw (sI m + Θ)Π −1 
+
+> w
+
+, (23) where Πw = J(s2Im) + B(sI m) + K∗Cw (sI m + Θ) and more precisely, K∗ = diag {k∗ 
+
+> i
+
+} is a gain for which Ww
+
+has desired phase margins. The factor (sI m + ¯θ) in (22) lowers the relative degree of the transfer function so that Ww
+
+becomes SPR and admits a passivity-based interpretation, in which its internal model can be stabilized via Lyapunov arguments. Furthermore, compared to (3) and (4), we use the shaped consensus signals ¯ey = ¯ zy − ¯y due to the shaped variables in (22). The meaning of ¯zy = Am ¯y + A0 ¯y0 is similar to ¯z and ¯y0 = 1m ⊗ y0, with y0 = ( s + θ0)x0 is the shaped leader signal for this setting as opposed to ¯x0. The (ideal) reference signal assuming the known Ww is denoted as 
+
+¯rw = W−1 
+
+> w
+
+¯zy
+
+= ˆK ¯zy + [ ˆJ(s2Im) + ˆB(sI m)][ Cw (sI m + Θ) ]−1 ¯zy
+
+= ˆJ ¨Ωw + ˆB ˙Ωw + ˆK ¯zy, (24) where Ωw = [Cw(sI m + Θ) ]−1 ¯zy ≈ C−1 
+
+> w
+
+¯z and ˆJ, ˆB, ˆK := K∗ + ˜K are the estimates. Introduce 
+
+¯ew := ¯ rw − ˆK ¯y = ˆJ ¨Ωw + ˆB ˙Ωw + ˆK ¯ey ,
+
+and define the parameter estimation error ˜Ξw = ˆΞw − Ξw , where ˆΞw = [ ˆK, ˆJ, ˆB] and Ξw is the true parameter. Then 
+
+¯ew = ˜Ξw ηw + K∗ ¯ey + J ¨Ωw + B ˙Ωw , (25) where ηw = [¯ e⊤ 
+
+> y
+
+, ¨Ω⊤ 
+
+> w
+
+, ˙Ω⊤ 
+
+> w
+
+]⊤. Consistent with position-exchange constraints (Remark 4), inaccessible derivatives of ¯zy
+
+are replaced by leader-based signals filtered through C−1
+
+> w
+
+¯ew = ˜Ξw ηw + K∗ ¯ey + JC−1 
+
+> w
+
+¨¯x0 + BC−1 
+
+> w
+
+˙¯x0
+
+= ˜Ξw ηw + K∗ ¯ey + J ¨Ωx0 + B ˙Ωx0
+
+︸ ︷︷ ︸
+
+> Ξwηw
+
+, (26) where ¨Ωx0 = C−1 
+
+> w
+
+¨¯x0 and ˙Ωx0 = C−1 
+
+> w
+
+˙¯x0, with the resulting time varying regressor ηw = [¯ e⊤ 
+
+> y
+
+, ¨Ω⊤ 
+
+> x0
+
+, ˙Ω⊤ 
+
+> x0
+
+]⊤. To certify SPR, we invoke the Meyer–Kalman–Yakubovich (MKY) lemma, which links the condition in Definition 1 to the existence of a Lyapunov function; proof in [22]. 
+
+Lemma 2 (MKY) . Consider a transfer function W(s), a matrix γI m, γ > 0 and a symmetric matrix ϕ ≻ 0. If 
+
+ℜ[W(iω )] , ℜ[ γ 
+
+> 2
+
+Im + W] > 0, ∀ω ∈ R
+
+where W = c⊤(iωI mn − A)−1B, then ∃ǫ > 0, α := diag {α1, . . . , α m}, α i ∈ Rn, P ≻ 0, such that A⊤P + PA =
+
+−αα ⊤ − ǫϕ and PB − c = √γα .
+
+From (26), the optimal term Ξw ηw corresponds to the ideal feedforward control that drives ¯ey := WwΞw ηw to zero, ensuring consensus. In contrast, the non-optimal term ˜Ξw ηw must be shown to decay over time. The error model can be derived as ¯ey := Ww ˜Ξw ηw , which is equivalent to the state-space ˙¯ex = Aw ¯ex + Bw ˜Ξw ηw and ¯ey = c⊤ 
+
+> w
+
+¯ex in which ¯ex represents the internal state. Therefore, based on Lemma 2, if Ww in (23) is SPR, then ∃Qw = Q⊤ 
+
+> w
+
+≻ 0
+
+such that Pw = P⊤ 
+
+> w
+
+≻ 0 solves the equation of A⊤ 
+
+> w
+
+Pw + Pw Aw = −Qw with Pw Bw = cw . With the Lyapunov function 
+
+Vw (¯ ex, ˜Ξw ) = ¯ e⊤ 
+
+> x
+
+Pw ¯ex + tr [˜Ξ⊤ 
+
+> w
+
+Γ−1 
+
+> ξ
+
+˜Ξw
+
+], (27a) its derivative along ¯ey = Ww ˜Ξw ηw becomes 
+
+˙Vw = ¯ e⊤
+
+> x
+
+[A⊤ 
+
+> w
+
+Pw + Pw Aw
+
+]¯ex + 2¯ e⊤ 
+
+> x
+
+Pw Bw ˜Ξw ηw + 2 tr [ ˙˜Ξ⊤ 
+
+> w
+
+Γ−1 
+
+> ξ
+
+˜Ξw
+
+]
+
+8Distributed Adaptive Synchronization 
+
+= −¯e⊤ 
+
+> x
+
+Qw ¯ex + 2¯ e⊤ 
+
+> x
+
+PwBw ˜Ξw ηw + 2 tr [ηw ¯e⊤ 
+
+> y
+
+ΓξΓ−1 
+
+> ξ
+
+˜Ξw
+
+]
+
+= −¯e⊤ 
+
+> x
+
+Qw ¯ex ≤ 0, (27b) if the adaptive law ˜Ξw is suitably chosen as 
+
+˙˜Ξw = −[Γ ξ1 , Γξ2 , Γξ3 ]( I3 ⊗ ¯ey) diag {¯e⊤ 
+
+> y
+
+, ¨Ω⊤ 
+
+> x0
+
+, ˙Ω⊤ 
+
+> x0
+
+} (27c) with diagonal gains Γξk ≻ 0, k = 1 , 2, 3. Hence ¯ex, ¯ey , ˜Ξw ∈ L ∞, ¯ex ∈ L 2, and ¯ex(t) → 0. Since the transfer Ww
+
+is strictly proper and stable, ¯ey(t) → 0m, i.e., synchronization holds in the disturbance-free setting after shaping. 
+
+Scenario 2 (regressor shaping; only ¯x available). When only ¯x is measurable, the output shaping (sI m + Θ) of (22) cannot be implemented in the shared signals. The closed-loop transfer function reduces to W− 
+
+> w
+
+= Cw (Π − 
+
+> w
+
+)−1 where 
+
+Π− 
+
+> w
+
+= J(s2Im) + B(sI m) + K∗Cw . Consequently, the (ideal) references (24) and errors (26) are formed with ¯z and 
+
+¯e (rather than ¯zy , ¯ey). In particular, the time-varying regressor becomes ηw = [¯ e⊤, ¨Ω⊤ 
+
+> x0
+
+, ˙Ω⊤ 
+
+> x0
+
+]⊤ and, nonetheless, the error model ¯e = W− 
+
+> w
+
+˜Ξw ηw is not SPR (relative degree nd > 1). To recover passivity, we shape the regressor by a stable pre-filter and use its inverse inside the adaptation: 
+
+¯e = W− 
+
+> w
+
+(sI m + Θ) ˜Ξw ¯ηw (28) where ¯ηw = ηw (sI m + Θ) −1. The composite transfer Ww := W− 
+
+> w
+
+(sI m + Θ) has nd = 1 and is rendered SPR. Hence we can reuse the Lyapunov function in (27a) (now with the transfer Ww) and obtain the same dissipation inequality as in (27b). Choosing a uniform gradient law ˙˜Ξw = −Γξ ¯e¯η⊤ 
+
+> w
+
+, with Γξ ≻ 0 yields ˙Vw ≤ 0, implying ¯ex, ¯e ∈ L ∞,
+
+¯ex ∈ L 2, and ¯ex(t) → 0. Since Ww is strictly proper and stable, ¯e(t) → 0m, establishing synchronization. 
+
+## 5 Numerical Simulations 
+
+This section validates the distributed adaptive control framework across (i) unstable heterogeneous dynamics, (ii) multiple graph topologies, and (iii) diverse disturbance profiles. The dynamics of the followers are modeled as in (17) with unknown J, B and the leader trajectory x0(t) = sin( t) + 0 .75 cos(2 t). The parameters of the unstable heterogeneous followers used in the simulations are as follows: 
+
+Ji = 0 .5 + 0 .1i, bi = −1.3 − 0.1i, (29) with control gains φi = 1 .5 + 0 .5i and λi = 1 for i = 1 , . . . , 8, and adaptation gains Γξk = 5 Im, k = 1 , 2, 3. Three different disturbances are considered to evaluate the robustness of the control designs: ¯δ1 = 0 .25 , ¯δ2 = 0 .45 sin(2 t),and ¯δ3 = 0 .7 sin(2 t) + 0 .3 cos(3 t) as shown in Fig. 4b. Four topologies (see Fig. 3), all satisfying Remark 1, are used with the following edge weights: 1. Star : wi0 = 1 , ∀i.2. Cyclic : wi0 = 0 .5 and wij = 0 .25 for j ∈ N i \{ 0}.3. Series (path) : edges (i, i − 1) with wij = 1 .4. Arbitrary : as in Table 1.  
+
+> Table 1: Weights used in arbitrary network
+
+Agent Weights Agent Weights 
+
+1 w10 = 1 5 w52 = .25 , w57 = .75 
+
+2 w20 = .75 , w24 = .25 6 w63 = .75 , w68 = .25 
+
+3 w30 = 1 7 w75 = .5, w76 = .45 , w78 = .05 
+
+4 w41 = .5, w42 = .5 8 w86 = .5, w87 = .5
+
+We report results in three parts: (i) SPR (passivity-certified) synchronization—disturbance rejection and network-level behavior across topologies; (ii) non-SPR (passivity-recovered via frequency shaping) synchronization; and (iii) scalability, via runtime benchmarking for SPR and non-SPR settings as m increases. • Disturbance response (single agent). Figure 4a reports the response for the most challenging follower ( i = 8 )under ¯δk, k = 1 , 2, 3. In all cases the follower synchronizes to x0, while ˆJ and ˆB converge, confirming robustness and disturbance rejection of the passivity-certified design. 9Distributed Adaptive Synchronization              
+
+> Star
+> 01
+> 234
+> 5
+> 678
+> Cyclic
+> 01
+> 234
+> 5
+> 678
+> Series
+> 01
+> 234
+> 5
+> 678III
+> III
+> Arbitrary
+> 0
+> 3
+> 7
+> 6
+> 8
+> 1
+> 425
+
+Figure 3: Four network topologies are considered adhering to Remark 1. The blue circles with a number in each topology indicate the followers while the arrows show the communication network. In general, the red arrows express to which follower the leader trajectory is delivered (G0) while the black arrows are the links among the followers (Gm). More specifically, the red dashed arrows in cyclic and arbitrary network mean that we perform in-depth analysis in various scenarios while the green arrows in arbitrary network shows the exchange information from various levels of followers from the leader x0.
+
+Table 2: Scaling of simulation runtime with the number of agents m. Entries are median wall-clock time per run (seconds) over 20 runs. Hardware (MacBook Pro, Apple M2, 8 GB) and solver settings (MATLAB) fixed across runs.                                      
+
+> SPR non-SPR (Scenario 1)
+> mStar Cyclic Path Star Cyclic Path
+> 50 0.0201 0.0235 0.0793 0.0193 0.0272 0.0781 100 0.0341 0.0320 0.1692 0.0313 0.0490 0.1592 150 0.1056 0.0909 0.7605 0.1036 0.1005 0.8655 200 0.1184 0.1273 1.1563 0.1271 0.1537 1.2065 250 0.1325 0.1507 1.7258 0.1511 0.1773 1.8385
+
+• Network performance (SPR). Figure 5 shows network-level synchronization across star, cyclic, path, and arbitrary graphs under the worst disturbance ¯δ3. Despite large variations in connectivity and information flow, all followers track x0. Hence, the SPR transfer Wu ensures uniform convergence margins across heterogeneous topologies. • Influence of cyclic leader weights (SPR). Figure 6a varies the direct leader weight wi0 in the cyclic graph. For 
+
+wi0 ≥ 0.15 , synchronization is achieved; at wi0 = 0 .05 the network drifts toward follower-only consensus, revealing insufficient external excitation. To probe partial access, Fig. 6b fixes a minimal leader weight wi0 = 0 .15 on only ic
+
+agents. Even with ic ≤ 5, the network synchronizes efficiently—performance comparable to larger leader weights 
+
+(wi0 ∈ { 0.95 , 0.75 , 0.5}). Thus, modest, well-placed leader links suffice to preserve synchronization. • Arbitrary topology robustness (SPR). Figure 7a varies a leader edge ( w20 ∈ { 0.05 , 0.15 , 0.25 , 0.5}) in the arbi-trary graph. Unlike the cyclic case, all configurations synchronize to x0, even with w20 = 0 .05 , highlighting the resilience of irregular connectivity via alternative paths. Figure 7b then removes selected links (sets I–III in Fig. 3), violating (L − A0)1m = 0 ; synchronization persists and the error ( L2-norm) remains bounded, showing that the SPR design tolerates structural perturbations without retuning. • Passivity-recovered (non-SPR) synchronization. Figures 8a–8b evaluate the passivity-recovered controllers. Both implementations—shaped output combinations and position-only feedback—match the SPR performance across all topologies under ¯δ3. This confirms that frequency shaping recovers effective passivity of (unshaped) transfer func-tion, making the overall loop satisfy the same Lyapunov-based guarantees and delivering synchronization compara-ble to the SPR case. • Complexity Analysis. Per update, each agent does O(1) local compute and O(Ni) communication. Network-wide, compute is O(m) and communication is O(E)—linear in m for sparse graphs, O(m2) for dense ones. Empirical runtimes for SPR and non-SPR setting corroborate this; see Table 2. Across unstable heterogeneous dynamics, disturbances ¯δ1–¯δ3, and diverse graphs, the passivity-certified (SPR) design yields exact step disturbance rejection and bounded responses to time-varying inputs, with parameter convergence under persistent excitation. The passivity-recovered (non-SPR) design achieves comparable tracking after frequency shaping. Taken together, the simulations support the central claim: a passivity-agnostic, distributed adaptive frame-work can deliver reliable synchronization in large-scale networks, whether the closed loop is inherently SPR or ren-dered SPR by design. 
+
+## 6 Conclusion 
+
+This paper presented a unified framework for distributed adaptive synchronization under position-only communica-tion. We developed two complementary designs: a passivity-certified (SPR) scheme via structured reparameterization, 10 Distributed Adaptive Synchronization                     
+
+> 0246810 12 14 16 18 20
+> -2 -1 012
+> 0246810 12 14 16 18 20
+> -3 -2 -1 012
+
+(a) Performance and Convergence                               
+
+> 0246810 12 14 16 18 20
+> -1 -0.5 00.5 1
+> 0246810 12 14 16 18 20
+> -1 -0.5 00.5 1
+> 0246810 12 14 16 18 20
+> -1 -0.5 00.5 1
+
+(b) Disturbance Profiles 
+
+Figure 4: The performance output and the convergence for various ¯δk .                                        
+
+> 0246810 12 14 16 18 20
+> -2 -1 012
+> 0246810 12 14 16 18 20
+> -2 -1 012
+> 0246810 12 14 16 18 20
+> -2 -1 012
+> 0246810 12 14 16 18 20
+> -2 -1 012
+
+Figure 5: The performance outputs for four network topologies using ¯δ3                                        
+
+> 0246810 12 14 16 18 20
+> -2 02
+> 0246810 12 14 16 18 20
+> -2 02
+> 0246810 12 14 16 18 20
+> -2 02
+> 0246810 12 14 16 18 20
+> -2 02
+
+(a)       
+
+> 1234567
+> 012345678910
+
+(b) Figure 6: Effect of leader weight wi0 in cyclic networks under disturbance ¯δ3.
+
+and a passivity-recovered (non-SPR) scheme that uses frequency shaping to restore SPR behavior. Both require no knowledge of the leader’s dynamics, operate on directed graphs satisfying balance and “reachability” conditions, and accommodate unknown (possibly unstable) follower dynamics. Analysis shows global asymptotic synchronization in the disturbance-free case and under bounded time-varying disturbances; with parameter convergence under persis-tent excitation. Simulations on star, cyclic, path, and arbitrary topologies confirm robust tracking and scalability, and demonstrate that the frequency-shaped non-SPR designs match the SPR performance. Sensitivity experiments high-11 Distributed Adaptive Synchronization                                         
+
+> 0246810 12 14 16 18 20
+> -2 02
+> 0246810 12 14 16 18 20
+> -2 02
+> 0246810 12 14 16 18 20
+> -2 02
+> 0246810 12 14 16 18 20
+> -2 02
+
+(a)           
+
+> 0246810 12 14 16 18 20
+> 00.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1
+
+(b) Figure 7: Robustness of arbitrary network under varying leader and disconnected access.                 
+
+> 0510 15 20
+> 00.5 11.5
+> 0510 15 20
+> 00.5 11.5
+> 0510 15 20
+> 00.5 11.5
+> 0510 15 20
+> 00.5 11.5
+
+(a) Scenario 1                 
+
+> 0510 15 20
+> 00.5 11.5
+> 0510 15 20
+> 00.5 11.5
+> 0510 15 20
+> 00.5 11.5
+> 0510 15 20
+> 00.5 11.5
+
+(b) Scenario 2 
+
+Figure 8: Performance of distributed adaptive phase-lead compensator strategies. 
+
+light how modest leader injection and alternative paths sustain performance despite structural variations. Future work will address communication delays and packet losses in the network [27]. 
+
+## References 
+
+[1] A. Dorri, S. S. Kanhere, and R. Jurdak, “Multi-agent systems: A survey,” IEEE Access , vol. 6, pp. 28573–28593, 2018. [2] J. J. R. Liu, J. Lam, and Z. Shu, “Positivity-preserving consensus of homogeneous multiagent systems,” IEEE Transactions on Automatic Control , vol. 65, no. 6, pp. 2724–2729, 2020. [3] Q. Jiao, H. Modares, F. L. Lewis, S. Xu, and L. Xie, “Distributed l2-gain output-feedback control of homoge-neous and heterogeneous systems,” Automatica , vol. 71, pp. 361–368, 2016. [4] M. K. Wafi, H. M. Hedesh, and M. Siami, “Distributed adaptive estimation over sensor networks with partially unknown source dynamics,” arXiv preprint arXiv:2511.07646 , 2025. [5] C. Chen, F. L. Lewis, K. Xie, S. Xie, and Y. Liu, “Off-policy learning for adaptive optimal output synchronization of heterogeneous multi-agent systems,” Automatica , vol. 119, p. 109081, 2020. 12 Distributed Adaptive Synchronization [6] Y. Hua, X. Dong, G. Hu, Q. Li, and Z. Ren, “Distributed time-varying output formation tracking for hetero-geneous linear multiagent systems with a nonautonomous leader of unknown input,” IEEE Transactions on Automatic Control , vol. 64, no. 10, pp. 4292–4299, 2019. [7] M. K. Wafi and B. L. Widjiantoro, “Distributed estimation with decentralized control for quadruple-tank process,” 
+
+arXiv preprint arXiv:2304.04763 , 2025. [8] H. Yu, J. Yang, and T. Chen, “Distributed optimization-based formation control: A dynamic event-triggered approach,” in 2023 42nd Chinese Control Conference (CCC) , pp. 5224–5229, 2023. [9] E. Firouzmand, M. Babahaji, H. A. Talebi, and A. G. Aghdam, “Distributed control of multi-agent systems with uncertain communication links,” IEEE Journal of Radio Frequency Identification , vol. 7, pp. 415–423, 2023. [10] A. Roy and P. V. Reddy, “Distributed control of networked multi-agent systems using network adapted feedback guaranteed cost equilibrium controls,” IEEE Control Systems Letters , vol. 6, pp. 3283–3288, 2022. [11] M. K. Wafi, K. Indriawati, and B. L. Widjiantoro, “Model reference adaptive control of networked systems with state and input delays,” International Journal of Electrical and Computer Engineering , vol. 14, pp. 5055–5063, 2024. [12] H. Gu, P. Liu, J. Lü, and Z. Lin, “Pid control for synchronization of complex dynamical networks with directed topologies,” IEEE Transactions on Cybernetics , vol. 51, no. 3, pp. 1334–1346, 2021. [13] D. G. Lui, A. Petrillo, and S. Santini, “Leader tracking control for heterogeneous uncertain nonlinear multi-agent systems via a distributed robust adaptive pid strategy,” Nonlinear Dynamics , vol. 108, pp. 363–378, Mar 2022. [14] D. G. Lui, A. Petrillo, and S. Santini, “Bipartite tracking consensus for high-order heterogeneous uncertain nonlinear multi-agent systems with unknown leader dynamics via adaptive fully-distributed pid control,” IEEE Transactions on Network Science and Engineering , vol. 10, no. 2, pp. 1131–1142, 2023. [15] M. K. Wafi and M. Siami, “Distributed adaptive control of disturbed interconnected systems with high-order tuners,” IEEE Control Systems Letters , vol. 8, pp. 1421–1426, 2024. [16] W. Wu, L. Fu, and H. Li, “Distributed adaptive control of nonlinear multi-agent systems-based controller dynamic linearization method,” IEEE Access , vol. 13, pp. 64796–64809, 2025. [17] S. Baldi, S. Yuan, and P. Frasca, “Output synchronization of unknown heterogeneous agents via distributed model reference adaptation,” IEEE Transactions on Control of Network Systems , vol. 6, no. 2, pp. 515–525, 2019. [18] H. M. Hedesh, M. K. Wafi, and M. Siami, “Local stability and region of attraction analysis for neural network feedback systems under positivity constraints,” in 2025 IEEE 64th Conference on Decision and Control (CDC) ,pp. 1142–1149, 2025. [19] H. M. Hedesh, M. K. Wafi, B. Shafai, and M. Siami, “Robust stability analysis of positive lur’e system with neural network feedback,” in 2025 IEEE Conference on Control Technology and Applications (CCTA) , pp. 976– 981, 2025. [20] R. Olfati-Saber, J. A. Fax, and R. M. Murray, “Consensus and cooperation in networked multi-agent systems,” 
+
+Proceedings of the IEEE , vol. 95, no. 1, pp. 215–233, 2007. [21] J. P. Hespanha, P. Naghshtabrizi, and Y. Xu, “A survey of recent results in networked control systems,” Proceed-ings of the IEEE , vol. 95, no. 1, pp. 138–162, 2007. [22] K. S. Narendra and A. M. Annaswamy, Stable adaptive systems . USA: Prentice-Hall, Inc., 1989. [23] A. Loh, X. Cai, and W. Tan, “Auto-tuning of phase lead/lag compensators,” Automatica , vol. 40, no. 3, pp. 423– 429, 2004. [24] F.-Y. Wang, “The exact and unique solution for phase-lead and phase-lag compensation,” IEEE Transactions on Education , vol. 46, no. 2, pp. 258–262, 2003. [25] R. Zanasi and S. Cuoghi, “Design of lead-lag compensators for robust control,” in 2011 9th IEEE International Conference on Control and Automation (ICCA) , pp. 106–111, 2011. [26] W. Yao, Y. Wang, Y. Xu, and C. Dong, “Small-signal stability analysis and lead-lag compensation control for dc networked-microgrid under multiple time delays,” IEEE Transactions on Power Systems , vol. 38, no. 1, pp. 921– 933, 2023. [27] M. K. Wafi and M. Siami, “A comparative analysis of reinforcement learning and adaptive control techniques for linear uncertain systems,” in 2023 Proceedings of the Conference on Control and its Applications (CT) , pp. 25–32, 2023. 13 Distributed Adaptive Synchronization 
+
+Derivation of (18) . With disturbance ¯δ, the follower dynamics are (17). Recall ϑu, ηu, ζu, and the reparameterized control (cf. (13)) 
+
+¯u = Φ ϑu + ˆJζ u + ˆB ˙¯x = Φ ϑu + ˆΞuηu,
+
+where ˆΞu = [ ˆJ, ˆB]. Differentiating ϑu and using ¯e = ¯ z − ¯x as in (14a)–(14b) gives 
+
+˙ϑu = ζu − ¨¯x. (A1) Solve (A1) for ¨¯x: ¨¯x = J−1(¯u + ¯δ − B ˙¯x).
+
+Substitute ¯u and ¨¯x into (A1): 
+
+˙ϑu = ζu − J−1(Φϑu + ˆJζ u + ˆB ˙¯x + ¯δ − B ˙¯x)
+
+= (Im − ˆJJ −1)ζu − J−1Φ ϑu − J−1( ˆB − B) ˙ ¯x − J−1 ¯δ. 
+
+Using ˜Ξu := ˆΞu − Ξu = [ ˆJ − J, ˆB − B] and ˜Ξuηu = ( ˆJ − J)ζu + ( ˆB − B) ˙ ¯x, we group terms to obtain 
+
+˙ϑu = −J−1Φϑu − J−1 ˜Ξuηu + J−1 ¯δ, 
+
+which is (18). 
+
+14

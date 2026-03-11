@@ -1,0 +1,644 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-03-11T19:36:10.992720+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 15,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 97,
+    "quick_skim_target": 11,
+    "quick_selected": 11
+  },
+  "deep_dive": [
+    {
+      "id": "2603.08863v1",
+      "title": "Adaptive SINDy: Residual Force System Identification Based UAV Disturbance Rejection",
+      "abstract": "The stability and control of Unmanned Aerial Vehicles (UAVs) in a turbulent environment is a matter of great concern. Devising a robust control algorithm to reject disturbances is challenging due to the highly nonlinear nature of wind dynamics, and modeling the dynamics using analytical techniques is not straightforward. While traditional techniques using disturbance observers and classical adaptive control have shown some progress, they are mostly limited to relatively non-complex environments. On the other hand, learning based approaches are increasingly being used for modeling of residual forces and disturbance rejection; however, their generalization and interpretability is a factor of concern. To this end, we propose a novel integration of data-driven system identification using Sparse Identification of Non-Linear Dynamics (SINDy) with a Recursive Least Square (RLS) adaptive control to adapt and reject wind disturbances in a turbulent environment. We tested and validated our approach on Gazebo harmonic environment and on real flights with wind speeds of up to 2 m/s from four directions, creating a highly dynamic and turbulent environment. Adaptive SINDy outperformed the baseline PID and INDI controllers on several trajectory tracking error metrics without crashing. A root mean square error (RMSE) of up to 12.2 cm and 17.6 cm, and a mean absolute error (MAE) of 13.7 cm and 10.5 cm were achieved on circular and lemniscate trajectories, respectively. The validation was performed on a very lightweight Crazyflie drone under a highly dynamic environment for complex trajectory tracking.",
+      "authors": [
+        "Fawad Mehboob",
+        "Amir Atef Habel",
+        "Roohan Ahmed Khan",
+        "Mikhail Derevianchenko",
+        "Clement Fortin",
+        "Dzmitry Tsetserukou"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-03-09T19:26:13+00:00",
+      "link": "https://arxiv.org/pdf/2603.08863v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 10.0,
+      "llm_evidence_en": "UAV disturbance rejection in turbulent environments and wind dynamics modeling",
+      "llm_evidence_cn": "湍流环境下的无人机抗干扰与风场动力学建模",
+      "llm_evidence": "湍流环境下的无人机抗干扰与风场动力学建模",
+      "canonical_evidence": "湍流环境下的无人机抗干扰与风场动力学建模",
+      "llm_tldr_en": "Proposes Adaptive SINDy for UAV disturbance rejection by identifying residual forces in complex wind dynamics.",
+      "llm_tldr_cn": "提出自适应SINDy方法，通过识别复杂风场动力学中的残余力实现无人机抗干扰。",
+      "llm_tldr": "提出自适应SINDy方法，通过识别复杂风场动力学中的残余力实现无人机抗干扰。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Control Methods Under Wind Disturbances",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.02948v1",
+      "title": "Enhancing Physics-Informed Neural Networks with Domain-aware Fourier Features: Towards Improved Performance and Interpretable Results",
+      "abstract": "Physics-Informed Neural Networks (PINNs) incorporate physics into neural networks by embedding partial differential equations (PDEs) into their loss function. Despite their success in learning the underlying physics, PINN models remain difficult to train and interpret. In this work, a novel modeling approach is proposed, which relies on the use of Domain-aware Fourier Features (DaFFs) for the positional encoding of the input space. These features encapsulate all the domain-specific characteristics, such as the geometry and boundary conditions, and unlike Random Fourier Features (RFFs), eliminate the need for explicit boundary condition loss terms and loss balancing schemes, while simplifying the optimization process and reducing the computational cost associated with training. We further develop an LRP-based explainability framework tailored to PINNs, enabling the extraction of relevance attribution scores for the input space. It is demonstrated that PINN-DaFFs achieve orders-of-magnitude lower errors and allow faster convergence compared to vanilla PINNs and RFFs-based PINNs. Furthermore, LRP analysis reveals that the proposed leads to more physically consistent feature attributions, while PINN-RFFs and vanilla PINNs display more scattered and less physics-relevant patterns. These results demonstrate that DaFFs not only enhance PINNs' accuracy and efficiency but also improve interpretability, laying the ground for more robust and informative physics-informed learning.",
+      "authors": [
+        "Alberto Miño Calero",
+        "Luis Salamanca",
+        "Konstantinos E. Tatsis"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CE",
+        "cs.NE"
+      ],
+      "published": "2026-03-03T12:55:53+00:00",
+      "link": "https://arxiv.org/pdf/2603.02948v1",
+      "tags": [
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "enhancing PINNs with domain-aware features for spatiotemporal modeling",
+      "llm_evidence_cn": "利用领域感知特征增强PINN的时空建模能力",
+      "llm_evidence": "利用领域感知特征增强PINN的时空建模能力",
+      "canonical_evidence": "利用领域感知特征增强PINN的时空建模能力",
+      "llm_tldr_en": "Proposes Domain-aware Fourier Features to improve PINN performance and interpretability in physical modeling.",
+      "llm_tldr_cn": "提出领域感知傅里叶特征，以提高物理信息神经网络在物理建模中的性能和可解释性。",
+      "llm_tldr": "提出领域感知傅里叶特征，以提高物理信息神经网络在物理建模中的性能和可解释性。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Construction Method for PINNs Integrating Spatiotemporal Information",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.03224v1",
+      "title": "Stabilized Adaptive Loss and Residual-Based Collocation for Physics-Informed Neural Networks",
+      "abstract": "Physics-Informed Neural Networks (PINNs) have been recognized as a mesh-free alternative to solve partial differential equations where physics information is incorporated. However, in dealing with problems characterized by high stiffness or shock-dominated dynamics, traditional PINNs have been found to have limitations, including unbalanced training and inaccuracy in solution, even with small physics residuals. In this research, we seek to address these limitations using the viscous Burgers' equation with low viscosity and the Allen-Cahn equation as test problems. In addressing unbalanced training, we have developed a new adaptive loss balancing scheme using smoothed gradient norms to ensure satisfaction of initial and boundary conditions. Further, to address inaccuracy in the solution, we have developed an adaptive residual-based collocation scheme to improve the accuracy of solutions in the regions with high physics residuals. The proposed new approach significantly improves solution accuracy with consistent satisfaction of physics residuals. For instance, in the case of Burgers' equation, the relative L2 error is reduced by about 44 percent compared to traditional PINNs, while for the Allen-Cahn equation, the relative L2 error is reduced by approximately 70 percent. Additionally, we show the trustworthy solution comparison of the proposed method using a robust finite difference solver.",
+      "authors": [
+        "Divyavardhan Singh",
+        "Shubham Kamble",
+        "Dimple Sonone",
+        "Kishor Upla"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "published": "2026-03-03T18:17:28+00:00",
+      "link": "https://arxiv.org/pdf/2603.03224v1",
+      "tags": [
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "adaptive loss balancing for PINNs to solve physics equations with high stiffness",
+      "llm_evidence_cn": "针对PINN的自适应损失平衡方案，用于解决高刚性物理方程",
+      "llm_evidence": "针对PINN的自适应损失平衡方案，用于解决高刚性物理方程",
+      "canonical_evidence": "针对PINN的自适应损失平衡方案，用于解决高刚性物理方程",
+      "llm_tldr_en": "Improves Physics-Informed Neural Networks (PINNs) training stability for complex dynamics using adaptive loss.",
+      "llm_tldr_cn": "通过自适应损失平衡提高了物理信息神经网络（PINN）在复杂动力学中的训练稳定性。",
+      "llm_tldr": "通过自适应损失平衡提高了物理信息神经网络（PINN）在复杂动力学中的训练稳定性。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Construction Method for PINNs Integrating Spatiotemporal Information",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.07824v1",
+      "title": "Reasoning Knowledge-Gap in Drone Planning via LLM-based Active Elicitation",
+      "abstract": "Human-AI joint planning in Unmanned Aerial Vehicles (UAVs) typically relies on control handover when facing environmental uncertainties, which is often inefficient and cognitively demanding for non-expert operators. To address this, we propose a novel framework that shifts the collaboration paradigm from control takeover to active information elicitation. We introduce the Minimal Information Neuro-Symbolic Tree (MINT), a reasoning mechanism that explicitly structures knowledge gaps regarding obstacles and goals into a queryable format. By leveraging large language models, our system formulates optimal binary queries to resolve specific ambiguities with minimal human interaction. We demonstrate the efficacy of this approach through a comprehensive workflow integrating a vision-language model for perception, voice interfaces, and a low-level UAV control module in both high-fidelity NVIDIA Isaac simulations and real-world deployments. Experimental results show that our method achieves a significant improvement in the success rate for complex search-and-rescue tasks while significantly reducing the frequency of human interaction compared to exhaustive querying baselines.",
+      "authors": [
+        "Zeyu Fang",
+        "Beomyeol Yu",
+        "Cheng Liu",
+        "Zeyuan Yang",
+        "Rongqian Chen",
+        "Yuxin Lin",
+        "Mahdi Imani",
+        "Tian Lan"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-03-08T22:00:32+00:00",
+      "link": "https://arxiv.org/pdf/2603.07824v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 9.0,
+      "llm_evidence_en": "Human-AI joint planning in UAVs for environmental uncertainties and control handover",
+      "llm_evidence_cn": "无人机在环境不确定性下的机人联合规划与控制移交",
+      "llm_evidence": "无人机在环境不确定性下的机人联合规划与控制移交",
+      "canonical_evidence": "无人机在环境不确定性下的机人联合规划与控制移交",
+      "llm_tldr_en": "A framework for UAV human-AI collaboration that resolves knowledge gaps through active information elicitation.",
+      "llm_tldr_cn": "一种通过主动信息获取解决知识差距的无人机人机协作框架。",
+      "llm_tldr": "一种通过主动信息获取解决知识差距的无人机人机协作框架。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "human-machine shared control for emergency flight maneuvers",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.03127v1",
+      "title": "Deep Q-Learning-Based Gain Scheduling for Nonlinear Quadcopter Dynamics",
+      "abstract": "This paper presents a deep Q-network (DQN)-based gain-scheduling framework for safety-critical quadcopter trajectory tracking. Instead of directly learning control inputs, the proposed approach selects from a finite set of pre-certified stabilizing gain vectors, enabling reinforcement learning to operate within a structured and stability-preserving control architecture. By exploiting the isotropic structure of the translational dynamics, feedback gains are shared across spatial axes to reduce dimensionality while preserving performance. The learned policy adapts feedback aggressiveness in real time, applying high authority during large transients and reducing gains near convergence to limit control effort. Simulation results using a high-fidelity nonlinear quadcopter model demonstrate accurate trajectory tracking, bounded attitude excursions, smooth transition to hover after the final time, and consistent reward improvement, validating the effectiveness and robustness of the proposed learning-based gain scheduling strategy.",
+      "authors": [
+        "Hossein Rastgoftar",
+        "Muhammad J. H. Zahed"
+      ],
+      "primary_category": "eess.SY",
+      "categories": [
+        "eess.SY",
+        "math.DS"
+      ],
+      "published": "2026-03-03T16:00:36+00:00",
+      "link": "https://arxiv.org/pdf/2603.03127v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Safety-critical quadcopter trajectory tracking under nonlinear dynamics",
+      "llm_evidence_cn": "非线性动力学下的安全关键型四旋翼轨迹跟踪",
+      "llm_evidence": "非线性动力学下的安全关键型四旋翼轨迹跟踪",
+      "canonical_evidence": "非线性动力学下的安全关键型四旋翼轨迹跟踪",
+      "llm_tldr_en": "A DQN-based gain-scheduling framework for safety-critical quadcopter control and trajectory tracking.",
+      "llm_tldr_cn": "一种基于DQN的增益调度框架，用于安全关键型四旋翼控制和轨迹跟踪。",
+      "llm_tldr": "一种基于DQN的增益调度框架，用于安全关键型四旋翼控制和轨迹跟踪。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Control Methods Under Wind Disturbances",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.03259v1",
+      "title": "Physics-informed post-processing of stabilized finite element solutions for transient convection-dominated problems",
+      "abstract": "The numerical simulation of convection-dominated transient transport phenomena poses significant computational challenges due to sharp gradients and propagating fronts across the spatiotemporal domain. Classical discretization methods often generate spurious oscillations, requiring advanced stabilization techniques. However, even stabilized finite element methods may require additional regularization to accurately resolve localized steep layers. On the other hand, standalone physics-informed neural networks (PINNs) struggle to capture sharp solution structures in convection-dominated regimes and typically require a large number of training epochs. This work presents a hybrid computational framework that extends the PINN-Augmented SUPG with Shock-Capturing (PASSC) methodology from steady to unsteady problems. The approach combines a semi-discrete stabilized finite element method with a PINN-based correction strategy for transient convection-diffusion-reaction equations. Stabilization is achieved using the Streamline-Upwind Petrov-Galerkin (SUPG) formulation augmented with a YZbeta shock-capturing operator. Rather than training over the entire space-time domain, the neural network is applied selectively near the terminal time, enhancing the finite element solution using the last K_s temporal snapshots while enforcing residual constraints from the governing equations and boundary conditions. The network incorporates residual blocks with random Fourier features and employs progressive training with adaptive loss weighting. Numerical experiments on five benchmark problems, including boundary and interior layers, traveling waves, and nonlinear Burgers dynamics, demonstrate significant accuracy improvements at the terminal time compared to standalone stabilized finite element solutions.",
+      "authors": [
+        "Süleyman Cengizci",
+        "Ömür Uğur",
+        "Srinivasan Natesan"
+      ],
+      "primary_category": "math.NA",
+      "categories": [
+        "math.NA",
+        "cs.LG"
+      ],
+      "published": "2026-03-03T18:51:17+00:00",
+      "link": "https://arxiv.org/pdf/2603.03259v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "hybrid framework extending PINNs for transient transport",
+      "llm_evidence_cn": "扩展PINN用于瞬态输运的混合框架",
+      "llm_evidence": "扩展PINN用于瞬态输运的混合框架",
+      "canonical_evidence": "扩展PINN用于瞬态输运的混合框架",
+      "llm_tldr_en": "Integrates physics-informed neural networks with finite element methods for spatiotemporal transport problems.",
+      "llm_tldr_cn": "将物理信息神经网络与有限元方法结合，解决时空输运问题。",
+      "llm_tldr": "将物理信息神经网络与有限元方法结合，解决时空输运问题。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Construction Method for PINNs Integrating Spatiotemporal Information",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2603.04672v1",
+      "title": "Improving the accuracy of physics-informed neural networks via last-layer retraining",
+      "abstract": "Physics-informed neural networks (PINNs) are a versatile tool in the burgeoning field of scientific machine learning for solving partial differential equations (PDEs). However, determining suitable training strategies for them is not obvious, with the result that they typically yield moderately accurate solutions. In this article, we propose a method for improving the accuracy of PINNs by coupling them with a post-processing step that seeks the best approximation in a function space associated with the network. We find that our method yields errors four to five orders of magnitude lower than those of the parent PINNs across architectures and dimensions. Moreover, we can reuse the basis functions for the linear space in more complex settings, such as time-dependent and nonlinear problems, allowing for transfer learning. Out approach also provides a residual-based metric that allows us to optimally choose the number of basis functions employed.",
+      "authors": [
+        "Saad Qadeer",
+        "Panos Stinis"
+      ],
+      "primary_category": "math.NA",
+      "categories": [
+        "math.NA",
+        "cs.LG"
+      ],
+      "published": "2026-03-04T23:28:19+00:00",
+      "link": "https://arxiv.org/pdf/2603.04672v1",
+      "tags": [
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "improving accuracy of PINNs for solving PDEs",
+      "llm_evidence_cn": "提高用于求解偏微分方程的PINN精度",
+      "llm_evidence": "提高用于求解偏微分方程的PINN精度",
+      "canonical_evidence": "提高用于求解偏微分方程的PINN精度",
+      "llm_tldr_en": "Proposes a retraining method to significantly improve the accuracy of Physics-Informed Neural Networks.",
+      "llm_tldr_cn": "提出一种重训练方法，显著提高物理信息神经网络（PINN）的求解精度。",
+      "llm_tldr": "提出一种重训练方法，显著提高物理信息神经网络（PINN）的求解精度。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Construction Method for PINNs Integrating Spatiotemporal Information",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.02526v1",
+      "title": "Event-Driven Safe and Resilient Control of Automated and Human-Driven Vehicles under EU-FDI Attacks",
+      "abstract": "This paper studies the safe and resilient control of Connected and Automated Vehicles (CAVs) operating in mixed traffic environments where they must interact with Human-Driven Vehicles (HDVs) under uncertain dynamics and exponentially unbounded false data injection (EU-FDI) attacks. These attacks pose serious threats to safety-critical applications. While resilient control strategies can mitigate adversarial effects, they often overlook collision avoidance requirements. Conversely, safety-focused approaches tend to assume nominal operating conditions and lack resilience to adversarial inputs. To address these challenges, we propose a control framework that integrates event-driven Control Barrier Functions (CBFs) and Control Lyapunov Functions (CLFs) with adaptive attack-resilient control. The framework further incorporates data-driven estimation of HDV behaviors to ensure safety and resilience against EU-FDI attacks. Specifically, we focus on the lane-changing maneuver of CAVs in the presence of unpredictable HDVs and EU-FDI attacks on acceleration inputs. The event-driven approach reduces computational load while maintaining real-time safety guarantees. Simulation results, including comparisons with pure event-driven methods lacking resilience, validate the effectiveness and robustness of the proposed EDSR framework in achieving collision-free maneuvers, stable velocity regulation, and resilient operation under adversarial conditions.",
+      "authors": [
+        "Yi Zhang",
+        "Yichao Wang",
+        "Wei Xiao",
+        "Mohamadamin Rajabinezhad",
+        "Shan Zuo"
+      ],
+      "primary_category": "eess.SY",
+      "categories": [
+        "eess.SY"
+      ],
+      "published": "2026-03-03T02:22:54+00:00",
+      "link": "https://arxiv.org/pdf/2603.02526v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "interaction between automated and human-driven vehicles under uncertain dynamics and attacks",
+      "llm_evidence_cn": "不确定动力学和攻击下自动驾驶与人类驾驶车辆的交互",
+      "llm_evidence": "不确定动力学和攻击下自动驾驶与人类驾驶车辆的交互",
+      "canonical_evidence": "不确定动力学和攻击下自动驾驶与人类驾驶车辆的交互",
+      "llm_tldr_en": "Develops safe and resilient control for mixed traffic environments involving human-machine interaction.",
+      "llm_tldr_cn": "为涉及人机交互的混合交通环境开发了安全且具有弹性的控制框架。",
+      "llm_tldr": "为涉及人机交互的混合交通环境开发了安全且具有弹性的控制框架。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "How to Achieve Human Machine Co piloting in Extreme Hazardous Situations",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.02344v1",
+      "title": "A Passivity-Agnostic Framework for Distributed Adaptive Synchronization under Unknown Leader Dynamics",
+      "abstract": "We present a passivity-agnostic framework for distributed adaptive synchronization under position-only communication, bounded disturbances, and unknown leader dynamics. By passivity-agnostic we mean the design does not require the closed loop system to be strictly positive real (SPR) a priori: it certifies SPR when present and recovers it by frequency shaping when absent. Followers are heterogeneous second-order systems with unknown (possibly unstable) dynamics. In the SPR regime, a structured reparameterization yields gradient-based adaptive error dynamics; Lyapunov analysis guarantees global asymptotic synchronization in the disturbance-free case, exact rejection of constant disturbances, and bounded responses to time-varying disturbances, with parameter convergence under persistent excitation. In the non-SPR regime, frequency shaping recovers effective passivity of the unshaped transfer function, enabling the same stability guarantees via standard passivity/Lyapunov arguments using Meyer-Kalman-Yakubovich (MKY) Lemma. Simulations across star, cyclic, path, and arbitrary graphs demonstrate scalable synchronization, robust tracking, and parameter adaptation under multiple disturbance profiles, confirming that the frequency-shaped non-SPR designs match the performance of the SPR case.",
+      "authors": [
+        "Moh Kamalul Wafi",
+        "Milad Siami"
+      ],
+      "primary_category": "eess.SY",
+      "categories": [
+        "eess.SY"
+      ],
+      "published": "2026-03-02T19:23:40+00:00",
+      "link": "https://arxiv.org/pdf/2603.02344v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "adaptive synchronization under bounded disturbances and unknown dynamics",
+      "llm_evidence_cn": "有界扰动和未知动力学下的自适应同步",
+      "llm_evidence": "有界扰动和未知动力学下的自适应同步",
+      "canonical_evidence": "有界扰动和未知动力学下的自适应同步",
+      "llm_tldr_en": "Introduces a passivity-agnostic framework for adaptive control under disturbances and unknown dynamics.",
+      "llm_tldr_cn": "介绍了一种在扰动和未知动力学下进行自适应控制的无源性无关框架。",
+      "llm_tldr": "介绍了一种在扰动和未知动力学下进行自适应控制的无源性无关框架。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Control Methods Under Wind Disturbances",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.05029v1",
+      "title": "Robust adaptive NMPC using ellipsoidal tubes",
+      "abstract": "We propose a computationally efficient nonlinear Model Predictive Control (NMPC) algorithm for safe, learning-based control. The system model is represented as an affine combination of basis functions with unknown parameters, and is subject to additive set-bounded disturbances. Our algorithm employs successive linearization around nominal predicted trajectories and accounts for uncertainties in predicted states due to linearization, model errors, and disturbances using ellipsoidal sets. The ellipsoidal tube-based approach ensures that constraints on control inputs and system states are satisfied. Robustness to uncertainty is ensured using bounds on linearization errors and a backtracking line search. We show that the ellipsoidal embedding of model uncertainty scales favourably with system dimensions in numerical simulations. The algorithm incorporates set membership parameter estimation, and provides guarantees of recursive feasibility and input-to-state practical stability.",
+      "authors": [
+        "Johannes Buerger",
+        "Mark Cannon"
+      ],
+      "primary_category": "math.OC",
+      "categories": [
+        "math.OC"
+      ],
+      "published": "2026-03-05T10:18:27+00:00",
+      "link": "https://arxiv.org/pdf/2603.05029v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "robust adaptive NMPC for safe control under set-bounded disturbances",
+      "llm_evidence_cn": "在集合有界扰动下实现安全控制的鲁棒自适应NMPC",
+      "llm_evidence": "在集合有界扰动下实现安全控制的鲁棒自适应NMPC",
+      "canonical_evidence": "在集合有界扰动下实现安全控制的鲁棒自适应NMPC",
+      "llm_tldr_en": "A robust NMPC algorithm for safe control under disturbances, highly relevant to flight control under wind.",
+      "llm_tldr_cn": "一种用于扰动下安全控制的鲁棒NMPC算法，与风场环境下的飞行控制高度相关。",
+      "llm_tldr": "一种用于扰动下安全控制的鲁棒NMPC算法，与风场环境下的飞行控制高度相关。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Control Methods Under Wind Disturbances",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.02683v1",
+      "title": "MMH-Planner: Multi-Mode Hybrid Trajectory Planning Method for UAV Efficient Flight Based on Real-Time Spatial Awareness",
+      "abstract": "Motion planning is a critical component of intelligent unmanned systems, enabling their complex autonomous operations. However, current planning algorithms still face limitations in planning efficiency due to inflexible strategies and weak adaptability. To address this, this paper proposes a multi-mode hybrid trajectory planning method for UAVs based on real-time environmental awareness, which dynamically selects the optimal planning model for high-quality trajectory generation in response to environmental changes. First, we introduce a goal-oriented spatial awareness method that rapidly assesses flight safety in the upcoming environments. Second, a multi-mode hybrid trajectory planning mechanism is proposed, which can enhance the planning efficiency by selecting the optimal planning model for trajectory generation based on prior spatial awareness. Finally, we design a lazy replanning strategy that triggers replanning only when necessary to reduce computational resource consumption while maintaining flight quality. To validate the performance of the proposed method, we conducted comprehensive comparative experiments in simulation environments. Results demonstrate that our approach outperforms existing state-of-the-art (SOTA) algorithms across multiple metrics, achieving the best performance particularly in terms of the average number of planning iterations and computational cost per iteration. Furthermore, the effectiveness of our approach is further verified through real-world flight experiments integrated with a self-developed intelligent UAV platform.",
+      "authors": [
+        "Yinghao Zhao",
+        "Chenguang Dai",
+        "Liang Lyu",
+        "Zhenchao Zhang",
+        "Chaozhen Lan",
+        "Hong Xie"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-03-03T07:23:19+00:00",
+      "link": "https://arxiv.org/pdf/2603.02683v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "UAV trajectory planning based on real-time spatial awareness",
+      "llm_evidence_cn": "基于实时空间感知的无人机轨迹规划",
+      "llm_evidence": "基于实时空间感知的无人机轨迹规划",
+      "canonical_evidence": "基于实时空间感知的无人机轨迹规划",
+      "llm_tldr_en": "A hybrid trajectory planning method for UAVs that adapts to environmental changes for safe flight.",
+      "llm_tldr_cn": "一种无人机混合轨迹规划方法，可根据环境变化进行调整以确保飞行安全。",
+      "llm_tldr": "一种无人机混合轨迹规划方法，可根据环境变化进行调整以确保飞行安全。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "human-machine shared control for emergency flight maneuvers",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.02950v1",
+      "title": "The Geometry of Learning Under AI Delegation",
+      "abstract": "As AI systems shift from tools to collaborators, a central question is how the skills of humans relying on them change over time. We study this question mathematically by modeling the joint evolution of human skill and AI delegation as a coupled dynamical system. In our model, delegation adapts to relative performance, while skill improves through use and decays under non-use; crucially, both updates arise from optimizing a single performance metric measuring expected task error. Despite this local alignment, adaptive AI use fundamentally alters the global stability structure of human skill acquisition. Beyond the high-skill equilibrium of human-only learning, the system admits a *stable* low-skill equilibrium corresponding to persistent reliance, separated by a sharp basin boundary that makes early decisions effectively irreversible under the induced dynamics. We further show that AI assistance can strictly improve short-run performance while inducing persistent long-run performance loss relative to the no-AI baseline, driven by a negative feedback between delegation and practice. We characterize how AI quality deforms the basin boundary and show that these effects are robust to noise and asymmetric trust updates. Our results identify stability, not incentives or misalignment, as the central mechanism by which AI assistance can undermine long-run human performance and skill.",
+      "authors": [
+        "Lingxiao Huang",
+        "Nisheeth K. Vishnoi"
+      ],
+      "primary_category": "cs.CY",
+      "categories": [
+        "cs.CY",
+        "cs.AI",
+        "cs.GT"
+      ],
+      "published": "2026-03-03T13:01:22+00:00",
+      "link": "https://arxiv.org/pdf/2603.02950v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "modeling joint evolution of human skill and AI delegation",
+      "llm_evidence_cn": "人类技能与AI授权协同演化的建模研究",
+      "llm_evidence": "人类技能与AI授权协同演化的建模研究",
+      "canonical_evidence": "人类技能与AI授权协同演化的建模研究",
+      "llm_tldr_en": "Models the dynamical system of human-AI collaboration and its impact on human skill acquisition.",
+      "llm_tldr_cn": "对人机协作的动力系统及其对人类技能获取的影响进行建模。",
+      "llm_tldr": "对人机协作的动力系统及其对人类技能获取的影响进行建模。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "How to Achieve Human Machine Co piloting in Extreme Hazardous Situations",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.05111v1",
+      "title": "SPIRIT: Perceptive Shared Autonomy for Robust Robotic Manipulation under Deep Learning Uncertainty",
+      "abstract": "Deep learning (DL) has enabled impressive advances in robotic perception, yet its limited robustness and lack of interpretability hinder reliable deployment in safety critical applications. We propose a concept termed perceptive shared autonomy, in which uncertainty estimates from DL based perception are used to regulate the level of autonomy. Specifically, when the robot's perception is confident, semi-autonomous manipulation is enabled to improve performance; when uncertainty increases, control transitions to haptic teleoperation for maintaining robustness. In this way, high-performing but uninterpretable DL methods can be integrated safely into robotic systems. A key technical enabler is an uncertainty aware DL based point cloud registration approach based on the so called Neural Tangent Kernels (NTK). We evaluate perceptive shared autonomy on challenging aerial manipulation tasks through a user study of 15 participants and realization of mock-up industrial scenarios, demonstrating reliable robotic manipulation despite failures in DL based perception. The resulting system, named SPIRIT, improves both manipulation performance and system reliability. SPIRIT was selected as a finalist of a major industrial innovation award.",
+      "authors": [
+        "Jongseok Lee",
+        "Ribin Balachandran",
+        "Harsimran Singh",
+        "Jianxiang Feng",
+        "Hrishik Mishra",
+        "Marco De Stefano",
+        "Rudolph Triebel",
+        "Alin Albu-Schaeffer",
+        "Konstantin Kondak"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI"
+      ],
+      "published": "2026-03-05T12:29:57+00:00",
+      "link": "https://arxiv.org/pdf/2603.05111v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "shared autonomy regulating control based on perception uncertainty for safety",
+      "llm_evidence_cn": "基于感知不确定性调节控制权的共享自主系统，提升安全性",
+      "llm_evidence": "基于感知不确定性调节控制权的共享自主系统，提升安全性",
+      "canonical_evidence": "基于感知不确定性调节控制权的共享自主系统，提升安全性",
+      "llm_tldr_en": "Proposes a shared autonomy framework that transitions between semi-autonomous and manual control based on uncertainty.",
+      "llm_tldr_cn": "提出一种根据感知不确定性在半自主和手动控制间切换的共享自主框架。",
+      "llm_tldr": "提出一种根据感知不确定性在半自主和手动控制间切换的共享自主框架。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "How to Achieve Human Machine Co piloting in Extreme Hazardous Situations",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.03497v1",
+      "title": "Designing Barrier Functions for Graceful Safety Control",
+      "abstract": "This paper examines the problem of achieving \"grace\" when controlling dynamical systems for safety, which is defined in terms of providing multi-layered safety assurances. Namely, two safety layers are created: a primary layer that represents a desirable degree of safety, and a secondary failsafe layer. Graceful control then involves ensuring that even if the primary layer is breached, the failsafe layer remains forward invariant. The paper pursues this goal by constructing a safety constraint that combines the concepts of zeroing and reciprocal control barrier functions with regard to the primary and secondary safe sets, respectively. This constraint is analogous to a stiffening spring, making it possible to construct energy-based analytical proofs of the resulting graceful safety guarantees. The proposed approach is developed for systems with a relative degree of either 1 or 2, the latter case being particularly useful for mechanical systems. We demonstrate the applicability of the method using a wall collision avoidance example. This demonstration highlights the benefits of the proposed approach compared to traditional benchmarks from the literature.",
+      "authors": [
+        "Yejin Moon",
+        "Gabor Orosz",
+        "Hosam K. Fathy"
+      ],
+      "primary_category": "eess.SY",
+      "categories": [
+        "eess.SY"
+      ],
+      "published": "2026-03-03T20:12:06+00:00",
+      "link": "https://arxiv.org/pdf/2603.03497v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "multi-layered safety control with failsafe layers",
+      "llm_evidence_cn": "具有故障保护层的多层安全控制",
+      "llm_evidence": "具有故障保护层的多层安全控制",
+      "canonical_evidence": "具有故障保护层的多层安全控制",
+      "llm_tldr_en": "Constructs barrier functions for graceful safety control in dynamical systems during breaches.",
+      "llm_tldr_cn": "为动力系统构建屏障函数，以在发生违规时实现平滑的安全控制。",
+      "llm_tldr": "为动力系统构建屏障函数，以在发生违规时实现平滑的安全控制。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "human-machine shared control for emergency flight maneuvers",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.02975v1",
+      "title": "Grid-Forming Control with Assignable Voltage Regulation Guarantees and Safety-Critical Current Limiting",
+      "abstract": "This paper develops a nonlinear grid-forming (GFM) controller with provable voltage-formation guarantees, with over-current limiting enforced via a control-barrier-function (CBF)-based safety filter. The nominal controller follows a droop-based inner-outer architecture, in which voltage references and frequency are generated by droop laws, an outer-loop voltage controller produces current references using backstepping (BS), and an inner-loop current controller synthesizes the terminal voltage. The grid voltage is treated as an unknown bounded disturbance, without requiring knowledge of its bound, and the controller design does not rely on any network parameters beyond the point of common coupling (PCC). To robustify voltage formation against the grid voltage, a deadzone-adapted disturbance suppression (DADS) framework is incorporated, yielding practical voltage regulation characterized by asymptotic convergence of the PCC voltage errors to an assignably small and known residual set. Furthermore, the closed-loop system is proven to be globally well posed, with all physical and adaptive states bounded and voltage error transients (due to initial conditions) decaying exponentially at an assignable rate. On top of the nominal controller, hard over-current protection is achieved through a minimally invasive CBF-based safety filter that enforces strict current limits via a single-constraint quadratic program. The safety filter is compatible with any locally Lipschitz nominal controller. Rigorous analysis establishes forward invariance of the safe-current set and boundedness of all states under current limiting. Numerical results demonstrate improved transient performance and faster recovery during current-limiting events when the proposed DADS-BS controller is used as the nominal control law, compared with conventional PI-based GFM control.",
+      "authors": [
+        "Bhathiya Rathnayake",
+        "Sijia Geng"
+      ],
+      "primary_category": "eess.SY",
+      "categories": [
+        "eess.SY"
+      ],
+      "published": "2026-03-03T13:31:06+00:00",
+      "link": "https://arxiv.org/pdf/2603.02975v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Control under unknown bounded disturbances and safety filters",
+      "llm_evidence_cn": "未知有界扰动下的控制与安全滤波器",
+      "llm_evidence": "未知有界扰动下的控制与安全滤波器",
+      "canonical_evidence": "未知有界扰动下的控制与安全滤波器",
+      "llm_tldr_en": "Develops a grid-forming controller using CBF-based safety filters to handle unknown disturbances.",
+      "llm_tldr_cn": "开发了一种使用基于CBF的安全滤波器来处理未知扰动的构网型控制器。",
+      "llm_tldr": "开发了一种使用基于CBF的安全滤波器来处理未知扰动的构网型控制器。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Control Methods Under Wind Disturbances",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.05263v1",
+      "title": "A Behaviour-Aware Federated Forecasting Framework for Distributed Stand-Alone Wind Turbines",
+      "abstract": "Accurate short-term wind power forecasting is essential for grid dispatch and market operations, yet centralising turbine data raises privacy, cost, and heterogeneity concerns. We propose a two-stage federated learning framework that first clusters turbines by long-term behavioural statistics using Double Roulette Selection (DRS) initialisation with recursive Auto-split refinement, and then trains cluster-specific LSTM models via FedAvg. Experiments on 400 stand-alone turbines in Denmark show that DRS-auto discovers behaviourally coherent groups and achieves competitive forecasting accuracy while preserving data locality. Behaviour-aware grouping consistently outperforms geographic partitioning and matches strong k-means++ baselines, suggesting a practical privacy-friendly solution for heterogeneous distributed turbine fleets.",
+      "authors": [
+        "Bowen Li",
+        "Xiufeng Liu",
+        "Maria Sinziiana Astefanoaei"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-03-05T15:12:40+00:00",
+      "link": "https://arxiv.org/pdf/2603.05263v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Federated forecasting framework for distributed wind turbines and behavioral clustering",
+      "llm_evidence_cn": "分布式风力涡轮机的联邦预测框架和行为聚类",
+      "llm_evidence": "分布式风力涡轮机的联邦预测框架和行为聚类",
+      "canonical_evidence": "分布式风力涡轮机的联邦预测框架和行为聚类",
+      "llm_tldr_en": "Introduces a behavior-aware federated learning framework for accurate short-term wind power forecasting.",
+      "llm_tldr_cn": "引入了一种行为感知的联邦学习框架，用于准确的短期风电功率预测。",
+      "llm_tldr": "引入了一种行为感知的联邦学习框架，用于准确的短期风电功率预测。",
+      "llm_tags": [
+        "query:wind-wind-control:composite"
+      ],
+      "matched_query_tag": "query:wind-wind-control:composite",
+      "matched_query_text": "Papers central to 基于多传感器融合的风场反演、风切变检测、风场中飞行控制及危急情况下的共享控制研究, especially work that connects or combines: human-machine shared control for emergency flight maneuvers; c; low-level wind shear detection and identification; w; Construction Method for PINNs Integrating Spatiotemporal Information; How to Achieve Human Machine Co piloting in Extreme Hazardous Situations; What are the current challenges facing wind farm reconstruction?; How do wind disturbances and flying shear interact?; Current Challenges in Wind Shear Detection; Approach to Wind Shear Detection.",
+      "matched_requirement_id": "req-composite-wind-wind-control",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.03515v1",
+      "title": "The Controllability Trap: A Governance Framework for Military AI Agents",
+      "abstract": "Agentic AI systems - capable of goal interpretation, world modeling, planning, tool use, long-horizon operation, and autonomous coordination - introduce distinct control failures not addressed by existing safety frameworks. We identify six agentic governance failures tied to these capabilities and show how they erode meaningful human control in military settings. We propose the Agentic Military AI Governance Framework (AMAGF), a measurable architecture structured around three pillars: Preventive Governance (reducing failure likelihood), Detective Governance (real-time detection of control degradation), and Corrective Governance (restoring or safely degrading operations). Its core mechanism, the Control Quality Score (CQS), is a composite real-time metric quantifying human control and enabling graduated responses as control weakens. For each failure type, we define concrete mechanisms, assign responsibilities across five institutional actors, and formalize evaluation metrics. A worked operational scenario illustrates implementation, and we situate the framework within established agent safety literature. We argue that governance must move from a binary conception of control to a continuous model in which control quality is actively measured and managed throughout the operational lifecycle.",
+      "authors": [
+        "Subramanyam Sahoo"
+      ],
+      "primary_category": "cs.CY",
+      "categories": [
+        "cs.CY",
+        "cs.AI"
+      ],
+      "published": "2026-03-03T20:48:01+00:00",
+      "link": "https://arxiv.org/pdf/2603.03515v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "governance framework for human control in military AI agents",
+      "llm_evidence_cn": "军事AI智能体中人类控制的管理框架",
+      "llm_evidence": "军事AI智能体中人类控制的管理框架",
+      "canonical_evidence": "军事AI智能体中人类控制的管理框架",
+      "llm_tldr_en": "Proposes a framework to ensure meaningful human control and detect control degradation in AI agents.",
+      "llm_tldr_cn": "提出了一个确保AI智能体中有效人类控制并检测控制退化的框架。",
+      "llm_tldr": "提出了一个确保AI智能体中有效人类控制并检测控制退化的框架。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "How to Achieve Human Machine Co piloting in Extreme Hazardous Situations",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

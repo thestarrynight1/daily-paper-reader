@@ -6,72 +6,71 @@
 </div>
 
 ## 每次日报
-- 最新运行日期：2026-03-02 ~ 2026-03-11
-- 运行时间：2026-03-11 04:46:44 UTC
+- 最新运行日期：2026-03-11
+- 运行时间：2026-03-11 19:38:32 UTC
 - 运行状态：成功
 - 本次总论文数：17
 - 精读区：6
 - 速读区：11
 
 ### 今日简报（AI）
-本期深度复盘 17 篇前沿论文，聚焦无人机在极端风场与复杂近墙环境下的感知、规划与流体动力学突破。
-重点推荐 WESPR 框架实现的抗风安全飞行方案
-- 详情：[/20260302-20260311/README](/20260302-20260311/README)
+今日精选 17 篇论文聚焦无人机抗干扰与 PINN 优化，其中 Adaptive SINDy 凭借满分表现
+- 详情：[/202603/11/README](/202603/11/README)
 
 ### 精读区论文标签
-1. [WESPR: Wind-adaptive Energy-Efficient Safe Perception & Planning for Robust Flight with Quadrotors](/20260302-20260311/2603.09194v1-wespr-wind-adaptive-energy-efficient-safe-perception--planning-for-robust-flight-with-quadrotors)  
+1. [Adaptive SINDy: Residual Force System Identification Based UAV Disturbance Rejection](/202603/11/2603.08863v1-adaptive-sindy-residual-force-system-identification-based-uav-disturbance-rejection)  
    标签：评分：10.0/10、query:wind-wind-control
-   evidence：风切变下鲁棒飞行的风自适应感知与规划
-2. [Vortical similarities across laminar and turbulent extreme gust encounters](/20260302-20260311/2603.02472v1-vortical-similarities-across-laminar-and-turbulent-extreme-gust-encounters)  
+   evidence：湍流环境下的无人机抗干扰与风场动力学建模
+2. [Enhancing Physics-Informed Neural Networks with Domain-aware Fourier Features: Towards Improved Performance and Interpretable Results](/202603/11/2603.02948v1-enhancing-physics-informed-neural-networks-with-domain-aware-fourier-features-towards-improved-performance-and-interpretable-results)  
    标签：评分：9.0/10、query:wind-wind-control
-   evidence：机翼遭遇极端阵风时的涡流结构
-3. [PSTNet: Physically-Structured Turbulence Network](/20260302-20260311/2603.07957v1-pstnet-physically-structured-turbulence-network)  
+   evidence：利用领域感知特征增强PINN的时空建模能力
+3. [Stabilized Adaptive Loss and Residual-Based Collocation for Physics-Informed Neural Networks](/202603/11/2603.03224v1-stabilized-adaptive-loss-and-residual-based-collocation-for-physics-informed-neural-networks)  
    标签：评分：9.0/10、query:wind-wind-control
-   evidence：飞机大气湍流强度的实时估计
-4. [Flow Field Reconstruction via Voronoi-Enhanced Physics-Informed Neural Networks with End-to-End Sensor Placement Optimization](/20260302-20260311/2603.09371v1-flow-field-reconstruction-via-voronoi-enhanced-physics-informed-neural-networks-with-end-to-end-sensor-placement-optimization)  
+   evidence：针对PINN的自适应损失平衡方案，用于解决高刚性物理方程
+4. [Reasoning Knowledge-Gap in Drone Planning via LLM-based Active Elicitation](/202603/11/2603.07824v1-reasoning-knowledge-gap-in-drone-planning-via-llm-based-active-elicitation)  
    标签：评分：9.0/10、query:wind-wind-control
-   evidence：具有时空传感器优化的PINN流场重建
-5. [DiffWind: Physics-Informed Differentiable Modeling of Wind-Driven Object Dynamics](/20260302-20260311/2603.09668v1-diffwind-physics-informed-differentiable-modeling-of-wind-driven-object-dynamics)  
-   标签：评分：9.0/10、query:wind-wind-control
-   evidence：风驱动动力学的物理告知微分建模
-6. [Automated Analysis of Ripple-Scale Gravity Wave Structures in the Mesosphere Using Convolutional Neural Networks](/20260302-20260311/2603.03669v1-automated-analysis-of-ripple-scale-gravity-wave-structures-in-the-mesosphere-using-convolutional-neural-networks)  
+   evidence：无人机在环境不确定性下的机人联合规划与控制移交
+5. [Deep Q-Learning-Based Gain Scheduling for Nonlinear Quadcopter Dynamics](/202603/11/2603.03127v1-deep-q-learning-based-gain-scheduling-for-nonlinear-quadcopter-dynamics)  
    标签：评分：8.0/10、query:wind-wind-control
-   evidence：大气中剪切不稳定性及重力波的分析
+   evidence：非线性动力学下的安全关键型四旋翼轨迹跟踪
+6. [Physics-informed post-processing of stabilized finite element solutions for transient convection-dominated problems](/202603/11/2603.03259v1-physics-informed-post-processing-of-stabilized-finite-element-solutions-for-transient-convection-dominated-problems)  
+   标签：评分：8.0/10、query:wind-wind-control
+   evidence：扩展PINN用于瞬态输运的混合框架
 
 ### 速读区论文标签
-1. [Turbulence generation and data assimilation in wall-bounded flows with a latent diffusion model](/20260302-20260311/2603.02143v2-turbulence-generation-and-data-assimilation-in-wall-bounded-flows-with-a-latent-diffusion-model)  
+1. [Improving the accuracy of physics-informed neural networks via last-layer retraining](/202603/11/2603.04672v1-improving-the-accuracy-of-physics-informed-neural-networks-via-last-layer-retraining)  
    标签：评分：8.0/10、query:wind-wind-control
-   evidence：风电场应用的时空流场重构
-2. [Adaptive Gain Nonlinear Observer for External Wrench Estimation in Human-UAV Physical Interaction](/20260302-20260311/2603.06933v1-adaptive-gain-nonlinear-observer-for-external-wrench-estimation-in-human-uav-physical-interaction)  
+   evidence：提高用于求解偏微分方程的PINN精度
+2. [Robust adaptive NMPC using ellipsoidal tubes](/202603/11/2603.05029v1-robust-adaptive-nmpc-using-ellipsoidal-tubes)  
    标签：评分：8.0/10、query:wind-wind-control
-   evidence：人机物理交互中的力矩估计
-3. [Physics-infused Learning for Aerial Manipulator in Winds and Near-Wall Environments](/20260302-20260311/2603.07826v1-physics-infused-learning-for-aerial-manipulator-in-winds-and-near-wall-environments)  
+   evidence：在集合有界扰动下实现安全控制的鲁棒自适应NMPC
+3. [SPIRIT: Perceptive Shared Autonomy for Robust Robotic Manipulation under Deep Learning Uncertainty](/202603/11/2603.05111v1-spirit-perceptive-shared-autonomy-for-robust-robotic-manipulation-under-deep-learning-uncertainty)  
    标签：评分：8.0/10、query:wind-wind-control
-   evidence：非线性风扰动下的无人机空中作业
-4. [Trajectory Tracking Control Design for Autonomous Helicopters with Guaranteed Error Bounds](/20260302-20260311/2603.08045v1-trajectory-tracking-control-design-for-autonomous-helicopters-with-guaranteed-error-bounds)  
+   evidence：基于感知不确定性调节控制权的共享自主系统，提升安全性
+4. [A Behaviour-Aware Federated Forecasting Framework for Distributed Stand-Alone Wind Turbines](/202603/11/2603.05263v1-a-behaviour-aware-federated-forecasting-framework-for-distributed-stand-alone-wind-turbines)  
    标签：评分：8.0/10、query:wind-wind-control
-   evidence：具有有界扰动的直升机轨迹跟踪控制
-5. [Latent attention on masked patches for flow reconstruction](/20260302-20260311/2603.02028v1-latent-attention-on-masked-patches-for-flow-reconstruction)  
+   evidence：分布式风力涡轮机的联邦预测框架和行为聚类
+5. [Event-Driven Safe and Resilient Control of Automated and Human-Driven Vehicles under EU-FDI Attacks](/202603/11/2603.02526v1-event-driven-safe-and-resilient-control-of-automated-and-human-driven-vehicles-under-eu-fdi-attacks)  
    标签：评分：7.0/10、query:wind-wind-control
-   evidence：用于掩码流场重建的视觉Transformer
-6. [TRAKNN: Efficient Trajectory Aware Spatiotemporal kNN for Rare Meteorological Trajectory Detection](/20260302-20260311/2603.02059v1-traknn-efficient-trajectory-aware-spatiotemporal-knn-for-rare-meteorological-trajectory-detection)  
+   evidence：不确定动力学和攻击下自动驾驶与人类驾驶车辆的交互
+6. [MMH-Planner: Multi-Mode Hybrid Trajectory Planning Method for UAV Efficient Flight Based on Real-Time Spatial Awareness](/202603/11/2603.02683v1-mmh-planner-multi-mode-hybrid-trajectory-planning-method-for-uav-efficient-flight-based-on-real-time-spatial-awareness)  
    标签：评分：7.0/10、query:wind-wind-control
-   evidence：风暴等稀有气象轨迹的时空检测
-7. [Turbulence generation and data assimilation in wall-bounded flows with a latent diffusion model](/20260302-20260311/2603.02143v1-turbulence-generation-and-data-assimilation-in-wall-bounded-flows-with-a-latent-diffusion-model)  
+   evidence：基于实时空间感知的无人机轨迹规划
+7. [Designing Barrier Functions for Graceful Safety Control](/202603/11/2603.03497v1-designing-barrier-functions-for-graceful-safety-control)  
    标签：评分：7.0/10、query:wind-wind-control
-   evidence：风电场应用中时空样本的生成框架
-8. [cuNRTO: GPU-Accelerated Nonlinear Robust Trajectory Optimization](/20260302-20260311/2603.02642v1-cunrto-gpu-accelerated-nonlinear-robust-trajectory-optimization)  
+   evidence：具有故障保护层的多层安全控制
+8. [The Controllability Trap: A Governance Framework for Military AI Agents](/202603/11/2603.03515v1-the-controllability-trap-a-governance-framework-for-military-ai-agents)  
    标签：评分：7.0/10、query:wind-wind-control
-   evidence：有界扰动下的鲁棒轨迹优化
-9. [Influence of Turbulence Length Scale and Platform Surge Motion on Wake Dynamics in Tandem Floating Wind Turbines](/20260302-20260311/2603.01807v1-influence-of-turbulence-length-scale-and-platform-surge-motion-on-wake-dynamics-in-tandem-floating-wind-turbines)  
+   evidence：军事AI智能体中人类控制的管理框架
+9. [A Passivity-Agnostic Framework for Distributed Adaptive Synchronization under Unknown Leader Dynamics](/202603/11/2603.02344v1-a-passivity-agnostic-framework-for-distributed-adaptive-synchronization-under-unknown-leader-dynamics)  
    标签：评分：6.0/10、query:wind-wind-control
-   evidence：漂浮式风力机的湍流与尾迹动力学
-10. [PAC Finite-Time Safety Guarantees for Stochastic Systems with Unknown Disturbance Distributions](/20260302-20260311/2603.01918v1-pac-finite-time-safety-guarantees-for-stochastic-systems-with-unknown-disturbance-distributions)  
+   evidence：有界扰动和未知动力学下的自适应同步
+10. [The Geometry of Learning Under AI Delegation](/202603/11/2603.02950v1-the-geometry-of-learning-under-ai-delegation)  
    标签：评分：6.0/10、query:wind-wind-control
-   evidence：具有未知扰动的随机系统的安全保证
-11. [physfusion: A Transformer-based Dual-Stream Radar and Vision Fusion Framework for Open Water Surface Object Detection](/20260302-20260311/2603.01947v1-physfusion-a-transformer-based-dual-stream-radar-and-vision-fusion-framework-for-open-water-surface-object-detection)  
+   evidence：人类技能与AI授权协同演化的建模研究
+11. [Grid-Forming Control with Assignable Voltage Regulation Guarantees and Safety-Critical Current Limiting](/202603/11/2603.02975v1-grid-forming-control-with-assignable-voltage-regulation-guarantees-and-safety-critical-current-limiting)  
    标签：评分：6.0/10、query:wind-wind-control
-   evidence：物理启发的雷达与视觉融合目标检测
+   evidence：未知有界扰动下的控制与安全滤波器
 
 
 <div class="dpr-home-promo-card">

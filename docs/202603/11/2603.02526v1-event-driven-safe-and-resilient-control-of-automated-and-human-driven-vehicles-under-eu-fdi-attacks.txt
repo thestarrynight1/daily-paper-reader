@@ -1,0 +1,639 @@
+Title: Event-Driven Safe and Resilient Control of Automated and Human-Driven Vehicles under EU-FDI Attacks
+
+URL Source: https://arxiv.org/pdf/2603.02526v1
+
+Published Time: Wed, 04 Mar 2026 01:23:22 GMT
+
+Number of Pages: 8
+
+Markdown Content:
+# Event-Driven Safe and Resilient Control of Automated and Human-Driven Vehicles under EU-FDI Attacks 
+
+Yi Zhang, Yichao Wang, Wei Xiao, Mohamadamin Rajabinezhad, and Shan Zuo 
+
+Abstract — This paper studies the safe and resilient control of Connected and Automated Vehicles (CAVs) operating in mixed traffic environments where they must interact with Human-Driven Vehicles (HDVs) under uncertain dynamics and exponentially unbounded false data injection (EU-FDI) attacks. These attacks pose serious threats to safety-critical applications. While resilient control strategies can mitigate adversarial effects, they often overlook collision avoidance requirements. Conversely, safety-focused approaches tend to assume nominal operating conditions and lack resilience to adversarial inputs. To address these challenges, we propose a control framework that integrates event-driven Control Barrier Functions (CBFs) and Control Lyapunov Functions (CLFs) with adaptive attack-resilient control. The framework further incorporates data-driven estimation of HDV behaviors to ensure safety and resilience against EU-FDI attacks. Specifically, we focus on the lane-changing maneuver of CAVs in the presence of unpredictable HDVs and EU-FDI attacks on acceleration inputs. The event-driven approach reduces computational load while maintaining real-time safety guarantees. Simulation re-sults, including comparisons with pure event-driven methods lacking resilience, validate the effectiveness and robustness of the proposed EDSR framework in achieving collision-free maneuvers, stable velocity regulation, and resilient operation under adversarial conditions. 
+
+I. INTRODUCTION In the context of CAVs, false data injection (FDI) attacks pose a growing threat to safety-critical applications [1]. These attacks can significantly disrupt cooperative control mechanisms by corrupting sensory or communicated data, ultimately leading to unsafe driving behaviors or even col-lisions. As vehicle systems increasingly rely on communi-cation and automation, the vulnerability to such adversarial interventions becomes more pronounced. Traditional mitigation strategies often focus on detecting and removing compromised agents to eliminate the influence of malicious data [2], [3]. However, these approaches gener-ally depend on restrictive assumptions, such as knowing an upper bound on the number of affected entities. In realistic and dynamic driving environments, especially in mixed traf-fic, such assumptions may be too strong and impractical to enforce. To overcome these challenges, recent research has shifted toward developing resilient control strategies that main-tain performance without explicitly identifying compromised components [4]–[14]. These methods aim to minimize the    
+
+> Y. Zhang, Y. Wang, M. Rajabinezhad, and S. Zuo are with the Department of Electrical and Computer Engineering, University of Connecticut, Storrs, CT 06269, USA (emails: yi.2.zhang@uconn.edu; yichao.wang@uconn.edu; mohamadamin.rajabinezhad@uconn.edu; shan.zuo@uconn.edu). W. Xiao is with the Department of Robotics Engineering, Worcester Polytechnic Institute, Worcester, MA 01609, USA (email: wxiao3@wpi.edu).
+
+impact of adversarial actions by enhancing the intrinsic resilience of the control protocols. Nonetheless, many of these efforts overlook safety-critical constraints, such as collision avoidance, which are paramount in dense or high-speed traffic scenarios. Conversely, control strategies that emphasize safety through constrained optimization—such as using CBFs—often lack resilience to adversarial influence and may assume benign operational conditions [15]–[19]. This paper addresses the challenge of designing control strategies for CAVs that jointly ensure safety and resilience, particularly in the presence of EU-FDI attacks. Our focus is on guaranteeing collision avoidance even when the system is subjected to adversarial inputs. To this end, we investigate safe interactions between CAVs and HDVs in a mixed-traffic environment, where HDV dynamics and driver intentions are uncertain, nonlinear, and generally unknown. To address this challenge, we revisit the event-driven CBF framework in [20] and redesign it to remain valid under EU-FDI attacks. Existing event-driven CBF methods rely on the premise that the dynamics used in barrier construction sufficiently match the true system evolution under bounded uncertainties, which guarantees meaningful Lie-derivative constraints and maintains quadratic program (QP) feasibility. This premise fundamentally breaks down under EU-FDI attacks. Exponentially unbounded adversar-ial inputs injected into the acceleration channel induce a rapidly growing mismatch between the modeled and actual longitudinal dynamics, which directly distorts the evolution of safety constraints. As a result, the CBF conditions may no longer certify forward invariance of the safe set, and the event-driven QP can become infeasible even though it remains valid under nominal or bounded disturbances. This distinction highlights a fundamentally different research problem from prior resilience studies. While existing EU-FDI works mainly investigate stability or consensus degradation under adversarial inputs with the control structure remaining intact, the problem addressed here concerns the loss of safety feasibility itself, where adversarial injections invalidate the safety-constrained optimization formulation. Therefore, this work does not combine existing methods but instead resolves a previously unaddressed failure mode of event-driven safety control under EU-FDI attacks. The main contributions of this paper are summarized as follows:  
+
+> •
+
+To the best of our knowledge, this paper is the first to reveal and resolve the loss of validity of event-driven CBF-based safety-constrained control under EU-FDI attacks by redesigning the safety mechanism to operate under adversarial injections. This unique combination 
+
+> arXiv:2603.02526v1 [eess.SY] 3 Mar 2026
+
+ensures safety and resilience for CAVs interacting with HDVs in uncertain mixed traffic environments.  
+
+> •
+
+The proposed event-driven safe and resilient (EDSR) framework effectively addresses EU-FDI attacks, pro-viding provable collision avoidance and stable operation guarantees. Compared to the pure event-driven method in [20], simulation results demonstrate that alternative approaches fail to mitigate adversarial impacts, while the EDSR framework’s robustness and effectiveness are clearly validated under these conditions. II. PROBLEM FORMULATION Figure 1 illustrates a mixed-traffic lane-changing scenario. Vehicles A and B are cooperative CAVs, H is an uncon-trollable HDV, and U is a slower vehicle ahead. Vehicle B
+
+initiates a lane change to overtake U . We focus on a high-speed lane-changing interaction between CAVs and HDVs, which represents a worst-case conflict topology where longi-tudinal safety, lateral maneuvering, and human unpredictabil-ity coexist. The framework is general and extends to other conflict scenarios. The objectives are to minimize maneuver time and control effort, limit traffic disruption, ensure safety under unpredictable HDV behavior, and guarantee stability and resilience under malicious FDI attacks. H AB U
+
+Attacker 
+
+Fig. 1: Illustration of a basic lane-changing maneuver: the yellow vehicle is an HDV, green vehicles are CAVs, and the grey vehicle is a slow-moving, uncontrollable vehicle. In this scenario, the dynamics and control policy of the HDV are assumed to be unknown. The slow vehicle U is assumed to continue moving in the slow lane at a constant speed vU . For each CAV, indexed by i ∈ A, B in Figure 1, the dynamics are defined according to the model in [21] as follows: 
+
+
+
+˙xi(t)˙yi(t)˙θi(t)˙vi(t)
+
+| {z }
+
+> ˙xi(t)
+
+=
+
+
+
+vi(t) cos θi(t)
+
+vi(t) sin θi(t)00
+
+| {z } 
+
+> f(xi(t))
+
++
+
+
+
+0 −vi(t) sin θi(t)0 vi(t) cos θi(t)0 vi(t)/L w
+
+1 0
+
+| {z }
+
+> g(xi(t))
+
+ui(t)
+
+ϕi(t)
+
+| {z }
+
+> ξi(t)
+
+,
+
+(1) Here, xi(t), yi(t), θi(t), and vi(t) denote the longitudi-nal position, lateral position, heading angle, and speed, respectively. The control inputs ui(t) and ϕi(t) represent the acceleration and steering angle. Here, Lw denotes the wheelbase length of the vehicle, which affects the rate of change of the heading angle θi(t) during steering maneuvers. Consider the following malicious FDI attacks targeting the acceleration control input of each CAV. Then we have 
+
+˙vi(t) = ¯ ui(t) = ui(t) + γi(t), i ∈ { A, B } (2) where ¯ui(t) is the corrupted control input. γi(t) is the EU-FDI attack, which satisfies the following assumption. 
+
+Assumption 1: γi(t) is any FDI attacks with the worst case of being an exponentially growing signal and takes the general form of ηi(t) exp( κi(t)t). We assume |ηi(t)| ≤ ¯η
+
+and |κi(t)| ≤ ¯κ, where ¯η and ¯κ are positive constants. The exponential form captures the fastest transient de-viation that an adversarial input can induce within a short time window, representing a worst-case actuator corruption scenario. The maneuver starts at t0 and ends at tf , when vehicle B completes the lane change. During this period, the CAV inputs and velocity are constrained by 
+
+ui, min ≤ ui(t) ≤ ui, max , ϕi, min ≤ ϕi(t) ≤ ϕi, max ,vi, min ≤ vi(t) ≤ vi, max , i ∈ { A, B }. (3) Let l denote the lane width and set the slow-lane centerline as y = 0 . The lateral position satisfies 
+
+− l
+
+2 ≤ yi(t) ≤ 32 l, i ∈ { A, B }. (4) To ensure inter-vehicle safety, an ellipsoidal safe region is defined as 
+
+bi,j (xi, xj ) = (xj − xi)2
+
+(aivi)2 + (yj − yi)2
+
+(bivi)2 − 1 ≥ 0, (5) where ai and bi denote the longitudinal and lateral safety margins, respectively, with i ∈ {A, B } and j ∈{A, B, U, H }, i̸ = j. The ellipsoidal form is differentiable and facilitates CBF construction, and (3) ensures vi(t) ≥
+
+vi, min > 0, so that (5) is well-defined. 
+
+Definition 1 ( [22]): x(t) ∈ R is uniformly ultimately bounded (UUB) with the ultimate bound b, if there exist constants b, c > 0, independent of t0 ≥ 0, and for every 
+
+a ∈ (0 , c ), there exists t1 = t1(a, b ) ≥ 0, independent of t0,such that |x (t0)| ≤ c ⇒ | x(t)| ≤ b, ∀t ≥ t0 + t1.
+
+Now, we introduce the event-driven safe and resilient control problem. 
+
+Problem 1: Design control inputs ui(t) such that: 1) The lane-change maneuver minimizes control effort and terminal deviation; 2) Safety constraints bi,j (·) ≥ 0 are satisfied for all 
+
+t; 3) The speed regulation error εi(t) is UUB under EU-FDI. This yields the following optimal control problem: 
+
+min  
+
+> uA(t),u B(t),t f
+
+Z tf
+
+> t0
+
+αu
+
+2
+
+ u2
+
+> A
+
+(t) + u2 
+
+> B
+
+(t) dt + αl (yB (tf ) − l)2
+
++ αv
+
+h
+
+(vA(tf ) − vd(t)) 2 + ( vB (tf ) − vd(t)) 2i
+
+,
+
+s.t. (1) , (3) , (4) , (5) ,
+
+(6) where vd(t) is the desired cruising speed in the fast lane, and l is the centerline of the target lane. αu, αl, and αv are non-negative weights that represent the trade-offs between energy consumption, lateral deviation from the target lane, and velocity tracking performance, respectively. 
+
+Remark 1: The proposed EDSR framework integrates event-driven CBFs, CLFs, and adaptive attack compensation to ensure safety and resilience. Unlike [20], EU-FDI cor-rupts the safety constraint dynamics and may destroy QP feasibility, which necessitates a restructuring of the event-driven CBF mechanism. The ellipsoidal safe region in (5) provides a speed-dependent safety representation, while the event-driven implementation reduces computational burden. III. HUMAN-IN-THE-LOOP SAFE LANE-CHANGING MANEUVER In this section, an attack-resilient event-driven safe con-trol framework is proposed, which incorporates an attack-resilient controller augmented with event-driven CBFs and CLFs, to address the EDSR control problem defined in Problem 1. To enforce safety under adversarial conditions, the original state constraints in the EDSR control problem are replaced by CBF-based constraints. Specifically, for any state constraint of the form b(x) ≥ 0, a corresponding CBF condition is introduced. 
+
+Lemma 1 ( [20]): Let b(x(t)) be a continuously differen-tiable function representing a state constraint such that the safe set is defined as C = {x(t) ∈ Rn | b(x(t)) ≥ 0}.Assume that Lg b(x(t)) ̸ = 0 when b(x(t)) = 0 . Then the original constraint b(x(t)) ≥ 0 is implied by the following condition: 
+
+sup 
+
+> ξ(t)∈Ξ
+
+[Lf b(x(t)) + Lg b(x(t)) ξ(t) + α(b(x(t)))] ≥ 0,
+
+∀x(t) ∈ C ,
+
+(7) where Lf (·) and Lg (·) denote the Lie derivatives of b(x(t)) 
+
+along the system dynamics f (·) and input matrix g(·),respectively, and α(·) is an extended class K function. This condition is affine in the control input and ensures forward invariance of the safe set C.
+
+Remark 2: Solving the EDSR control problem 1 with event-driven CBFs requires accurately estimating the un-known dynamics of HDVs. With these HDV state estimates, the CAVs then enforce safety by transforming original con-straints into corresponding CBF constraints at every control update. By doing so, the original EDSR control problem can be recast into a series of QPs, similar in form to those discussed in [23]. An event-driven method further enhances efficiency by adaptively determining the appropriate trigger-ing moments for solving these QPs. 
+
+A. Event-Driven Safety Control 
+
+To approximate the unknown behavior of HDVs, adaptive dynamics are introduced based on real-time measurements. The HDV is modeled using the following adaptive nonlinear system: 
+
+˙xH (t) = fa(xH (t)) + ga(xH (t)) uH (t), (8) where fa(·) : Rn → R and ga(·) : Rn → Rn×q are adaptive functions designed to approximate the unknown dynamics of the HDV, uH (t) ∈ Rq is the HDV control input, and xH (t) ∈ X ⊂ Rn is the estimated HDV state vector corresponding to the true state xH (t).Let the estimation error be defined as e(t) = xH (t) −
+
+xH (t). For any safety constraint bi,H (xi(t), xH (t)) involv-ing a CAV i and the HDV, the function can be re-expressed using the estimated state and the error: 
+
+bi,H (xi(t), xH (t)) = bi,H (xi(t), xH (t) + e(t)) ≥ 0. (9) To enforce this constraint through a control barrier func-tion (CBF), the following condition is constructed: 
+
+∂b i,H (xi(t), xH (t) + e(t)) 
+
+∂xi
+
+˙xi(t)+ ∂b i,H (xi(t), xH (t) + e(t)) 
+
+∂xH (t) ˙xH (t)+ ∂b i,H (xi(t), xH (t) + e(t)) 
+
+∂e(t) ˙e(t)+ α (bi,H (xi(t), xH (t) + e(t))) ≥ 0,
+
+(10) where ˙xi(t) is governed by the system dynamics in (1), and 
+
+˙xH (t) is defined in (8). Since e(t) and ˙e(t) can be directly evaluated from real-time sensor measurements, all terms in (10) are computable. Thus, satisfaction of (10) ensures that the original safety constraint bi,H (xi(t), xH (t)) ≥ 0
+
+holds, even though the true HDV dynamics are unknown, as established in [20]. To adaptively refine the HDV dynamics model and reduce unnecessary conservativeness, the function fa(·) in (8) is updated at discrete time instants tk, for k = 1, 2, . . . ,according to: 
+
+fa(xH (t+ 
+
+> k
+
+)) = fa(xH (t− 
+
+> k
+
+)) + ˙ e(tk), (11) where t− 
+
+> k
+
+and t+ 
+
+> k
+
+represent the time instants immediately before and after tk. By resetting the estimated state to the measured state at each update, i.e., xH (tk) = xH (tk), the error satisfies e(tk) = 0 and ˙e(t+ 
+
+> k
+
+) ≈ 0. This approach improves control performance by reducing the frequency of event-driven QP updates and limiting unnecessary conserva-tiveness in the controller. In a lane-changing scenario, the dynamics of the HDV traveling in the fast lane are modeled adaptively to account for unknown behavior. The estimated HDV dynamics are defined as: 
+
+
+
+˙¯xH (t)˙¯yH (t)˙¯θH (t)˙¯vH (t)
+
+| {z } 
+
+> ˙¯xH(t)
+
+=
+
+
+
+¯vH (t) cos ¯θH (t) + hx(t)¯vH (t) sin ¯θH (t) + hy (t)¯vH (t)/L w + hθ (t)
+
+hv (t)
+
+| {z } 
+
+> fa(xH(t))
+
+, (12) where xH (t) = [¯ xH (t), ¯yH (t), ¯θH (t), ¯vH (t)] ⊤ repre-sents the estimated longitudinal and lateral positions, heading angle, and velocity of the HDV. The terms 
+
+hx(t), h y (t), h θ (t), h v (t) ∈ R are adaptive components used to approximate unknown variations in HDV behavior. These are initialized as zero at the start time: hj (t0) = 0 for 
+
+j ∈ { x, y, θ, v }.To ensure that the constraints in the EDSR control prob-lem—namely, the speed and control constraints (3), position constraints (4), and safety constraints (5)—are satisfied at all times, CBFs are employed. Each of these constraints can be expressed as bn(x(t)) ≥ 0 for n ∈ { 1, 2, . . . , N },where x(t) includes all relevant vehicle states, i.e., x(t) = 
+
+{xA(t), xB (t), xH (t), xU (t)}. The corresponding CBF con-dition for each constraint takes the general form: 
+
+Lf bn(x(t)) + Lg bn(x(t)) ξ(t) + αn(bn(x(t))) ≥ 0, (13) where ξ(t) = {ξA(t), ξB (t)}.In addition to CBFs that enforce hard safety constraints, CLFs are introduced to encode soft performance objectives related to lane-keeping and velocity tracking. Based on the terminal cost in (6), the following CLFs are defined: 
+
+V1(xB (t)) = ( vB (t) − vd(t)) 2,V2(xA(t)) = ( vA(t) − vd(t)) 2,V3(xB (t)) = ( yB (t) − l)2, V 4(xA(t)) = ( yA(t) − l)2,
+
+The corresponding CLF constraints are imposed separately on the longitudinal and lateral control channels, yielding 
+
+Lf Vj (x) + Lg Vj (x)usi + c3Vj (x) ≤ δj ,Lf Vj (x) + Lg Vj (x)ϕi + c3Vj (x) ≤ δj , (14) where the first inequality corresponds to the longitudinal channel (acceleration control), and the second corresponds to the lateral channel (steering control), with i ∈ { A, B }
+
+and j ∈ { 1, 2, 3, 4}. The variables δj are relaxation terms introduced to preserve QP feasibility. 
+
+Lemma 2 ( [24]): Consider a system of CAVs interacting with HDVs whose dynamics are unknown but estimated online. Let the safety constraints be encoded by CBFs bn(x)
+
+with Lie derivatives Lf bn, L g bn. Then, the QP enforcing safety can be solved at a sequence of event-driven times 
+
+{tk}∞
+
+> k=0
+
+, rather than fixed intervals, if the following condi-tions are satisfied: 1) The HDV state estimation error e(t) and its derivative 
+
+˙e(t) are bounded as: 
+
+|ex(t)| ≤ wx, |ey (t)| ≤ wy , |eθ (t)| ≤ wθ , |ev (t)| ≤ wv , (15a) 
+
+| ˙ex(t)| ≤ νx, | ˙ey (t)| ≤ νy , | ˙eθ (t)| ≤ νθ , | ˙ev (t)| ≤ νv . (15b) 2) For each CBF constraint bn(x), the following robust condition must hold: 
+
+Lfmin bn(tk) + Lgmin bn(tk)ξ(t) ≥ 0, (16) where Lfmin bn(tk) = min r∈R(tk ) [Lf bn(z) + αn(bn(z))] ,and Lgmin bn(tk) is determined based on the control direction signs. 3) Control inputs usi (tk) are obtained by solving the QP: 
+
+min     
+
+> usi(tk),δ j(tk)
+
+X
+
+> i=A,B
+
+αusi (usi )2 (tk) + 
+
+> 4
+
+X
+
+> j=1
+
+pj δ2 
+
+> j
+
+(tk)
+
+s.t. (1) , (14) , (16) ,
+
+(17) where αusi and pj are design parameters that balance control effort and constraint relaxation. In (15a)-(17), the event-driven time tk+1 , k = 0 , 1, 2, . . . 
+
+is given by 
+
+tk+1 = min {t > t k : |e(t)| = w, or | ˙e(t)| = ν,
+
+or |xi(t) − xi (tk)| = si, or |xH (t) − xH (tk)| = sH } ,
+
+(18) where i ∈ { A, B }. si ∈ R4 
+
+> ≥0
+
+is a error bound vector. 
+
+Remark 3: Although the triggering condition in (18) ap-pears mathematically involved, all terms are directly measur-able from onboard sensors, including the state estimation er-ror, its derivative, and the state deviation from the last update instant. No additional optimization or model-based compu-tation is required to evaluate the triggering rule. Therefore, the event-driven mechanism is computationally lightweight and fully implementable in real time. In implementation, time is discretized with a fixed sampling period Ts, and the control problem is solved at time instants tk = t0 + kT s,for k = 1 , 2, . . . . At each update instant, the EDSR control problem 1 is reformulated as the QP (17). This optimization ensures that the control input not only respects all safety constraints but also minimizes the deviation from the nominal control input. The solution is obtained by solving the QP in [25]. 
+
+B. Attack-Resilient Control 
+
+Define the following speed regulation error 
+
+εi(t) = vi(t) − vd(t), i ∈ { A, B }. (19) To address the EU-FDI attacks in (2), the attack-resilient control framework is designed as follows: 
+
+ui(t) = usi (t) − ˆγi(t), (20) 
+
+ˆγi(t) = εi(t)
+
+|εi(t)| + exp( −cit2) exp(ˆ ρi(t)) , (21) 
+
+˙ˆρi(t) = αi |εi(t)| , i ∈ { A, B }, (22) where compensating signal ˆγi(t) is designed to counteract the detrimental impact of the attack γi(t), while the param-eter ˆρi(t) is adaptively adjusted according to (22), with a positive constant αi > 0.
+
+Remark 4: (21) may appear unconventional at first glance, but it is designed to capture the physical intuition of adaptive compensation under adversarial conditions. εi(t) represents the speed regulation error, which is a measurable physical quantity indicating deviation from the desired velocity. The denominator |εi(t)| + exp( −cit2) ensures that the com-pensating signal remains bounded and smoothly transitions over time, mimicking a saturation-like behavior that prevents excessive control effort during transient phases. The expo-nential term exp(ˆ ρi(t)) reflects the accumulated history of the error, similar to an integral action in classical control. It amplifies the compensating signal when persistent deviations are observed, allowing the controller to respond more aggres-sively to sustained attacks. This structure is inspired by adap-tive control principles, where the system learns to counteract disturbances based on observed performance. Physically, the controller behaves like a dynamic filter that estimates and cancels out the adversarial input γi(t) using only observable quantities. Therefore, (20)–(22) together constitute an attack-resilient control framework that mitigates the adverse effects of EU-FDI attacks on the acceleration inputs by generating an adaptively tuned compensation signal. Unlike prior EU-FDI analyses where the control law struc-ture remains intact and only stability margins are affected, here the entire safety QP formulation would become infea-sible without the proposed attack-resilient compensation. 
+
+Theorem 1: Consider the CAV dynamics in (1) and the adaptive HDV model in (8) under EU-FDI attacks. Assume that the initial state lies in the safe set, the estimation error satisfies (15a)–(15b), and the event-driven QP (17) remains feasible at each triggering instant. Then, the objectives in Problem 1 are achieved implementing the event-driven safe and resilient controller in (15a)-(18) and (20)-(22). 
+
+Proof: Based on Lemma 1 and Lemma 2, the CAV achieves optimal trajectory tracking by minimizing control energy and terminal deviation from the desired lane position and speed, while the state xi(t) remains within a time-varying elliptical safe region for all t ≥ 0. This safety is enforced through a QP that integrates CBFs and CLFs under an event-driven framework. Hence, the first two objectives of the EDSR control problem are achieved. Next, we prove that the speed regulation error εi(t) for each CAV is UUB. A Lyapunov function candidate for each CAV i ∈ { A, B } is defined as V (εi(t)) = ( vi(t) − vd(t)) 2. Then, one has 
+
+˙V (εi(t)) =2( vi(t) − vd(t)) ˙ vi(t)=2 εi(t)¯ ui(t)=2 εi(t) ( usi (t) − ˆγi(t) + γi(t)) 
+
+(23) For the velocity-tracking CLF defined as Vi(εi) = ε2 
+
+> i
+
+(t), one has Lf Vi = 0 , and Lg Vi = 2 εi(t). Substituting them into the CLF condition (14) yields 2εi(t)usi (t) ≤ − c3ε2 
+
+> i
+
+(t) + δi(t).
+
+Then, choosing |εi(t)| ≥ pδi(t)/c 3, one has 
+
+˙V (εi(t)) = 2 εi(t)usi (t) − 2εi(t)ˆ γi(t) + 2 εi(t)γi(t)
+
+≤ − c3ε2 
+
+> i
+
+(t) + δi(t) − 2|εi(t)|2
+
+|εi(t)| + exp( −cit2) exp(ˆ ρi(t)) + 2 |εi(t)|| γi(t)|≤2|εi(t)|| γi(t)| − 2|εi(t)|2
+
+|εi(t)| + exp( −cit2) exp(ˆ ρi(t)) 
+
+≤2 ( |εi(t)|×
+
+ |εi(t)|| γi(t)| + exp( −cit2)|γi(t)| − | εi(t)| exp(ˆ ρi(t)) 
+
+|εi(t)| + exp( −cit2)
+
+ 
+
+(24) By using the integral solution for differential equations in (22), one has exp (ˆ ρi(t)) =exp (ˆ ρi(0)) exp 
+
+
+
+αi
+
+R t 
+
+> 0
+
+|εi(τ )| dτ
+
+
+
+. Define the compact set Υi ≜ {| εi(t)| ≤ κi}. Pick ˆρi(0) = 0 so that 
+
+exp (ˆ ρi(0)) = 1. Then, outside the compact set Υi,one has that there exists a time t1 such that for all 
+
+t ≥ t1, |εi(t)|| γi(t)| − | εi(t)| exp(ˆ ρi(t)) ≤ 0. Considering Assumption 1, one has lim t→∞ exp( −cit2)|γi(t)| = 0.Hence, one obtains that outside the compact set Υi, for all t ≥ t1, ˙V (εi(t)) ≤ 0. Then, by LaSalle’s invariance principle [26], one has that εi(t) is UUB. This completes the proof. IV. SIMULATION RESULTS This section presents simulation results that demonstrate the effectiveness of the proposed framework in enabling each CAV to perform optimal lane-changing maneuvers with safety guarantees, even in the presence of HDVs whose dynamics are unknown to the CAVs. The selected lane-changing scenario is intentionally designed as a worst-case mixed-traffic interaction, where safety constraints, human un-certainty, and adversarial actuator corruption coexist. Unlike many existing works that assume cooperative or predictable surrounding vehicles, the considered scenario includes an HDV whose behavior is unknown and cannot be influenced by the controller, thereby introducing significant uncertainty into the traffic environment. Under EU-FDI attacks that corrupt the longitudinal dynamics of the CAVs, this un-predictability prevents reliance on structured interactions or cooperative maneuvers for safety recovery. Consequently, the scenario forms a highly adversarial test condition that highlights the necessity of the proposed EDSR framework in realistic mixed-traffic environments. The simulation set-ting corresponds to the mixed-traffic lane-changing scenario shown in Figure 1 and Figure 2. Vehicle U is assumed to travel at a constant speed of vU (t) = 20 m /s throughout the simulation, although this assumption is not required by the proposed control framework. The dynamics of vehicles 
+
+A and B follow the model described in (1). The allowable speed range for the CAVs is specified as v(t) ∈ [15 , 35] m /s,and their acceleration and steering inputs are constrained within ξ(t) ∈ [( −7, −π/ 4) , (3 .3, π/ 4)] m /s2. The desired speed vd(t) is set to 30 m /s to reflect the traffic flow velocity. To ensure safety, elliptical safe regions defined in (5) are employed, where the ellipse parameters are set as 
+
+aA = aB = 0.6 to represent the reaction time of the CAVs, and bA = bB = 0 .1 to approximate the lane width 
+
+l = 4 m via the minor axis. The maximum allowable time for completing the lane-changing maneuver is set to Tf = 15 s .The real dynamics of the HDV H, which are unknown to the controller, are given by 
+
+
+
+˙xH (t)˙yH (t)˙θH (t)˙vH (t)
+
+ =
+
+
+
+vH (t) cos θH (t)
+
+vH (t) sin θH (t)00
+
+ +
+
+
+
+0 −vH (t) sin θH (t)0 vH (t) cos θH (t)0 vH (t)/L w
+
+1 0
+
+
+
+×
+
+uH (t)
+
+ϕH (t)
+
+
+
++
+
+
+
+ε1(t)
+
+ε2(t)
+
+ε3(t)
+
+ε4(t)
+
+ ,
+
+where uH (t) and ϕH (t) represent either a random policy or manual control by a human driver input, and the disturbances 
+
+ε1(t) ∈ [−0.7, 0.7] , ε2(t) ∈ [−0.5, 0.5] , ε3(t) ∈ [−0.5, 0.5] ,and ε4(t) ∈ [−0.7, 0.7] are modeled as uniformly distributed random variables. The initial states of the vehicles at time 
+
+t0 = 0 are given as xA(t0) = [50 m , 4 m , 0 rad , 29 m /s] T ,
+
+xB (t0) = [20 m, 0 m, 0 rad , 25 m/s] T , xH (t0) =[10 m, 4 m, 0 rad , 28 m/s] T , and xU (t0) =[60 m, 0 m, 0 rad , 20 m/s] T . The weights in the objective function (17) are selected as αusA = αusB = 1 ,
+
+p1 = p2 = p4 = 1, and p3 = 100 . The initial state of the adaptive HDV model (12) is set to match the true HDV state, i.e., xH (t0) = xH (t0), and the adaptive terms are initialized as hx(t0) = hy (t0) =
+
+hθ (t0) = hv (t0) = 0. The parameters si in Lemma 2 are set as si = [0 .01 m , 0.005 m , 0.01 rad , 1 m /s] for all vehicles i ∈ {A, B, H, U }. The corresponding bounds for the state error e(t) and its derivative 
+
+˙e(t) are w = [0 .2 m , 0.1 m , 0.1 rad , 1 m /s] and 
+
+ν = [0 .5 m /s, 0.2 m /s, 0.1 rad /s, 1 m /s2], respectively. Additionally, the allowable error threshold to terminate the maneuver is set as σ = 0 .3 m .Lateral Position y(m)
+
+-10 0 10 
+
+> Distance ( m)
+
+-20 -10 010 20 30 40 50 60 70 80     
+
+> vA= 29 m/s vB= 25 m/s vH= 28 m/s vU= 20 m/s
+> U
+> ABH
+
+(a) t = t0.Lateral Position y(m)
+
+-10 0
+
+> Distance ( m)
+
+190 200 210 220 230 240 250 260 270 280       
+
+> vA= 30.14 m/s vB= 25.38 m/s vH= 29.68 m/s vU= 20 m/s U
+> ABH
+
+(b) t = tf .
+
+Fig. 2: Lane-changing maneuver under EU-FDI attacks using the proposed EDSR framework. 
+
+A. Performance of the Proposed EDSR Framework under EU-FDI 
+
+Based on the above settings, we implement the proposed EDSR control framework in solving CBF-based QPs (17) with unknown HDV dynamics un-der EU-FDI attacks. Set the discretized time interval 
+
+Ts = 0.05 s . The HDV policy is set to be ran-dom, satisfying uH (tk) ∈ [−1.7, 1.7]m /s2, ϕ H (tk) ∈
+
+[−0.2π, 0.2π]rad , k = 0 , 1, 2, . . . . As illustrated in Fig-ure 2, the left configuration in Figure 2a corresponds to the initial configuration at t = t0, while the right configuration shows the final configuration in Figure 2b at t = tf after CAV B successfully completes the lane-changing maneuver under the proposed EDSR framework. These snapshots pro-vide a qualitative overview of the maneuver evolution before presenting the quantitative performance results. As shown in Figure 3, the EU-FDI attack signal grows unbounded over time, illustrating the exponential escalation of adversarial input injected into the system. The EU-FDI attacks are as follows 
+
+γA(t) = 2 exp( κt ) sin(5 t) (25a) 
+
+γB (t) = 5 exp( κt ) cos(5 t) (25b) Time (s)       
+
+> 0246
+> .A(t)(m=s2)
+> -20
+> -10
+> 0
+> 10
+> 20
+> Time(s)
+> 0246
+> .B (t)(m=s2)
+> -20
+> -10
+> 0
+> 10
+> 20
+
+Fig. 3: EU-FDI Attack Signal. The simulation results are shown in Figs. 4–6. Figure 4 demonstrates that CAV B successfully completes the lane-change maneuver within approximately 6.5 s under EU-FDI attacks, while both CAVs maintain smooth velocity profiles without excessive acceleration or braking. Figure 5 presents the safety constraint values bi,j for all interacting vehicle pairs. All curves remain above zero throughout the maneuver, confirming that the proposed EDSR framework preserves safety and maintains forward invariance of the safe set despite adversarial disturbances. Figure 6 shows the speed tracking errors εi(t) of CAVs A and B. Although transient deviations appear due to EU-FDI attacks, the errors remain bounded and quickly recover, indicating stable velocity reg-ulation and effective attack mitigation. Lateral Position ( m)      
+
+> 0246
+> Time ( s)
+> 0246
+> Speed ( m=s )
+> 15 20 25 30 35 ABHU
+> 4
+> Time ( s)
+> 026
+
+Fig. 4: Lateral position and speed under EU-FDI attacks using the proposed EDSR control framework. Time (s)      
+
+> 0123456
+> bi;j (xi; xj )
+> 0
+> 1000
+> 2000
+> 3000
+> 4000
+> 5000
+> 6000
+> AH
+> BH
+> AB
+> BU
+
+Fig. 5: Safety performance under EU-FDI attacks using the proposed EDSR control framework. Time (s)       
+
+> 0246
+> "A(m=s)
+> -20
+> -10
+> 0
+> 10
+> 20
+> Time(s)
+> 0246
+> "B (m=s)
+> -20
+> 0
+> 20
+
+Fig. 6: Tracking error under EU-FDI attacks using the proposed EDSR control framework. 
+
+B. Comparative Study with Event-Driven CBF in [20] 
+
+To evaluate the limitations of existing methods, we com-pare our EDSR framework with the event-driven approach from [20], which lacks attack-resilient compensation. For fair comparison, the same EU-FDI attack formulation defined in (25a) and (25b) is applied. Figure 7 shows the corresponding attack signals, and simulation results of the event-driven approach in [20] are presented in Figures 9–10. Time (s)         
+
+> 01234
+> .A(t)(m=s2)
+> -10
+> -5
+> 0
+> 5
+> 10
+> Time(s)
+> 01234
+> .B (t)(m=s2)
+> -10
+> -5
+> 0
+> 5
+> 10
+
+Fig. 7: EU-FDI Attack Signal. Lateral Position y(m)
+
+-10 0
+
+> Distance ( m)
+
+30 40 50 60 70 80 90 100 110 120     
+
+> vA= 31.01 m/s vB= 25.14 m/s vH= 28.28 m/s vU= 20 m/s
+> U
+> ABH
+
+(a) t = 1 .50 s. (b) t = 3 .69 s.
+
+Fig. 8: Lane-changing maneuver under EU-FDI attacks using the event-driven approach in [20]. Under this unified attack setting, Figure 8 presents rep-resentative snapshots of the lane-changing process under the conventional event-driven method at t = 1 .50 s and 
+
+t = 3.69 s. The left configuration in Figure 8a ( t =1.50 s) shows that the HDV has already intruded into the safety region of CAV B, indicating a violation or near-violation of the safety constraint bB,H , while CAV B fails to initiate effective avoidance under EU-FDI attacks. The right configuration in Figure 8b ( t = 3 .69 s) further reveals that CAV B deviates significantly from the desired lane-changing trajectory, leading to degraded maneuver effectiveness and excessive fallback. These snapshots demonstrate progressive safety degradation in the absence of attack-resilient compen-sation. Figure 9 shows the lateral positions and speeds of the vehicles. Without resilience to adversarial inputs, small HDV deviations induce drastic maneuvers and severe deceleration in CAV B, while CAV A exhibits rapid and uncontrolled acceleration. The disturbance propagates through the traffic interaction, and CAV B loses maneuver feasibility, resulting in premature termination at approximately t = 4 .28 s. This confirms that unmitigated EU-FDI attacks can rapidly drive the system toward unsafe behaviors. Figure 11 presents the CBF safety metrics bi,j . The most critical degradation occurs in bB,H , which drops below zero between approximately 
+
+t = 2.15 s and t = 2.60 s and reaches about −140 ,clearly indicating loss of forward invariance. Other safety metrics remain comparatively less affected, showing that the CAV B–HDV interaction dominates the safety degradation. Figure 10 shows the tracking errors εi(t). Under escalating EU-FDI attacks, CAV B exhibits severe negative errors (minimum about −30 m /s), indicating prolonged excessive deceleration, while CAV A shows sharp positive errors (up to about +15 m /s), reflecting unwarranted acceleration. These large error magnitudes confirm that the conventional event-driven method fails to maintain stable speed tracking and produces highly unbalanced vehicle behaviors. Overall, the pure event-driven optimization attempts to preserve safety through extreme acceleration or braking under attacks, which results in impractical trajectories and degraded traffic sta-bility, thereby highlighting the necessity of the integrated resilience provided by the proposed EDSR framework. Lateral Position ( m)       
+
+> -5 05
+> ABHU
+> Time ( s)
+> 01234
+> Speed ( m=s )
+> 010 20 30 2
+> Time ( s)
+> 0134
+
+Fig. 9: Lateral position and speed under EU-FDI attacks using the event-driven approach in [20]. Time (s)         
+
+> 01234
+> "A(m=s)
+> -20
+> -10
+> 0
+> 10
+> 20
+> Time(s)
+> 01234
+> "B (m=s)
+> -20
+> 0
+> 20
+
+Fig. 10: Tracking error under EU-FDI attacks using the event-driven approach in [20]. Time (s)           
+
+> 00.5 11.5 22.5 33.5 4
+> bi;j (xi; xj )
+> 0
+> 1000
+> 2000
+> 3000
+> 4000
+> 5000
+> 6000
+> AH
+> BH
+> AB
+> BU
+> Time(s)
+> 22.5 3
+> bBH
+> -100
+> -50
+> 0
+
+Fig. 11: Safety performance under EU-FDI attacks using the conventional event-driven approach in [20]. In this study, the simulation environment was designed to capture key dynamics of mixed traffic scenarios involving CAVs and HDVs under adversarial conditions. To improve realism, future work will incorporate more detailed vehicle models, including actuator dynamics, sensor noise, and com-munication delays. Additionally, we plan to integrate real-world traffic datasets and human driver behavior models to better reflect the variability and unpredictability of HDVs. These enhancements will further validate the robustness and applicability of the proposed control framework in practical deployment settings. V. C ONCLUSION 
+
+This paper has formulated and addressed the EDSR prob-lem for CAVs interacting with HDVs in mixed traffic envi-ronments. To jointly ensure safety and attack resilience under adversarial conditions, a novel control framework has been proposed that integrates event-driven CBFs and CLFs with data-driven estimation of HDV behaviors. This approach maintains provable collision avoidance guarantees during safe lane-changing maneuvers while significantly reducing computational burden in the presence of EU-FDI attacks. Simulation results validate the effectiveness of the framework in ensuring real-time safety and resilient decision-making in uncertain and adversarial traffic scenarios. REFERENCES [1] P. Weng, B. Chen, S. Liu, and L. Yu, “Secure nonlinear fusion estimation for cyber–physical systems under fdi attacks,” Automatica ,vol. 148, p. 110759, 2023. [2] D. Zhang, Z. Ye, and X. Dong, “Co-design of fault detection and consensus control protocol for multi-agent systems under hidden DoS attack,” IEEE Transactions on Circuits and Systems I: Regular Papers ,vol. 68, no. 5, pp. 2158–2170, 2021. [3] F. Pasqualetti, F. D¨ orfler, and F. Bullo, “Attack detection and identi-fication in cyber-physical systems,” IEEE transactions on automatic control , vol. 58, no. 11, pp. 2715–2729, 2013. [4] S. Zuo, Y. Wang, M. Rajabinezhad, and Y. Zhang, “Resilient contain-ment control of heterogeneous multiagent systems against unbounded attacks on sensors and actuators,” IEEE Transactions on Control of Network Systems , vol. 11, no. 3, pp. 1537–1547, 2023. [5] S. Zuo, Y. Zhang, and Y. Wang, “Adaptive resilient control of ac microgrids under unbounded actuator attacks,” Energies , vol. 15, no. 20, p. 7458, 2022. [6] Y. Zhang, Y. Wang, J. Zhao, and S. Zuo, “Resilient data-driven asymmetric bipartite consensus for nonlinear multi-agent systems against DoS attacks,” International Journal of Robust and Nonlinear Control , 2024. [7] W. Sun, Y. Zhang, Y. Yang, and S. Zuo, “Resilience-based output con-tainment control of heterogeneous MAS against unbounded attacks,” 
+
+IET Control Theory & Applications , vol. 17, no. 6, pp. 757–768, 2023. [8] S. Zuo, Y. Wang, and Y. Zhang, “Resilient synchronization of hetero-geneous MAS against correlated sensor attacks,” in 2022 IEEE 61st Conference on Decision and Control (CDC) . IEEE, 2022, pp. 2276– 2282. [9] M. Rajabinezhad, Y. Zhang, Y. Yang, and S. Zuo, “Distributed privacy-preserving resilient control of DC microgrids against unbounded cyberattacks,” in 2025 IEEE PES Grid Edge Technologies Conference & Exposition (Grid Edge) . IEEE, 2025, pp. 1–5. [10] S. Zuo, B. Lian, and Y. Zhang, “Data-driven control and multi-agent reinforcement learning of cyber-physical systems,” in Encyclopedia of Systems and Control Engineering . Elsevier, 2024. [11] Y. Zhang, M. Rajabinezhad, Y. Wang, J. Zhao, and S. Zuo, “Privacy-enhanced defense control framework for dc microgrid against expo-nentially unbounded attacks,” IEEE Access , 2025. [12] Y. Zhang, B. Lei, M. Rajabinezhad, C. Ding, and S. Zuo, “Observer-based data-driven consensus control for nonlinear multi-agent systems against denial-of-service and false data injection attacks,” Journal of Dynamic Systems, Measurement, and Control , vol. 148, no. 3, p. 031007, 2026. [13] Y. Wang, M. Rajabinezhad, Y. Zhang, and S. Zuo, “Cyber-physical defense for heterogeneous multi-agent systems against exponentially unbounded attacks on signed digraphs,” IEEE Transactions on Net-work Science and Engineering , 2025. [14] Y. Zhang, M. Rajabinezhad, and S. Zuo, “Distributed resilient asym-metric bipartite consensus: A data-driven event-triggered mechanism,” in IECON 2024-50th Annual Conference of the IEEE Industrial Electronics Society . IEEE, 2024, pp. 1–6. [15] K. Garg, E. Arabi, and D. Panagou, “Fixed-time control under spa-tiotemporal and input constraints: A quadratic programming based approach,” Automatica , vol. 141, p. 110314, 2022. [16] M. H. Cohen, R. K. Cosner, and A. D. Ames, “Constructive safety-critical control: Synthesizing control barrier functions for partially feedback linearizable systems,” IEEE Control Systems Letters , 2024. [17] S. Wu, T. Liu, M. Egerstedt, and Z.-P. Jiang, “Quadratic programming for continuous control of safety-critical multiagent systems under uncertainty,” IEEE Transactions on Automatic Control , vol. 68, no. 11, pp. 6664–6679, 2023. [18] M. H. Cohen, P. Ong, G. Bahati, and A. D. Ames, “Characterizing smooth safety filters via the implicit function theorem,” IEEE Control Systems Letters , vol. 7, pp. 3890–3895, 2023. [19] X. Tan and D. V. Dimarogonas, “On the undesired equilibria induced by control barrier function based quadratic programs,” Automatica ,vol. 159, p. 111359, 2024. [20] W. Xiao, C. Belta, and C. G. Cassandras, “Event-triggered control for safety-critical systems with unknown dynamics,” IEEE Transactions on Automatic Control , vol. 68, no. 7, pp. 4143–4158, 2022. [21] S. He, J. Zeng, B. Zhang, and K. Sreenath, “Rule-based safety-critical control design using control barrier functions with application to autonomous lane change,” in 2021 American Control Conference (ACC) . IEEE, 2021, pp. 178–185. [22] H. K. Khalil, Nonlinear systems , 3rd ed. Upper Saddle River, N.J: Prentice Hall, 2002. [23] A. D. Ames, J. W. Grizzle, and P. Tabuada, “Control barrier function based quadratic programs with application to adaptive cruise control,” in 53rd IEEE conference on decision and control . IEEE, 2014, pp. 6271–6278. [24] A. Li, C. G. Cassandras, and W. Xiao, “Safe optimal interactions between automated and human-driven vehicles in mixed traffic with event-triggered control barrier functions,” in 2024 American Control Conference (ACC) . IEEE, 2024, pp. 1455–1460. [25] J. Zhang, L. Ding, X. Lu, and W. Tang, “A novel real-time control approach for sparse and safe frequency regulation in inverter intensive microgrids,” IEEE Transactions on Industry Applications , vol. 59, no. 5, pp. 5550–5558, 2023. [26] J. LaSalle, “Some extensions of liapunov’s second method,” IRE Transactions on circuit theory , vol. 7, no. 4, pp. 520–527, 1960.
