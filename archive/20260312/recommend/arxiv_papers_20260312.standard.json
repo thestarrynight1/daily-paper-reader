@@ -1,0 +1,644 @@
+{
+  "mode": "standard",
+  "generated_at": "2026-03-12T19:33:23.760662+00:00",
+  "stats": {
+    "mode": "standard",
+    "tag_count": 1,
+    "deep_divecandidates": 12,
+    "deep_cap": 6,
+    "deep_selected": 6,
+    "quick_candidates": 102,
+    "quick_skim_target": 11,
+    "quick_selected": 11
+  },
+  "deep_dive": [
+    {
+      "id": "2603.03768v1",
+      "title": "Cognition to Control - Multi-Agent Learning for Human-Humanoid Collaborative Transport",
+      "abstract": "Effective human-robot collaboration (HRC) requires translating high-level intent into contact-stable whole-body motion while continuously adapting to a human partner. Many vision-language-action (VLA) systems learn end-to-end mappings from observations and instructions to actions, but they often emphasize reactive (System 1-like) behavior and leave under-specified how sustained System 2-style deliberation can be integrated with reliable, low-latency continuous control. This gap is acute in multi-agent HRC, where long-horizon coordination decisions and physical execution must co-evolve under contact, feasibility, and safety constraints. We address this limitation with cognition-to-control (C2C), a three-layer hierarchy that makes the deliberation-to-control pathway explicit: (i) a VLM-based grounding layer that maintains persistent scene referents and infers embodiment-aware affordances/constraints; (ii) a deliberative skill/coordination layer-the System 2 core-that optimizes long-horizon skill choices and sequences under human-robot coupling via decentralized MARL cast as a Markov potential game with a shared potential encoding task progress; and (iii) a whole-body control layer that executes the selected skills at high frequency while enforcing kinematic/dynamic feasibility and contact stability. The deliberative layer is realized as a residual policy relative to a nominal controller, internalizing partner dynamics without explicit role assignment. Experiments on collaborative manipulation tasks show higher success and robustness than single-agent and end-to-end baselines, with stable coordination and emergent leader-follower behaviors.",
+      "authors": [
+        "Hao Zhang",
+        "Ding Zhao",
+        "H. Eric Tseng"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI"
+      ],
+      "published": "2026-03-04T06:24:55+00:00",
+      "link": "https://arxiv.org/pdf/2603.03768v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "human-robot collaboration translating intent into stable control under constraints",
+      "llm_evidence_cn": "人机协作中将意图转化为约束下的稳定控制",
+      "llm_evidence": "人机协作中将意图转化为约束下的稳定控制",
+      "canonical_evidence": "人机协作中将意图转化为约束下的稳定控制",
+      "llm_tldr_en": "A hierarchy for human-robot collaboration integrating high-level cognition with low-latency control.",
+      "llm_tldr_cn": "一种将高层认知与低延迟控制相结合的人机协作分层架构。",
+      "llm_tldr": "一种将高层认知与低延迟控制相结合的人机协作分层架构。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "How to Achieve Human Machine Co piloting in Extreme Hazardous Situations",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.07151v1",
+      "title": "Optimize discrete loss with finite-difference physics constraint and time-stepping for solving incompressible flow",
+      "abstract": "Computational Fluid Dynamics (CFD) is an important approach for analyzing flow phenomena and predicting engineering-relevant quantities. The governing physics is formulated as partial differential equations(PDEs) and solved numerically on computational grids. Physics-informed neural networks(PINNs) have emerged as a popular optimization-based approach for solving PDEs, but they often suffer from ill-conditioned objectives and the high cost of automatic differentiation. Optimization-based discretizations such as ODIL mitigate several PINN drawbacks by optimizing discrete variables directly, yet accuracy and efficiency remain limited on body-fitted geometries and for time-dependent problems. This paper proposes FDTO, a finite-difference time-stepping loss-optimization solver that defines physics losses from discrete residuals. FDTO couples curvilinear coordinate transforms with body-fitted structured grids and decomposes long-horizon evolution into sequential, well-conditioned subproblems consistent with time marching. The method is primarily evaluated on incompressible Navier-Stokes flows, including lid-driven cavity benchmarks, external airfoil aerodynamics (lift/drag consistency), and a cylinder case on a multi-block structured mesh with cross-block coherent solutions. Additional validations on diffusion and flow-mixing problems further demonstrate generality. Compared with representative PINN-based solvers, FDTO reduces GPU memory by about 82.6% on the lid-driven cavity case and achieves 3-5 times lower relative error on the flow-mixing problem. These results indicate that FDTO enables accurate, stable, and memory-efficient discrete-loss optimization for incompressible-flow solutions, while remaining applicable to other PDE models.",
+      "authors": [
+        "Yali Luo",
+        "Yiye Zou",
+        "Heng Zhang",
+        "Mingjie Zhang",
+        "Gang Wei",
+        "Jingyu Wang",
+        "Xiaogang Deng"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn"
+      ],
+      "published": "2026-03-07T11:25:07+00:00",
+      "link": "https://arxiv.org/pdf/2603.07151v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Optimization-based PINNs for solving incompressible flow and PDEs",
+      "llm_evidence_cn": "基于优化的物理信息神经网络求解不可压缩流和偏微分方程",
+      "llm_evidence": "基于优化的物理信息神经网络求解不可压缩流和偏微分方程",
+      "canonical_evidence": "基于优化的物理信息神经网络求解不可压缩流和偏微分方程",
+      "llm_tldr_en": "Improves PINNs for fluid dynamics by optimizing discrete variables with physics constraints.",
+      "llm_tldr_cn": "通过物理约束优化离散变量，改进了用于流体动力学求解的PINN方法。",
+      "llm_tldr": "通过物理约束优化离散变量，改进了用于流体动力学求解的PINN方法。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Construction Method for PINNs Integrating Spatiotemporal Information",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.07678v1",
+      "title": "Numerical Approach for On-the-Fly Active Flow Control via Flow Map Learning Method",
+      "abstract": "We present a data-driven numerical approach for on-the-fly active flow control and demonstrate its effectiveness for drag reduction in two-dimensional incompressible flow past a cylinder. The method is based on flow map learning (FML), a recently developed framework for modeling unknown dynamical systems that is particularly effective for partially observed systems. For active flow control, we construct an FML dynamical model for the quantities of interest (QoIs), namely the drag and lift forces. During offline learning, training data are generated for the responses of drag and lift to the control variable, and a deep neural network (DNN)-based FML model is constructed. The learned FML model enables online optimal flow control without requiring simulations of the flow field. We demonstrate that the FML-based approach can be integrated with existing optimal control strategies, including deep reinforcement learning (DRL) and model predictive control (MPC). Numerical results show that the proposed approach enables on-the-fly flow control and achieves more than $20\\%$ drag reduction. By eliminating the need for forward simulations during control optimization, the approach offers the potential for real-time optimal control in other systems.",
+      "authors": [
+        "Xinyu Liu",
+        "Qifan Chen",
+        "Dongbin Xiu"
+      ],
+      "primary_category": "math.NA",
+      "categories": [
+        "math.NA"
+      ],
+      "published": "2026-03-08T15:27:01+00:00",
+      "link": "https://arxiv.org/pdf/2603.07678v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "on-the-fly active flow control via flow map learning",
+      "llm_evidence_cn": "通过流图学习进行在线主动流动控制",
+      "llm_evidence": "通过流图学习进行在线主动流动控制",
+      "canonical_evidence": "通过流图学习进行在线主动流动控制",
+      "llm_tldr_en": "A data-driven approach for real-time flow control, highly relevant to managing wind disturbances.",
+      "llm_tldr_cn": "一种用于实时流动控制的数据驱动方法，与风场扰动管理高度相关。",
+      "llm_tldr": "一种用于实时流动控制的数据驱动方法，与风场扰动管理高度相关。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Control Methods Under Wind Disturbances",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.07740v1",
+      "title": "Meta-PINNs: Meta-Learning Enhanced Physics-Informed Machine Learning Framework for Turbomachinery Flow Predictions under Varying Operation Conditions",
+      "abstract": "Coupling physics with machine learning models has shown great potential for solving fluid dynamics problems governed by partial differential equations. However, conventional methods, such as physics-informed neural networks, often suffer from slow convergence, unstable training, and limited generalization across different flow conditions. To overcome these challenges, this study proposes a novel meta-learning en- hanced physics-informed neural networks (Meta-PINNs) framework, which integrates a meta-optimization strategy into the training process. The approach allows the model to automatically adapt its learning process to varying physical regimes, thereby substantially improving both training efficiency and predictive robustness. The proposed Meta-PINNs model is evaluated on two representative flow problems: (1) unsteady flow around a circular cylinder at multiple inlet Reynolds numbers, and (2) steady turbulent flow within a compressor cascade passage at various angles of attack. In both cases, the extrapolation performance of the developed framework is comprehensively tested by predicting the flow fields at Reynolds numbers and angles of attack that are not included in the training set. The results demonstrate that Meta-PINNs achieve a 1-2 order-of-magnitude improvement in accuracy over vanilla physics-informed neural networks and standard neural networks, while reducing computational cost by up to 95.7 % and 92.1 %, respectively. It successfully captures the sequential patterns of key flow features such as pressure and velocity distributions under unseen conditions. Thus, the findings confirm that the Meta-PINNs framework offers a notable improvement in convergence and generalization over existing machine learning approaches, providing a promising pathway toward smart simulations of complex turbomachinery flows.",
+      "authors": [
+        "Yuling Han",
+        "Zhihui Li",
+        "Zhibin Yu"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn"
+      ],
+      "published": "2026-03-08T17:31:02+00:00",
+      "link": "https://arxiv.org/pdf/2603.07740v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Meta-learning enhanced PINNs for fluid dynamics and flow predictions",
+      "llm_evidence_cn": "用于流体动力学和流量预测的元学习增强型PINN",
+      "llm_evidence": "用于流体动力学和流量预测的元学习增强型PINN",
+      "canonical_evidence": "用于流体动力学和流量预测的元学习增强型PINN",
+      "llm_tldr_en": "Proposes Meta-PINNs to improve convergence and generalization in fluid dynamics flow predictions.",
+      "llm_tldr_cn": "提出了Meta-PINNs，以提高流体动力学流量预测中的收敛性和泛化能力。",
+      "llm_tldr": "提出了Meta-PINNs，以提高流体动力学流量预测中的收敛性和泛化能力。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Construction Method for PINNs Integrating Spatiotemporal Information",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.07998v1",
+      "title": "Aero-Promptness: Drag-Aware Aerodynamic Manipulability for Propeller-driven Vehicles",
+      "abstract": "This work introduces the Drag-Aware Aerodynamic Manipulability (DAAM), a geometric framework for control allocation in redundant multirotors. By equipping the propeller spin-rate space with a Riemannian metric based on the remaining symmetric acceleration capacity of each motor, the formulation explicitly accounts for motor torque limits and aerodynamic drag. Mapping this metric through the nonlinear thrust law to the generalized force space yields a state-dependent manipulability volume. The log-determinant of this volume acts as a natural barrier function, strictly penalizing drag-induced saturation and low-spin thrust loss. Optimizing this volume along the allocation fibers provides a redundancy resolution strategy inherently invariant to arbitrary coordinate scaling in the generalized-force space. Analytically, we prove that the resulting optimal allocations locally form smooth embedded manifolds, and we geometrically characterize the global jump discontinuities that inevitably arise from physical actuator limits and spin-rate sign transitions.",
+      "authors": [
+        "Antonio Franchi"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI",
+        "eess.SY",
+        "math.OC"
+      ],
+      "published": "2026-03-09T06:02:59+00:00",
+      "link": "https://arxiv.org/pdf/2603.07998v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Control allocation for multirotors accounting for aerodynamic drag",
+      "llm_evidence_cn": "考虑气动阻力的多旋翼飞行器控制分配",
+      "llm_evidence": "考虑气动阻力的多旋翼飞行器控制分配",
+      "canonical_evidence": "考虑气动阻力的多旋翼飞行器控制分配",
+      "llm_tldr_en": "Introduces a drag-aware geometric framework for control allocation in redundant multirotor vehicles.",
+      "llm_tldr_cn": "为冗余多旋翼飞行器引入了一种考虑阻力的几何控制分配框架。",
+      "llm_tldr": "为冗余多旋翼飞行器引入了一种考虑阻力的几何控制分配框架。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Control Methods Under Wind Disturbances",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch"
+    },
+    {
+      "id": "2603.08089v1",
+      "title": "Adaptive Vision-Based Control of Redundant Robots with Null-Space Interaction for Human-Robot Collaboration",
+      "abstract": "Human-robot collaboration aims to extend human ability through cooperation with robots. This technology is currently helping people with physical disabilities, has transformed the manufacturing process of companies, improved surgical performance, and will likely revolutionize the daily lives of everyone in the future. Being able to enhance the performance of both sides, such that human-robot collaboration outperforms a single robot/human, remains an open issue. For safer and more effective collaboration, a new control scheme has been proposed for redundant robots in this paper, consisting of an adaptive vision-based control term in task space and an interactive control term in null space. Such a formulation allows the robot to autonomously carry out tasks in an unknown environment without prior calibration while also interacting with humans to deal with unforeseen changes (e.g., potential collision, temporary needs) under the redundant configuration. The decoupling between task space and null space helps to explore the collaboration safely and effectively without affecting the main task of the robot end-effector. The stability of the closed-loop system has been rigorously proved with Lyapunov methods, and both the convergence of the position error in task space and that of the damping model in null space are guaranteed. The experimental results of a robot manipulator guided with the technology of augmented reality (AR) are presented to illustrate the performance of the control scheme.",
+      "authors": [
+        "Xiangjie Yan",
+        "Chen Chen",
+        "Xiang Li"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO"
+      ],
+      "published": "2026-03-09T08:30:14+00:00",
+      "link": "https://arxiv.org/pdf/2603.08089v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "human-robot collaboration and interactive control schemes",
+      "llm_evidence_cn": "人机协作与交互控制方案",
+      "llm_evidence": "人机协作与交互控制方案",
+      "canonical_evidence": "人机协作与交互控制方案",
+      "llm_tldr_en": "Develops an adaptive control scheme for safer and more effective human-robot collaboration.",
+      "llm_tldr_cn": "开发了一种自适应控制方案，用于更安全、更有效的人机协作。",
+      "llm_tldr": "开发了一种自适应控制方案，用于更安全、更有效的人机协作。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "How to Achieve Human Machine Co piloting in Extreme Hazardous Situations",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch"
+    }
+  ],
+  "quick_skim": [
+    {
+      "id": "2603.08307v1",
+      "title": "Adaptive Tracking Control of Euler-Lagrange Systems with Time-Varying State and Input Constraints",
+      "abstract": "This paper presents an adaptive control framework for Euler-Lagrange (E-L) systems that enforces user-defined time-varying state and input constraints in the presence of parametric uncertainties and bounded disturbances. The proposed design integrates a time-varying barrier Lyapunov Function (TVBLF) with a saturated control law to guarantee constraint satisfaction without resorting to real-time optimization. A key contribution is the development of an offline, verifiable feasibility condition that certifies the existence of a feasible control policy for any prescribed pair of time-varying state and input envelopes. Additionally, we prove boundedness of all closed-loop signals. Real-time experiments conducted on a 2-DoF helicopter model validate the efficacy and practical viability of the proposed method.",
+      "authors": [
+        "Poulomee Ghosh",
+        "Shubhendu Bhasin"
+      ],
+      "primary_category": "eess.SY",
+      "categories": [
+        "eess.SY"
+      ],
+      "published": "2026-03-09T12:30:06+00:00",
+      "link": "https://arxiv.org/pdf/2603.08307v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "adaptive tracking control for Euler-Lagrange systems with bounded disturbances",
+      "llm_evidence_cn": "具有有界扰动的欧拉-拉格朗日系统自适应跟踪控制",
+      "llm_evidence": "具有有界扰动的欧拉-拉格朗日系统自适应跟踪控制",
+      "canonical_evidence": "具有有界扰动的欧拉-拉格朗日系统自适应跟踪控制",
+      "llm_tldr_en": "Develops an adaptive control framework for constrained systems under disturbances, tested on a helicopter model.",
+      "llm_tldr_cn": "为受扰动的约束系统开发了自适应控制框架，并在直升机模型上进行了测试。",
+      "llm_tldr": "为受扰动的约束系统开发了自适应控制框架，并在直升机模型上进行了测试。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Control Methods Under Wind Disturbances",
+      "matched_requirement_id": "req-11",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.03483v1",
+      "title": "Near-surface Extreme Wind Events and Their Responses to Climate Forcings in a Hierarchy of Global Climate Models",
+      "abstract": "Near-surface extreme winds profoundly affect human society, yet process-based understanding of their changes under climate forcings remains limited. This study systematically investigates the responses of high (HWE) and low (LWE) wind extremes (10-meter) to climate forcings using a hierarchy of climate model experiments from multiple general circulation models that participated in the Cloud Feedback Model Intercomparison Project. We analyze idealized atmosphere-only aquaplanet (Aqua) simulations and more realistic land-atmosphere (AMIP) simulations to identify robust responses to climate forcings and trace the sources of structural uncertainty. In Aqua simulations, tropical LWE changes exhibit large inter-model spread, which can be traced to dynamically distinct representations of low-pressure systems between models. In contrast, extratropical HWE intensify robustly with surface warming, linked to the strengthening of high-latitude extratropical cyclones. The AMIP simulations confirm the robust intensification of extratropical HWE. The more realistic boundary conditions in AMIP simulations act as a constraint, reducing inter-model spread in tropical zonal means compared to Aqua simulations. A comparison of uniform and patterned 4-K warming experiments suggests that the global magnitude of warming, rather than the specific warming pattern, dominates the large-scale responses of wind extremes. However, regional projections of extreme wind changes, especially over land, remain highly uncertain due to divergences in model physics. Case studies reveal that major disagreements in HWE changes can stem from fundamental differences in representing the type and seasonality of extreme-producing weather systems. Our results underscore that reducing uncertainty in regional wind projections requires constraining the physical representation of weather systems in climate models.",
+      "authors": [
+        "G. Zhang",
+        "M. Rao",
+        "I. Simpson",
+        "K. A. Reed",
+        "B. Medeiros",
+        "H. -H. Chou",
+        "T. Shaw"
+      ],
+      "primary_category": "physics.ao-ph",
+      "categories": [
+        "physics.ao-ph"
+      ],
+      "published": "2026-03-03T19:59:30+00:00",
+      "link": "https://arxiv.org/pdf/2603.03483v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Investigation of near-surface extreme wind events and climate responses",
+      "llm_evidence_cn": "近地表极端风事件及其气候响应研究",
+      "llm_evidence": "近地表极端风事件及其气候响应研究",
+      "canonical_evidence": "近地表极端风事件及其气候响应研究",
+      "llm_tldr_en": "Analyzes extreme wind events using climate models, providing context for wind disturbance interactions.",
+      "llm_tldr_cn": "利用气候模型分析极端风事件，为风场扰动交互提供背景。",
+      "llm_tldr": "利用气候模型分析极端风事件，为风场扰动交互提供背景。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "How do wind disturbances and flying shear interact?",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.03574v1",
+      "title": "Safety-Centered Scenario Generation for Autonomous Vehicles",
+      "abstract": "This paper presents a scenario generation framework that creates diverse, parametrized, and safety-critical driving situations to validate the safety features of autonomous vehicles in simulation  [15]. By modeling factors such as road geometry, traffic participants, environmental conditions, and perception uncertainties, the framework enables repeatable and scalable testing of safety mechanisms, including emergency braking, evasive maneuvers, and vulnerable road user protection. The framework supports both regulatory and edge case scenarios, mapped to hazards and safety goals derived from Hazard Analysis and Risk Assessment (HARA), ensuring traceability to ISO 26262 functional safety requirements and performance limitations. The output from these simulations provides quantitative safety metrics such as time-to-collision, minimum distance, braking and steering performance, and residual collision severity. These metrics enable the systematic evaluation of evasive maneuvering as a safety feature, while highlighting system limitations and edge-case vulnerabilities. Integration of scenario-based simulation with safety engineering principles offers accelerated validation cycles, improved test coverage at reduced cost, and stronger evidence for regulatory and stakeholder confidence.",
+      "authors": [
+        "Kiruthiga Chandra Shekar",
+        "Aliasghar Moj Arab"
+      ],
+      "primary_category": "eess.SY",
+      "categories": [
+        "eess.SY"
+      ],
+      "published": "2026-03-03T23:08:08+00:00",
+      "link": "https://arxiv.org/pdf/2603.03574v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "safety-critical scenario generation for emergency maneuvers",
+      "llm_evidence_cn": "针对紧急避障动作的安全关键场景生成",
+      "llm_evidence": "针对紧急避障动作的安全关键场景生成",
+      "canonical_evidence": "针对紧急避障动作的安全关键场景生成",
+      "llm_tldr_en": "A framework for generating safety-critical scenarios to validate autonomous vehicle safety mechanisms.",
+      "llm_tldr_cn": "一种用于验证自动驾驶车辆安全机制的安全关键场景生成框架。",
+      "llm_tldr": "一种用于验证自动驾驶车辆安全机制的安全关键场景生成框架。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "How to Achieve Human Machine Co piloting in Extreme Hazardous Situations",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.08366v1",
+      "title": "Observations and numerical simulations of a valley-exit wind in the Alpine Bolzano basin",
+      "abstract": "The characteristics of the nocturnal drainage wind flowing from the tributary Isarco Valley into the Bolzano basin, in the Italian Alps, during wintertime are investigated. Analyses are performed by combining measurements from an intensive field campaign and the output of four high-resolution numerical simulations, run with the Weather Research and Forecasting (WRF) model using different planetary boundary-layer (PBL) schemes. Two episodes are identified, based on the vertical temperature stratification in the basin and the evolution of the drainage flow at the valley exit. Numerical results show that the drainage flow behaves as a valley-exit wind, whose main structure at the exit of the valley is well captured by the model independently of the PBL scheme. However, the model struggles to correctly reproduce the temperature stratification in the basin, with better results when a PBL scheme including, among others, a prognostic equation for the temperature variance and a counter-gradient term is used. This has an impact on the simulation of the onset and duration of the valley-exit wind, which are sensitive to the temperature contrasts between the valley and the basin. Overall, the model is able to reproduce the different behavior of the drainage wind at the exit of the valley in the two case studies. It is found that the presence of a cold air pool in the basin favors an upward trajectory of the flow at the exit of the valley, resulting in unperturbed calm wind conditions in the lower levels. On the other hand, with weak temperature stratification, the drainage flow closely follows the topography, resulting in strong winds also near the surface.",
+      "authors": [
+        "Federica Gucci",
+        "Andrea Zonato",
+        "Marco Falocchi",
+        "Dino Zardi",
+        "Lorenzo Giovannini"
+      ],
+      "primary_category": "physics.ao-ph",
+      "categories": [
+        "physics.ao-ph"
+      ],
+      "published": "2026-03-09T13:29:02+00:00",
+      "link": "https://arxiv.org/pdf/2603.08366v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "Numerical simulations of valley-exit wind structures",
+      "llm_evidence_cn": "山谷出口风结构的数值模拟",
+      "llm_evidence": "山谷出口风结构的数值模拟",
+      "canonical_evidence": "山谷出口风结构的数值模拟",
+      "llm_tldr_en": "Investigates nocturnal drainage wind characteristics using field measurements and WRF simulations.",
+      "llm_tldr_cn": "结合实地测量和 WRF 模拟研究夜间排水风的特征。",
+      "llm_tldr": "结合实地测量和 WRF 模拟研究夜间排水风的特征。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Approach to Wind Shear Detection",
+      "matched_requirement_id": "req-10",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.03611v1",
+      "title": "Idealized Impacts of Mountainous Terrain on the Energetics of Hurricane Melissa (2025)",
+      "abstract": "This study examines the decay of Hurricane Melissa (2025) as the storm crossed the mountainous terrain of Jamaica, focusing on changes in inner-core energetics. Using NOAA P-3 reconnaissance observations near the 700 hPa level, integrated kinetic energy within 100 km of the storm center was computed before and after land interaction to quantify vortex weakening. During the approximately four hour period in which the center remained over Jamaica, the storm experienced rapid degradation, including a 48 percent reduction in peak tangential wind, a 58 hPa rise in central pressure, and a 41 percent decrease in integrated kinetic energy. To investigate the mechanisms responsible for this decay, the observations were compared with results from an idealized axisymmetric tangential momentum diffusion model that isolates the effects of vertical turbulent mixing and enhanced surface drag. Despite its simplified physics, the model reproduces many leading order features of the observed weakening, including substantial reductions in tangential wind and a 36 percent decline in integrated kinetic energy. These results indicate that enhanced friction and turbulent mixing associated with extremely rough mountainous terrain can account for a large fraction of the rapid spin down observed during land interaction. Differences between the model and observations suggest that additional processes such as asymmetric dynamics, terrain induced flow distortion, and thermodynamic feedbacks further amplify the weakening of intense tropical cyclones over land.",
+      "authors": [
+        "Michael Igbinoba"
+      ],
+      "primary_category": "physics.ao-ph",
+      "categories": [
+        "physics.ao-ph"
+      ],
+      "published": "2026-03-04T00:48:27+00:00",
+      "link": "https://arxiv.org/pdf/2603.03611v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Impact of terrain on hurricane wind energetics",
+      "llm_evidence_cn": "地形对飓风风力能量的影响",
+      "llm_evidence": "地形对飓风风力能量的影响",
+      "canonical_evidence": "地形对飓风风力能量的影响",
+      "llm_tldr_en": "Analyzes hurricane decay and wind speed reduction caused by mountainous terrain interaction.",
+      "llm_tldr_cn": "分析了山地地形相互作用导致的飓风衰减和风速降低。",
+      "llm_tldr": "分析了山地地形相互作用导致的飓风衰减和风速降低。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "How do wind disturbances and flying shear interact?",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.03751v1",
+      "title": "Interaction-Aware Whole-Body Control for Compliant Object Transport",
+      "abstract": "Cooperative object transport in unstructured environments remains challenging for assistive humanoids because strong, time-varying interaction forces can make tracking-centric whole-body control unreliable, especially in close-contact support tasks. This paper proposes a bio-inspired, interaction-oriented whole-body control (IO-WBC) that functions as an artificial cerebellum - an adaptive motor agent that translates upstream (skill-level) commands into stable, physically consistent whole-body behavior under contact. This work structurally separates upper-body interaction execution from lower-body support control, enabling the robot to maintain balance while shaping force exchange in a tightly coupled robot-object system. A trajectory-optimized reference generator (RG) provides a kinematic prior, while a reinforcement learning (RL) policy governs body responses under heavy-load interactions and disturbances. The policy is trained in simulation with randomized payload mass/inertia and external perturbations, and deployed via asymmetric teacher-student distillation so that the student relies only on proprioceptive histories at runtime. Extensive experiments demonstrate that IO-WBC maintains stable whole-body behavior and physical interaction even when precise velocity tracking becomes infeasible, enabling compliant object transport across a wide range of scenarios.",
+      "authors": [
+        "Hao Zhang",
+        "Yves Tseng",
+        "Ding Zhao",
+        "H. Eric Tseng"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI"
+      ],
+      "published": "2026-03-04T05:50:40+00:00",
+      "link": "https://arxiv.org/pdf/2603.03751v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "interaction-aware whole-body control for humanoids",
+      "llm_evidence_cn": "类人机器人的交互感知全身控制",
+      "llm_evidence": "类人机器人的交互感知全身控制",
+      "canonical_evidence": "类人机器人的交互感知全身控制",
+      "llm_tldr_en": "Presents interaction-oriented control for stable behavior under contact, relevant to shared control concepts.",
+      "llm_tldr_cn": "提出了交互导向控制以实现接触下的稳定行为，与共享控制概念相关。",
+      "llm_tldr": "提出了交互导向控制以实现接触下的稳定行为，与共享控制概念相关。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "human-machine shared control for emergency flight maneuvers",
+      "matched_requirement_id": "req-1",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.08465v1",
+      "title": "MUSA-PINN: Multi-scale Weak-form Physics-Informed Neural Networks for Fluid Flow in Complex Geometries",
+      "abstract": "While Physics-Informed Neural Networks (PINNs) offer a mesh-free approach to solving PDEs, standard point-wise residual minimization suffers from convergence pathologies in topologically complex domains like Triply Periodic Minimal Surfaces (TPMS). The locality bias of point-wise constraints fails to propagate global information through tortuous channels, causing unstable gradients and conservation violations. To address this, we propose the Multi-scale Weak-form PINN (MUSA-PINN), which reformulates PDE constraints as integral conservation laws over hierarchical spherical control volumes. We enforce continuity and momentum conservation via flux-balance residuals on control surfaces. Our method utilizes a three-scale subdomain strategy-comprising large volumes for long-range coupling, skeleton-aware meso-scale volumes aligned with transport pathways, and small volumes for local refinement-alongside a two-stage training schedule prioritizing continuity. Experiments on steady incompressible flow in TPMS geometries show MUSA-PINN outperforms state-of-the-art baselines, reducing relative errors by up to 93% and preserving mass conservation.",
+      "authors": [
+        "Weizheng Zhang",
+        "Xunjie Xie",
+        "Hao Pan",
+        "Xiaowei Duan",
+        "Bingteng Sun",
+        "Qiang Du",
+        "Lin lu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-03-09T15:03:50+00:00",
+      "link": "https://arxiv.org/pdf/2603.08465v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "PINN construction for fluid flow in complex geometries",
+      "llm_evidence_cn": "复杂几何体中流体流动的PINN构建",
+      "llm_evidence": "复杂几何体中流体流动的PINN构建",
+      "canonical_evidence": "复杂几何体中流体流动的PINN构建",
+      "llm_tldr_en": "Introduces MUSA-PINN for fluid flow, directly relevant to spatiotemporal PINN construction methods.",
+      "llm_tldr_cn": "引入用于流体流动的MUSA-PINN，与时空PINN构建方法直接相关。",
+      "llm_tldr": "引入用于流体流动的MUSA-PINN，与时空PINN构建方法直接相关。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Construction Method for PINNs Integrating Spatiotemporal Information",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.03650v1",
+      "title": "Adaptive Sensing of Continuous Physical Systems for Machine Learning",
+      "abstract": "Physical dynamical systems can be viewed as natural information processors: their systems preserve, transform, and disperse input information. This perspective motivates learning not only from data generated by such systems, but also how to measure them in a way that extracts the most useful information for a given task. We propose a general computing framework for adaptive information extraction from dynamical systems, in which a trainable attention module learns both where to probe the system state and how to combine these measurements to optimize prediction performance. As a concrete instantiation, we implement this idea using a spatiotemporal field governed by a partial differential equation as the underlying dynamics, though the framework applies equally to any system whose state can be sampled. Our results show that adaptive spatial sensing significantly improves prediction accuracy on canonical chaotic benchmarks. This work provides a perspective on attention-enhanced reservoir computing as a special case of a broader paradigm: neural networks as trainable measurement devices for extracting information from physical dynamical systems.",
+      "authors": [
+        "Felix Köster",
+        "Atsushi Uchida"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG",
+        "physics.comp-ph"
+      ],
+      "published": "2026-03-04T02:13:36+00:00",
+      "link": "https://arxiv.org/pdf/2603.03650v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "Adaptive sensing of spatiotemporal fields for optimal prediction",
+      "llm_evidence_cn": "时空场的自适应感知以实现最优预测",
+      "llm_evidence": "时空场的自适应感知以实现最优预测",
+      "canonical_evidence": "时空场的自适应感知以实现最优预测",
+      "llm_tldr_en": "A framework for adaptive information extraction from physical systems to optimize prediction performance.",
+      "llm_tldr_cn": "一种从物理系统中自适应提取信息的框架，用于优化预测性能。",
+      "llm_tldr": "一种从物理系统中自适应提取信息的框架，用于优化预测性能。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Approach to Detecting Wind Shear Using Multi Source Sensor Data",
+      "matched_requirement_id": "req-12",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    },
+    {
+      "id": "2603.03754v1",
+      "title": "Separation induced transition in a low pressure turbine under varying compressibility",
+      "abstract": "The present study investigates influence of compressibility on separation induced transition in a low pressure turbine cascade using high fidelity direct numerical simulations of the T106A blade. Simulations are performed for inlet Mach numbers, Ms ranging from 0.15 to 0.35 at a fixed Reynolds number and high incidence, representative of off design LPT operation. A dispersion relation preserving numerical framework is employed to accurately capture instability waves, separation bubbles, and separation induced transition to turbulence. A comprehensive analysis is carried out using surface pressure and skin friction distributions, boundary layer integral parameters, spectral analyses, and budgets of compressible enstrophy. Increasing Ms systematically reduces streamwise extent of both leading edge and trailing edge separation bubbles and promotes earlier transition and reattachment, consistent with trends observed under increased free stream disturbances. Despite shorter separation regions, suction side momentum thickness at trailing edge increases from Ms = 0.15 to 0.35, indicating higher profile losses at elevated Ms. Spectral analyses demonstrate a redistribution of turbulent spatial and temporal scales, with energy injection occurring at progressively larger scales as Ms increases. Flow field visualizations reveal a transition pathway that shifts from two dimensional spanwise rolls and intermittent turbulent spots at low Ms to streak dominated, bypass like transition at higher Ms.",
+      "authors": [
+        "Priya Pal",
+        "Abhijeet Guha",
+        "Aditi Sengupta"
+      ],
+      "primary_category": "physics.flu-dyn",
+      "categories": [
+        "physics.flu-dyn"
+      ],
+      "published": "2026-03-04T05:58:57+00:00",
+      "link": "https://arxiv.org/pdf/2603.03754v1",
+      "tags": [
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 6.0,
+      "llm_evidence_en": "Numerical simulation of turbulence and transition in turbine blades",
+      "llm_evidence_cn": "涡轮叶片湍流与转捩的数值模拟",
+      "llm_evidence": "涡轮叶片湍流与转捩的数值模拟",
+      "canonical_evidence": "涡轮叶片湍流与转捩的数值模拟",
+      "llm_tldr_en": "Investigates compressibility effects on transition to turbulence in turbine cascades using high-fidelity simulations.",
+      "llm_tldr_cn": "利用高保真模拟研究可压缩性对涡轮级联中湍流转捩的影响。",
+      "llm_tldr": "利用高保真模拟研究可压缩性对涡轮级联中湍流转捩的影响。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "How do wind disturbances and flying shear interact?",
+      "matched_requirement_id": "req-8",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "6"
+    },
+    {
+      "id": "2603.08465v2",
+      "title": "MUSA-PINN: Multi-scale Weak-form Physics-Informed Neural Networks for Fluid Flow in Complex Geometries",
+      "abstract": "While Physics-Informed Neural Networks (PINNs) offer a mesh-free approach to solving PDEs, standard point-wise residual minimization suffers from convergence pathologies in topologically complex domains like Triply Periodic Minimal Surfaces (TPMS). The locality bias of point-wise constraints fails to propagate global information through tortuous channels, causing unstable gradients and conservation violations. To address this, we propose the Multi-scale Weak-form PINN (MUSA-PINN), which reformulates PDE constraints as integral conservation laws over hierarchical spherical control volumes. We enforce continuity and momentum conservation via flux-balance residuals on control surfaces. Our method utilizes a three-scale subdomain strategy-comprising large volumes for long-range coupling, skeleton-aware meso-scale volumes aligned with transport pathways, and small volumes for local refinement-alongside a two-stage training schedule prioritizing continuity. Experiments on steady incompressible flow in TPMS geometries show MUSA-PINN outperforms state-of-the-art baselines, reducing relative errors by up to 93% and preserving mass conservation.",
+      "authors": [
+        "Weizheng Zhang",
+        "Xunjie Xie",
+        "Hao Pan",
+        "Xiaowei Duan",
+        "Bingteng Sun",
+        "Qiang Du",
+        "Lin Lu"
+      ],
+      "primary_category": "cs.LG",
+      "categories": [
+        "cs.LG"
+      ],
+      "published": "2026-03-09T15:03:50+00:00",
+      "link": "https://arxiv.org/pdf/2603.08465v2",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 8.0,
+      "llm_evidence_en": "PINN reformulation for fluid flow using hierarchical control volumes",
+      "llm_evidence_cn": "使用分层控制体的流体流动PINN重构",
+      "llm_evidence": "使用分层控制体的流体流动PINN重构",
+      "canonical_evidence": "使用分层控制体的流体流动PINN重构",
+      "llm_tldr_en": "Proposes MUSA-PINN using weak-form integral conservation laws for complex fluid geometries.",
+      "llm_tldr_cn": "提出了利用弱形式积分守恒定律处理复杂流体几何形状的MUSA-PINN。",
+      "llm_tldr": "提出了利用弱形式积分守恒定律处理复杂流体几何形状的MUSA-PINN。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "Construction Method for PINNs Integrating Spatiotemporal Information",
+      "matched_requirement_id": "req-5",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "8plus"
+    },
+    {
+      "id": "2603.03741v1",
+      "title": "HALyPO: Heterogeneous-Agent Lyapunov Policy Optimization for Human-Robot Collaboration",
+      "abstract": "To improve generalization and resilience in human-robot collaboration (HRC), robots must handle the combinatorial diversity of human behaviors and contexts, motivating multi-agent reinforcement learning (MARL). However, inherent heterogeneity between robots and humans creates a rationality gap (RG) in the learning process-a variational mismatch between decentralized best-response dynamics and centralized cooperative ascent. The resulting learning problem is a general-sum differentiable game, so independent policy-gradient updates can oscillate or diverge without added structure. We propose heterogeneous-agent Lyapunov policy optimization (HALyPO), which establishes formal stability directly in the policy-parameter space by enforcing a per-step Lyapunov decrease condition on a parameter-space disagreement metric. Unlike Lyapunov-based safe RL, which targets state/trajectory constraints in constrained Markov decision processes, HALyPO uses Lyapunov certification to stabilize decentralized policy learning. HALyPO rectifies decentralized gradients via optimal quadratic projections, ensuring monotonic contraction of RG and enabling effective exploration of open-ended interaction spaces. Extensive simulations and real-world humanoid-robot experiments show that this certified stability improves generalization and robustness in collaborative corner cases.",
+      "authors": [
+        "Hao Zhang",
+        "Yaru Niu",
+        "Yikai Wang",
+        "Ding Zhao",
+        "H. Eric Tseng"
+      ],
+      "primary_category": "cs.RO",
+      "categories": [
+        "cs.RO",
+        "cs.AI"
+      ],
+      "published": "2026-03-04T05:26:13+00:00",
+      "link": "https://arxiv.org/pdf/2603.03741v1",
+      "tags": [
+        "keyword:WIND/WIND control",
+        "query:WIND/WIND control"
+      ],
+      "llm_score": 7.0,
+      "llm_evidence_en": "human-robot collaboration and stability in policy space",
+      "llm_evidence_cn": "人机协作与策略空间稳定性",
+      "llm_evidence": "人机协作与策略空间稳定性",
+      "canonical_evidence": "人机协作与策略空间稳定性",
+      "llm_tldr_en": "Proposes a Lyapunov-based reinforcement learning method for stable and resilient human-robot collaboration.",
+      "llm_tldr_cn": "提出了一种基于李雅普诺夫的强化学习方法，用于稳定且有弹性的人机协作。",
+      "llm_tldr": "提出了一种基于李雅普诺夫的强化学习方法，用于稳定且有弹性的人机协作。",
+      "llm_tags": [
+        "query:wind-wind-control"
+      ],
+      "matched_query_tag": "query:wind-wind-control",
+      "matched_query_text": "How to Achieve Human Machine Co piloting in Extreme Hazardous Situations",
+      "matched_requirement_id": "req-6",
+      "selection_source": "fresh_fetch",
+      "quick_tier": "7"
+    }
+  ]
+}

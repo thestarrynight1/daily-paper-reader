@@ -1,0 +1,465 @@
+Title: Numerical Approach for On-the-Fly Active Flow Control via Flow Map Learning Method
+
+URL Source: https://arxiv.org/pdf/2603.07678v1
+
+Published Time: Tue, 10 Mar 2026 01:27:28 GMT
+
+Number of Pages: 18
+
+Markdown Content:
+NUMERICAL APPROACH FOR ON-THE-FLY ACTIVE FLOW CONTROL VIA FLOW MAP LEARNING METHOD 
+
+XINYU LIU , QIFAN CHEN , AND DONGBIN XIU ∗
+
+Abstract. We present a data-driven numerical approach for on-the-fly active flow control and demonstrate its effectiveness for drag reduction in two-dimensional incompressible flow past a cylin-der. The method is based on flow map learning (FML), a recently developed framework for modeling unknown dynamical systems that is particularly effective for partially observed systems. For active flow control, we construct an FML dynamical model for the quantities of interest (QoIs), namely the drag and lift forces. During offline learning, training data are generated for the responses of drag and lift to the control variable, and a deep neural network (DNN)–based FML model is constructed. The learned FML model enables online optimal flow control without requiring simulations of the flow field. We demonstrate that the FML-based approach can be integrated with existing optimal control strategies, including deep reinforcement learning (DRL) and model predictive control (MPC). Numer-ical results show that the proposed approach enables on-the-fly flow control and achieves more than 20% drag reduction. By eliminating the need for forward simulations during control optimization, the approach offers the potential for real-time optimal control in other systems. 
+
+Key words. 
+
+Active flow control; optimal control; flow map learning, data-driven modeling. 
+
+1. Introduction. Optimal control of complex systems is a longstanding prob-lem in science and engineering, with applications ranging from fluid mechanics and structural dynamics to chemical processes and energy systems [6, 2, 23]. In many such problems, the governing equations involve nonlinear partial differential equa-tions (PDEs) that are computationally expensive to solve. This creates a fundamental challenge for optimal control, since many control strategies require repeated forward simulations of the underlying PDEs. The difficulty is particularly pronounced when control decisions must be made in real time or across many parameter and control configurations [18, 3]. Classical approaches to optimal control include adjoint-based methods, model pre-dictive control (MPC), and linear–quadratic formulations; see, for example, [23, 4, 5]. Although these methods are mathematically well established, their practical applica-tion to large-scale nonlinear systems often requires intrusive access to the governing equations, accurate adjoint solvers, and repeated solutions of forward and adjoint problems [21, 17]. These requirements limit their applicability in settings involving legacy solvers, complex multiphysics models, or strict latency constraints. To reduce computational cost, a substantial body of work has focused on reduced-order modeling (ROM) for control. Projection-based techniques such as proper or-thogonal decomposition (POD) combined with Galerkin projection have been widely used in flow control and related applications [20, 28, 36]. Extensions incorporating sta-bilization, closure modeling, and balanced truncation have improved robustness, while data-driven approaches such as dynamic mode decomposition (DMD) and operator inference provide alternative reduced representations [37, 29]. Despite these advances, ROM-based control approaches often face challenges related to model fidelity, stabil-ity, and extrapolation beyond the training regime, particularly for strongly nonlinear or transient flows. 
+
+> ∗
+
+Department of Mathematics, The Ohio State University, Columbus, OH 43210, USA. Emails: 
+
+liu.12165, chen.11010, xiu.16@osu.edu. Funding: This work was partially supported by AFOSR FA9550-24-1-0237. 1
+
+> arXiv:2603.07678v1 [math.NA] 8 Mar 2026
+
+In this paper, we take an alternative perspective by formulating the control prob-lem directly at the level of quantities of interest (QoIs), rather than the full system state. In many control problems, objectives, constraints, and feedback signals de-pend only on a small number of physically meaningful observables, such as lift and drag coefficients, stress extrema, energy norms, or integrated sensor measurements. If the evolution of these QoIs under control can be predicted accurately and efficiently, control synthesis can be decoupled from the full-order state dynamics, significantly reducing computational complexity. The main contribution of this work is the development of such a framework for efficient optimal control of complex systems. Our approach employs flow map learning (FML), a recently developed data-driven framework for modeling the discrete-time evolution operator of unknown dynamical systems. FML was first introduced in [32] for modeling autonomous dynamical systems and later extended to parameterized systems [31], non-autonomous systems [30], partially observed systems [14], PDEs [11, 42], and stochastic dynamical systems [10, 43]. A detailed review of FML can be found in [13]. In this work, we adapt FML to construct dynamical models for QoIs as functions of control signals. The resulting model can be integrated with existing optimal control methods without requiring full-order simulations. As a representative and nontrivial demonstration, we consider the active flow con-trol (AFC) problem governed by the incompressible Navier–Stokes equations [12, 15, 8]. Active flow control has long served as a benchmark problem for control method-ologies because of its high dimensionality, strong nonlinearity, and sensitivity to ac-tuation [16, 22, 4, 19]. In this study, we focus on drag reduction for two-dimensional flow past a circular cylinder [33, 40]. The QoIs are the fluid forces acting on the cylinder, represented by the drag and lift forces. Control is applied through small jet streams at the sides of the cylinder and is realized through a single control pa-rameter [41, 44, 34]. By repeatedly executing a high-fidelity CFD solver, we generate training data for the responses of drag and lift to varying control signals. We then construct an FML dynamical model for the evolution of the fluid forces under chang-ing control inputs. Once trained, the FML model allows evaluation of the objective function with respect to the control signal without using the full CFD solver. The resulting non-intrusive surrogate can then be integrated with optimal control meth-ods to realize real-time AFC. In particular, we consider reinforcement learning (RL) and model predictive control (MPC), two fundamentally different control strategies, to demonstrate the flexibility of the FML-based approach. The overall algorithm en-ables on-the-fly optimal control: as the CFD solver advances the flow simulation, the FML-based controller provides instantaneous control signals without delay. The CFD solver then updates the boundary conditions accordingly and achieves approximately 20 ∼ 30% drag reduction. This paper is organized as follows. Section 2 describes the problem setup and control objective. Section 3 reviews the relevant background, including FML, RL, and MPC. Section 4 presents the construction of the FML models for the drag and lift subject to excitations, and Section 5 discusses how the learned FML models can be integrated with RL and MPC control strategies. Section 6 reports the computational results for the drag reduction active flow control problem. 
+
+2. Problem Setup. The active flow control problem considered in this paper is drag reduction for two-dimensional incompressible flow past a circular cylinder, where the control is realized via two jets of injection and suction at the sides of the cylinder. 
+
+> 2
+
+2.1. Computational Setup and Numerical Solver. The governing equa-tions are two-dimensional incompressible Navier-Stokes (NS) equations for velocity 
+
+u = ( vx, v y )T and pressure p:
+
+
+
+∇ · u = 0 ,
+
+ut + ( u · ∇ )u = −∇ p + 1
+
+Re ∇2u, (2.1) where Re is the Reynolds number 
+
+Re = U∞Lν , (2.2) with U∞ being the characteristic velocity, L the characteristic length, and ν the kinematic viscosity. The computational domain is a rectangular region ( x, y ) ∈
+
+[−10 , 20] × [−10 , 10], where a circular cylinder with diameter D = L = 1 is cen-tered at the origin. For boundary conditions, far-field conditions of vx = U∞ = 1 and 
+
+vy = 0 are imposed on the left (inlet), top, and bottom boundaries, while an outflow condition of ( ∂xu = 0) is enforced on the right boundary (outlet). The computational domain is illustrated on the left of Figure 2.1. 10  20  
+
+> 10
+> 10
+> Cylinder
+> D=1
+> Inlet Outlet
+
+Fig. 2.1: Computational setup for the flow past cylinder simulation. Left: the com-putational domain; Right: the computational mesh. To solve the problem numerically, we employ Nektar++ ([7, 27]), an open-source high-order hp -spectral element solver. The domain is discretized by an unstructured mesh of 3 , 613 elements, shown on the right of Figure 2.1. Spectral elements of 6th-order polynomials are used, yielding a total number of 143 , 880 degrees of freedom for the discrete system. Second-order implicit–explicit scheme is used for time integration, with a constant step size δt = 0 .002. All of these parameter settings were examined numerically to ensure sufficient resolution of the problem. All simulations are conducted with the “sudden start” initial state, which sets constant initial velocities ( vx, v y ) = (1 , 0) inside the domain. We then simulate the flow till it reaches stable and fully developed state. For the Reynolds number con-sidered in this study, 100 ≤ Re ≤ 500, the flow shall reach well-known quasi-periodic vortex shedding state. Such a state shall be the initial state for our ensuing drag reduction control study. 
+
+2.2. Active Flow Control for Drag Reduction. We consider the overall flow force on the cylinder 
+
+f (t) = ( fx, f y )T (t) = −
+
+I
+
+> S
+
+(σ · ˆn) ds, 
+
+> 3
+
+where 
+
+σ = −pI + ν  ∇u + ∇uT 
+
+is the Cauchy stress tensor and the integral is over the cylinder surface S whose outward unit normal vector is ˆ n. In our coordinate system, fx becomes the drag force and fy the lift force. It is a standard practice to normalize the drag and lift forces, resulting in the drag and lift coefficients. 
+
+CD (t) = fx 
+
+> 12
+
+U 2
+
+> ∞
+
+L = 2 fx(t), CL(t) = fy 
+
+> 12
+
+U 2
+
+> ∞
+
+L = 2 fy (t), (2.3) where the factor of 2 is the result of our chosen characteristic velocity and length. In this paper, the goal of our active flow control is drag reduction, which shall be implemented by minimizing a cost function involving CD .To realize drag reduction, we employ an actuator setup similar to that in [33], where two synthetic jets are placed at the sides of the cylinder as the control. More specifically, we introduce an opening of ω = 18 ◦ at both the top and bottom of the cylinder boundary, shown in Figure 2.2. Two jet flows of identical velocity profile but in the opposite directions are prescribed at the openings, ensuring zero total mass is introduced into the computational domain. Specifically, the following velocity profile on the cylinder surface is 
+
+u(t) = ( vx, v y )T = 2πQ (t)
+
+ωD 2 cos 
+
+h πω (θ − θ0)
+
+i
+
+(cos θ, sin θ)T , |θ − θ0| ≤ 9◦, (2.4) where θ is the angular coordinate, with θ0 = 90 ◦ for the center of the top opening and 
+
+θ0 = 270 ◦ for the center of the bottom opening, ω = 18 ◦, and Q is mass flow rate. The optimal control shall be realized via the adjustment of the mass flow rate Q(t). 
+
+Fig. 2.2: Velocity boundary conditions for the two synthetic jets on the cylinder surface. We define the cost function 
+
+J(t) = ⟨CD ⟩T + ωL|⟨ CL⟩T |, (2.5) 
+
+> 4
+
+where ⟨·⟩ T stands for moving window time average over window length T > 0, i.e., 
+
+⟨f ⟩T (t) = 1
+
+T
+
+Z tt−T
+
+f (τ )dτ, 
+
+and ωL is a parameter. In this paper, we fix T = 5 .0 and ωL = 0 .2. These are chosen based on the similar setting from [33]. The goal of the flow control is to achieve active drag reduction via minimization of the cost function, min  
+
+> Q(t)
+
+J(t). (2.6) We remark that there exist a variety of ways for active flow control for flow past a cylinder. The purpose of this paper is to demonstrate the effectiveness of our proposed numerical approach, which is not restricted to the specific choice of the control setup from [33]. Obviously, the objective function, expressed in terms of the drag and lift coeffi-cients, depends on the underlying flow field, which in turn depends on the Re number. In this paper, we consider two separate types of flow control: 
+
+• Type-I: The flow field is from a fixed Reynolds number, Re = 300. This is similar to the work of [33] and most other existing studies. 
+
+• Type-II: The flow field has an unknown Reynolds number in the range of 100 ≤ Re ≤ 500. This represents a “newer” scenario, rarely explored in the literature. In this case, the flow control method needs to implicitly adapt to the flow field whose basic property, manifested via its Re number, is unknown. 
+
+3. Preliminaries. In this section, we provide preliminary materials essential to our proposed method. These include the fundamentals of FML, as well as the two different optimal control strategies used in this paper, reinforcement learning (RL) and model predictive control (MPC). 
+
+3.1. Flow Map Learning. FML is a data driven method for modeling unknown dynamics, first proposed in [32] for learning autonomous dynamical systems. For an unknown autonomous system, xt = f (x), x ∈ Rd, where the governing equation 
+
+f : Rd → Rd is not known, FML seeks to learn its flow map operator Φ : Rd → Rd
+
+numerically, as opposed to learning f . The flow map operator governs the evolution of the solutions, i.e., x(tn) = Φ tn−ts (x(ts)). Therefore, when data of the solution trajectories are available, we split the trajectory data into pairs of data separated by one time step ∆ t. These pairs of data then satisfy x(t + ∆ t) = Φ ∆t(x(t)), where t is the “starting time” of each data pair. In FML, we then seek a function N : Rd → Rd
+
+to minimize the following loss function 
+
+> Ndata
+
+X
+
+> j=1
+
+x(j)(∆ t) − N (x(j)(0)) 2
+
+,
+
+where Ndata is the total number of such data pairs  x(j)(0) , x (j)(∆ t), j = 1 , . . . , N data .Note that the “starting time” of each pair is set to 0 as in autonomous systems only the relative time matters. Upon minimizing this loss function, we obtain N ≈ Φ and a predictive FML model 
+
+xn+1 = N (xn), (3.1) which can predict the system behavior when an initial condition x0 is specified. 
+
+> 5
+
+A notable extension of FML is modeling incomplete system ([14]). Let x = ( z, w ), where z ∈ Rm are observables and w ∈ Rd−m missing variables. When trajectory data are available only on z, the work of [14] established that modeling the dynamics of z
+
+can be accomplished without any information of the missing variable w. Motivated by the celebrated Mori–Zwanzig formulation ([26, 45]), [14] developed a discrete approx-imate Mori–Zwanzig formulation and established that a discrete dynamical model of 
+
+z exists in the following form, 
+
+zn+1 = N (zn, z n−1, . . . , z n−nM ), n ≥ nM , (3.2) where nM ≥ 0 is the number of memory terms. In this case, N : Rm×(nM +1) → Rm
+
+is the flow map with memory nM . The special case of nM = 0 corresponds to the learning of a fully observed autonomous system (3.1). The memory-based FML structure (3.2) has been shown to be able to model a wide class of partially observed systems. For a review of FML modeling of unknown dynamical systems, see [13]. Moreover, a recent work of [9] showed that FML is capable of modeling the dynamics of drag and lift forces for flow past cylinder. This work is directly relevant to the current work. 
+
+3.2. Reinforcement Learning. RL is widely applied in control tasks, where an agent learns to optimize its strategy through interactions with an environment [39]. Mathematically, this problem is modeled as a Markov Decision Process (MDP). Fol-lowing the standard definition [1], an MDP is characterized by the tuple ( S, A, P, R). Here, S ⊆ Rns is the state space, and A ⊆ Rna is the action space. At each step tn,given the current state sn ∈ S and action an ∈ A , the system evolves to next state 
+
+sn+1 according to the transition dynamics P : S × A × S → [0 , 1], which is a condi-tional density of the next state given the current state and action. Simultaneously, the agent receives a feedback signal from the reward function R : S × A → R.The agent’s control strategy is governed by a policy π, defined as a mapping from the state space to the probability simplex over the action space 
+
+π : S → ∆( A). (3.3) Here, π(an|sn) denotes the probability of selecting action an given state sn. The objective is to find an optimal policy π∗ that maximizes the expected cumulative discounted reward. This is formulated as 
+
+R(π) = Eτ ∼(π, P)
+
+" ∞X
+
+> n=0
+
+γnR(sn, a n)
+
+#
+
+, (3.4) where γ ∈ [0 , 1) is the discount factor that determines the present value of future rewards, and τ = ( s0, a 0, s 1, a 1, . . . ) represents a trajectory generated by the policy π
+
+interacting with the transition dynamics P.In high-dimensional spaces, solving for the optimal policy π∗ directly is compu-tationally intractable. Deep RL (DRL) addresses this by approximating the policy function (3.3) using deep neural networks [25]. Consequently, the optimization prob-lem (3.4) transforms into finding the optimal network parameters that maximize R.
+
+3.3. Model Predictive Control. MPC is a well-established framework for con-trolling constrained dynamical systems [35]. It determines control inputs by repeat-edly solving a finite-horizon optimization problem. Consider a discrete-time system 
+
+xn+1 = f (xn, u n), (3.5) 
+
+> 6
+
+where xn ∈ X ⊆ Rnx and un ∈ U ⊆ Rnu denote the state and control constrained to the admissible sets X and U. To formulate this optimization problem, a cost function 
+
+J is defined over a prediction horizon nP ≥ 1 as [24]: 
+
+J(un, . . . , u n+nP −1) =  
+
+> nP−1
+
+X
+
+> k=0
+
+ℓ(xn+k, u n+k) + VF (xn+nP ), (3.6) where ℓ(·) represents the stage cost and VF (·) is the terminal cost. At each time step, let u∗ 
+
+> n
+
+denote the first element of the optimal sequence that minimizes J subject to the dynamics (3.5) and constraints. The control input is then determined by 
+
+un = u∗
+
+> n
+
+, (3.7) and the process repeats in the next step with the updated state. 
+
+4. FML Modeling for QoI Dynamics under Excitation. We first discuss how to construct FML models for QoIs dynamics under external excitations. The objective is to construct dynamical model for the drag and lift temporal evolution under arbitrary external input, which is the time dependent boundary condition at the cylinder surface (2.4), without requiring simulation of the flow field. This is an extension of the work of [9], which demonstrated that FML can model the intrinsic dynamics of drag and lift, without external excitations, for the flow past cylinder problem. 
+
+4.1. FML Models. We consider the active flow control problem defined in Sec-tion 2.2. Let V denote the QoIs, which are the drag and lift coefficients (2.3), 
+
+V (t) = ( CD , C L)T (t) ∈ RnV , nV = 2 . (4.1) Let u denote the external control input. In this study, the control is the normalized mass flow rate Q(t) in (2.4), constrained within the interval [ −1, 1]. That is, 
+
+u(t) = Q(t) ∈ [−1, 1] ⊂ Rnu , nu = 1 . (4.2) We seek a discrete-time flow map operator G that governs the dynamics of the QoIs V under control excitation u. Based on the work of [30], the mapping takes the form 
+
+G : R(nM +1) ×(nV +nu) → RnV , (4.3) and evolves the QoIs according to 
+
+Vn+1 = G (Vn, · · · , V n−nM ; un, · · · , u n−nM ) , (4.4) where nM ≥ 0 is the number of memory steps. With nV = 2 and nu = 1, we have 
+
+G : R3( nM +1) → R2. (4.5) Note that the Reynolds number Re (2.2) will be treated as a “hidden” parameter and does not show up explicitly in the model (4.4). More specifically, for the two types of control problem described in Section 2.2, we will construct two separate FML models: 
+
+• FML-1 model: for the Type-I control with flow at the fixed Reynolds number 
+
+Re = 300. 
+
+> 7
+
+• FML-2 model: for the Type-II control where the flow field is from a range of unknown Reynolds numbers 100 ≤ Re ≤ 500. In both FML models, the most important parameter is the memory length. To this end, we first determined that a time step ∆ t = 0 .1 is sufficient to resolve the temporal dynamical behavior V (t), the drag and lift coefficients. (The time step used in the Navier-Stokes (NS) solver in Section (2.1), δt = 0 .002, is suitable for the stability of the NS solver but unnecessarily small for drag and lift dynamics.) We then conduct numerical tests with increasing memory length and determined that the following memory lengths deliver numerically convergent results: 
+
+• For FML-1, nM = 20 which corresponds to a memory length TM = 2 .0; 
+
+• For FML-2, nM = 30 which corresponds to a memory length TM = 3 .0. This memory is longer than that of FML-1. It is not surprising because FML-2 shall predict the drag and lift for flows with arbitrary and unknown Reynolds number 100 ≤ Re ≤ 500, as opposed to the fixed Re = 300 for FML-1. 
+
+4.2. Data Generation. To construct the FML models (4.4), training data need to be generated by executing the full Navier-Stokes solver. The procedure for gener-ating the training data consists of the following steps: (1) Establish an initial state by simulating the full NS solver under the standard flow past cylinder setting in Section 2.1. For FML-1, the Reynolds number is fixed at Re = 300; For FML-2, the Reynolds number is randomly sampled in the range of [100 , 500] with uniform distribution, i.e., Re ∼ U (100 , 500). (2) From the established initial state, continue the NS simulation with random-ized time dependent boundary condition at the cylinder surface (2.4). More specifically, the normalized mass flow rate Q(t) in (2.4), which is the control variable u(t) in our setting (4.2), is set to be piecewise constant random num-ber following independent uniform distribution in [ −1, 1] over every ∆ t = 0 .1. The NS simulation is conducted for a time domain 0 ≤ t ≤ Tsim .(3) Record the external excitation signal u and the QoI response over the simu-lation time 0 ≤ t ≤ Tsim with the time step ∆ t = 0 .1. This results in a time history data 
+
+H ≜ {V0, . . . , V Nstep ; u0, . . . , u Nstep −1}, Nstep = Tsim /∆t. (4.6) (4) Repeat the above procedure Nsim > 1 times. Upon finishing the procedure, we obtain a total number of Nsim pieces of time history data (4.6). These become our raw data set 
+
+Q =
+
+n
+
+H(j), j = 1 , . . . , N sim 
+
+o
+
+, (4.7) where H(j) is the QoI time history data (4.6) from the j-th simulation. The overall computational cost of obtaining this dataset is the Nsim of full NS simulations, each of which lasting 0 ≤ t ≤ Tsim . Although Tsim is typically not very long, this procedure is still relatively time consuming. However, we emphasize that this procedure is an offline process. Hereafter, the full NS solver will not be needed anymore. 
+
+4.3. FML Model Construction. We adopt DNN to express the FML model (4.4). The DNN structure utilizes a straightforward fully connected feedforward net-work, as shown in Fig. 4.1. 
+
+> 8
+
+Fig. 4.1: DNN structure for QoI FML model (4.4). To train the DNN, we utilize the dataset (4.7). For each trajectory H(j), j =1, . . . , N sim , in the form of (4.6), we randomly sample an initial index n0 from H(j),and then use the segment (Vn0 , · · · , V n0+nM ; un0 , · · · , u n0+nM −1)as “initial condition” to march forward the FML model (4.4) nR (nR ≥ 1) number of times, i.e., 
+
+eVk+nM = G
+
+ eVk+nM −1, · · · , eVk−1; uk+nM −1, · · · , u k−1
+
+
+
+, k = 1 , . . . , n R,
+
+eV0 = Vn0 , · · · , eVnM = Vn0+nM , (Initial conditions) (4.8) where k ≥ 1 is the forward marching step. We then compute the mean squared loss, averaged over the nR steps, between the FML prediction eV and the data V ,1
+
+nRnRX
+
+> k=1
+
+Vn0+nM +k − eVnM +k
+
+> 2
+
+. (4.9) This is the multi-step loss function we seek to minimize to train the FML DNN models. The computation of the multi-step loss (4.9) requires segments of time history data of V (4.6) of length 
+
+nL = nM + 1 + nR, (4.10) where the first ( nM + 1) terms become the inputs of (4.8) and the last nR terms are used to compute the loss (4.9). Since each H(j), j = 1 , . . . , N sim in the dataset (4.7) contains Nstep + 1 time instances, the random sampling of the initial index n0 thus follows the discrete uniform distribution 
+
+n0 ∈ U { 0, . . . , N step − nL} . (4.11) 
+
+> 9
+
+Finally, since the length of the simulated data (4.7), Nstep , is usually (much) larger than nL, we typically conduct nB ≥ 1 random sampling of the initial index n0
+
+from each of the H(j), j = 1 , . . . , N sim , trajectory data in the dataset (4.7). By doing so, the total number of time history segment data used to train the FML models becomes 
+
+Ndata = Nsim · nB . (4.12) 
+
+5. FML based Optimal Control. In this section we describe how the FML model (4.4) can be integrated with existing optimal control methods for our active flow control problem. In particular, we discuss its integration with deep reinforce-ment learning (DRL) and model predictive control (MPC), two widely used and yet fundamentally different control methods, to demonstrate the adaptivity of the FML approach. 
+
+5.1. Deep Reinforcement Learning with FML. Following the standard no-tation, our FML enabled DRL here can be expressed via MDP (Markov decision process) tuple ( S, A, P, R): 
+
+• State space S: The state space S is defined by the historical trajectory of both QoIs and the applied control signals. Given the memory length nM , the state sn at each time step tn is 
+
+sn = {Vn, . . . , V n−nM ; un−1, . . . , u n−nM } ∈ S . (5.1) 
+
+• Action space A: The action space A is the interval [ −1, 1], where the control variable u (4.2) is chosen via a policy πθ : R3nM +2 → R. We also apply action smoothing for smooth control transitions. Specifically, let 
+
+an ∼ πθ (·| sn) (5.2) be a raw action at time tn generated by the policy πθ , the control at tn is then defined as 
+
+un = (1 − α)un−1 + αa n, α = 0 .5. (5.3) 
+
+• State transition dynamics P: This is the dynamical model of the QoI, which is the FML model (4.4) and constructed via the procedure described in the previous section. Given the state (5.1) and the new control (5.3), the FML model (4.4) is fully determined and can be used to evaluate Vn+1 and obtain the new state sn+1 .
+
+• Reward R: The reward function is the negative of the cost function (2.5), as DRL seeks to maximize the reward. Specifically, at each time tn, the instantaneous reward is 
+
+Rn = −J(tn) = −⟨ CD ⟩T (tn) − ωL |⟨ CL⟩T (tn)| . (5.4) The goal is to learn an optimal policy πθ : R2nM +1 → R to maximize the expected cumulative reward (3.4). In this paper, we express the policy πθ via a DNN with (3 nM + 2) input nodes, which is the dimension of sn in (5.1), 1 output node, 2 hidden layers of width 512, and hyper-parameters θ which are initialized randomly. To compute the expected cumulative reward (3.4), we again start the flow at stable initial state without control, as described in Step (1) in Section 4.2, march forward 
+
+> 10
+
+the learned FML model (4.4) to a finite steps nRL = 200 (equivalent of a forward marching time TRL = 20 .0), where each step requires a sampling of the policy πθ
+
+(5.2). The instantaneous reward (5.4) is evaluated at each time step to compute the expected cumulative reward 
+
+R(πθ ) = E
+
+"nRL X
+
+> n=0
+
+γnRn
+
+#
+
+, γ = 0 .99 , nRL = 200 , (5.5) where the expectation is evaluated by repeating the above procedure 5 , 000 times such that there are 10 6 random samples of πθ . The optimization problem is solved by the proximal policy optimization (PPO) algorithm [38]. The use of the FML model (4.4) renders the entire DRL learning process free of the full NS simulation. As a result, the expected cumulative reward (5.5) is computed via a large number of samples, 10 6 in this case. In the traditional PDE-based opti-mal control, this would require 10 6 PDE simulations, which could be difficult, if not impossible, to accomplish. 
+
+5.2. Model Predictive Control with FML. MPC is inherently an online control method, i.e., there is no offline learning. To integrate the learned FML QoI model (4.4) into the flow control, we again start the flow at a full developed stable initial state, as described in Step (1) in Section 4.2. Then, at any time tn with state 
+
+sn (5.1), we conduct forward FML march for a fixed nP ≥ 1 prediction horizon. In this paper, we fixed nP = 20, which is equivalent to a time horizon of TP = 2 .0. That is, for any fixed tn, given the current state sn (5.1), we compute 
+
+Vn+k+1 = G (Vn+k, · · · , V n−nM +k; un+k, · · · , u n−nM +k) , k = 0 , . . . , n P − 1. (5.6) The cost function (2.5) is then evaluated at the last step 
+
+J(tn + TP ) = ⟨CD ⟩T (tn + TP ) + ωL|⟨ CL⟩T (tn + TP )|. (5.7) We then seek to minimize this cost function 
+
+ u∗
+
+> n
+
+, · · · , u ∗ 
+
+> n+nP−1
+
+ = argmin   
+
+> un,··· ,u n+nP−1
+
+J(tn + TP ), (5.8) and set the control at the immediate next step to be 
+
+un = u∗
+
+> n
+
+. (5.9) The procedure is then moved to the next time tn+1 and continues till the end. In the traditional MPC, the optimization step (5.8), which is carried out by an iterative algorithm such as gradient descent, requires evaluations of the QoIs repeti-tively. Each evaluation of the QoIs is a full-scale NS solver in this case. The use of the FML model (5.6) completely avoids the full scale NS solver. Since the FML model (5.6) is an ultra small 2-dimensional discrete dynamical system, it can be evaluated with negligible cost and seamlessly embedded into the optimization step (5.8). 
+
+6. Active Flow Control for Drag Reduction. In this section, we present the implementation and computational results of the active drag reduction problem and demonstrate the feasibility of on-the-fly control by using the proposed FML model for the QoIs (4.4). 
+
+> 11
+
+6.1. Numerical Procedure. Our FML assisted optimal control is implemented in “real time”, in the sense that the feedback active flow control is conducted on-the-fly as the flow field evolves. Specifically, the implementation procedure is as follows: 
+
+• The full NS solver starts with a fully developed stable state, as described in Step (1) of Section 4.2. At this stage the corresponding control signals are null signals (i.e., uncontrolled). 
+
+• During the active control stage, the flow field evolves by following the NS sim-ulation with the time dependent boundary condition at the surface cylinder (2.4). The QoIs (drag and lift coefficients) (4.1) are continuously evaluated by the NS solver. This produces time history data for the QoIs and the corresponding control signals and defines the current state sn (5.1). 
+
+• The current state sn is then fed into the optimal controller. As described in the previous section, we investigate two separate controllers: DRL and MPC. 
+
+– In DRL, a raw action is drawn from the learned optimal policy πθ (5.2) and gives the control signal un (5.3). 
+
+– In MPC, the control signal is computed by (5.9). 
+
+• The optimal control value un updates the boundary condition at the cylinder surface (2.4). 
+
+• The full NS continues with the updated boundary condition. It is evident that while the full NS simulation is conducted to evolve the flow field, the computation of the control signal, via either DRL or MPC, requires only evaluations of the FML model for the QoIs (4.4) and is free of any NS simulations. The cost of computing of the optimal control signal is so minimal that it incurs negligible delay in the full NS simulations. Thus, our active flow control via FML is conducted on-the-fly and in sync with the evolution of the flow field. 
+
+6.2. Open Loop Accuracy Validation. We first validate the accuracy of the learned FML model (4.4), which includes two separate FML models for the two types of flow control problems described in Section 2.2. A summary of the two FML models (4.4) is as follows. 
+
+• FML-1: Type-I control for flow field at fixed Re = 300. Here the memory term is nM = 20, which defines a mapping R63 → R2 (4.5). We use 4 hidden layers with equal width of 50 nodes. Therefore, the FML-1 has layer widths 
+
+{63 , 50 , 50 , 50 , 50 , 2}. We will primarily use FML-1 for DRL control (Section 5.1), where its accuracy needs to be maintained for the forward marching time TRL = 20 .0. 
+
+• FML-2: Type-II control for flow field at unknown 100 ≤ Re ≤ 500. Here the memory term is nM = 30, which defines a mapping R93 → R2 (4.5). We use 4 hidden layers with equal width of 80 nodes. Therefore, the FML-2 has layer widths {93 , 80 , 80 , 80 , 80 , 2}. We will primarily use FML-2 for MPC control (Section 5.2), where its accuracy needs to be maintained for the prediction time horizon TP = 2 .0. Both models were trained using the Adam optimizer to minimize the multi-step loss function (4.9) over nR = 3 recurrent steps. Training was conducted for 100,000 epochs with batch size 4,096. An exponential learning rate schedule was used with initial rate 0 .0005 and decay factor 0 .9999. To validate the predictive accuracy of the trained FML models, we performed open-loop tests, where the time dependent boundary conditions at the cylinder surface (2.4) are subject to randomly generated external signals. (No feedback control is enforced.) In Fig. 6.1, we show the predictions of the drag and lift coefficients by the 
+
+> 12
+
+FML-1 model, along with the reference solution which was obtained by running the full scale NS solver subject to the same randomized boundary conditions. We observe excellent agreement between the FML predictions and the reference solutions for up to TRL = 20, which is required by the Type-I control using DRL. In Fig. 6.2, we show the predictions by the FML-2 model, along with the ref-erence solution obtained by the full-scale NS solver. The three rows of results are for, from the top to bottom, Re = 118 .62, Re = 303 .10, and Re = 444 .22. These are randomly generated Reynolds numbers 100 ≤ Re ≤ 500 and are “hidden” from the FML-2 model. The only inputs to the FML-2 model are the “initial conditions”, which are the drag and lift coefficient history curves to the left of the vertical dashed lines. The FML-2 model is able to produce accurate predictions of the drag and lift coefficients, compared to the reference solutions obtained by the full-scale NS solver, for the prediction horizon of TP = 2 .0, which is required by the Type-II optimal control using MPC. We remark that with sufficient training data and proper training, FML models are capable of producing accurate predictions for (much) longer time horizon. For example, the work of [9] showed that the FML models were accurate for up to T =200 .0 for predictions of drag and lift for the (uncontrolled) flow past cylinder problem. Here, we restrain our accuracy tests to time horizons of TRL = 20 .0 for FML-1 and 
+
+TP = 2 .0 for FML-2, because they are sufficient for the Type-I control with DRL and the Type-II control with MPC, respectively. 
+
+Fig. 6.1: Open-loop validation for the trained FML-1 model at Re = 300. Left: drag coefficient ( CD ); Right: lift coefficient ( CL). 
+
+6.3. Type-I Active Flow Control. This is for flow at fixed Re = 300, where we use the trained FML-1 model (Section 4.1) along with DRL-PPO control (Section 5.1). For comparison purpose, we also conducted active control with MPC with the same FML-1 model. Fig. 6.3 shows the performance of both DRL-PPO and MPC controllers, compared to the uncontrolled baseline case (which is the standard flow past cylinder simulation). The top of Fig. 6.3 shows the drag coefficient over a time horizon of T = 200. Here the dashed lines are the instantaneous solutions, whereas the solid lines are the time averaged solutions over a moving window of T = 5 .0. The uncontrolled baseline case naturally produces periodic drag, corresponding to the periodic vortex shedding, with its time averaged value approximately a constant. For the active control case, we ob-serve that both the DRL-PPO controller and the MPC controller produce significant reduction in drag, at approximately 20% compared to the baseline case. The instan-taneous control signal, which updates the boundary condition (2.4) at the cylinder surface, are shown in the middle of Fig. 6.3. We observe that DRL-PPO and MPC produce rather different control signals, even though the end drag reduction effects are similar. The lift coefficients, which are not the primary goal of the flow control, 
+
+> 13
+
+Fig. 6.2: Open-loop validation of the trained FML-2 model. Left column: drag coefficient ( CD ); Right column: lift coefficient ( CL). Top row: Re = 118 .62; Middle row: Re = 303 .10; Bottom row: Re = 444 .22. The Re numbers are randomly generated from Re ∈ [100 , 500] and unknown to the FML-2 model. are shown in the bottom of the figure, for the sake of completeness. For the same reason, we present the vorticity field evolution in Fig. 6.4 for the DRL-PPO control and in Fig. 6.5 for the MPC control, along with those for the uncontrolled baseline case for comparison. 
+
+6.4. Type-II Active Flow Control. For Type-II control, we start the flow from a fully developed stable state at arbitrarily chosen Re number and then apply the FML-2 model (without using the Re information) and start the MPC controller (Section 5.2). Note that the FML-2 model was trained with unknown Re in range 
+
+Re ∈ [100 , 500]. In Fig. 6.6 we present 6 different cases for the MPC control. The 6 cases are 
+
+Re = 100, 200, 300, 400, 500, and 1 , 000. We remark that the Re = 1 , 000 case is completely outside the training regime for the FML-2 model, whereas Re = 100 and Re = 500 are borderline cases. The results demonstrate that the FML-2 MPC controller is able to produce noticeable drag reduction in all cases. The higher the 
+
+Re number, the more reduction the MPC control achieves, which is not surprising. Again, we emphasize that the FML-2 model is completely unaware of the Re number in each case. 
+
+7. Conclusion. This work presents a framework for optimal control based on learning the dynamics of quantities of interest (QoIs) using flow map learning. By modeling QoI dynamics directly, the approach avoids repeated solution of the full-order governing equations during control optimization and enables fast evaluation of control strategies. Using active flow control (drag reduction) for incompressible flow past a cylinder as a representative test case, we demonstrate that accurate models of QoI dynamics can be learned directly and used for control strategies such as deep reinforcement learning (DRL) and model predictive control (MPC). Without needing the full-scale flow solver, the proposed method enables on-the-fly active flow control and offers the potential for real-time optimal control for complex systems. 
+
+> 14
+
+Fig. 6.3: Type-I optimal control at Re = 300. Top: drag coefficient; Middle: control signal; Bottom: lift coefficient. Dashed lines are instantaneous values; Solid lines are averaged values over moving window of size 5 .0. 
+
+REFERENCES [1] R. Bellman , Dynamic Programming , Princeton University Press, 1957. [2] D. Bertsekas , Dynamic Programming and Optimal Control: Volume I , Athena Scientific, 4th ed., 2012. [3] T. R. Bewley , Flow control: New challenges for a new renaissance , Prog. Aerosp. Sci., 37 (2001), pp. 21–58. [4] T. R. Bewley, P. Moin, and R. Temam , DNS-based predictive control of turbulence: An optimal benchmark for feedback algorithms , J. Fluid Mech., 447 (2001), pp. 179–225. [5] L. T. Biegler , Nonlinear Programming: Concepts, Algorithms, and Applications to Chemical Processes , SIAM, 2010. [6] A. E. Bryson , Applied Optimal Control: Optimization, Estimation and Control , Routledge, 2018. [7] C. D. Cantwell, D. Moxey, A. Comerford, A. Bolis, G. Rocco, G. Mengaldo, D. De Grazia, S. Yakovlev, J.-E. Lombard, D. Ekelschot, et al. , Nektar++: An open-source spectral/hp element framework , Comput. Phys. Commun., 192 (2015), pp. 205– 15 t = 21 .8
+
+> t = 80 .5
+> t = 23 .0
+> t = 81 .9
+> t = 24 .1
+> t = 83 .2
+> t = 25 .3
+> t = 84 .6
+> t = 26 .5
+> t = 86 .0
+
+Fig. 6.4: Type-1 control: selected snapshots of the vorticity field near the cylinder at 
+
+Re = 300. Left: uncontrolled baseline case; Right: FML-DRL controlled case. 
+
+> t = 21 .8
+> t = 81 .4
+> t = 23 .0
+> t = 82 .8
+> t = 24 .1
+> t = 83 .2
+> t = 25 .3
+> t = 84 .4
+> t = 26 .5
+> t = 85 .6
+
+Fig. 6.5: Type-1 control: selected snapshots of the vorticity field near the cylinder at 
+
+Re = 300. Left: uncontrolled baseline case; Right: FML-MPC controlled case.     
+
+> 219. [8] L. N. Cattafesta and M. Sheplak ,Actuators for active flow control , Annu. Rev. Fluid Mech., 43 (2011), pp. 247–272. [9] Q. Chen, Z. Xu, J. Zhang, and D. Xiu ,Targeted digital twin via flow map learning and its application to fluid dynamics , arXiv preprint arXiv:2510.07549, (2025). 16
+
+(a) Re = 100 (b) Re = 200 
+
+(c) Re = 300 (d) Re = 400 
+
+(e) Re = 500 (f) Re = 1000 
+
+Fig. 6.6: Type-II MPC optimal control using FML-2 model at unknown Re numbers, for 6 test cases of Re = 100 , 200 , 300 , 400 , 500 , 1000. Dashed lines are instantaneous drag coefficients; Solid lines are averaged values over moving window of size 5 .0. Note that Re number is a hidden parameter and does not enter the FML-2 model. 
+
+[10] Y. Chen and D. Xiu , Learning stochastic dynamical system via flow map operator , J. Comput. Phys., 508 (2024), p. 112984. [11] Z. Chen, V. Churchill, K. Wu, and D. Xiu , Deep neural network modeling of unknown partial differential equations in nodal space , J. Comput. Phys., 449 (2022), p. 110782. [12] H. Choi, W.-P. Jeon, and J. Kim , Control of flow over a bluff body , Annu. Rev. Fluid Mech., 40 (2008), pp. 113–139. [13] V. Churchill and D. Xiu , Flow map learning for unknown dynamical systems: Overview, implementation, and benchmarks , J. Mach. Learn. Model. Comput., 4 (2023), pp. 173– 201. [14] X. Fu, L.-B. Chang, and D. Xiu , Learning reduced systems via deep neural networks with memory , J. Mach. Learn. Model. Comput., 1 (2020), pp. 97–118. [15] M. Gad-el-Hak , Flow control , Appl. Mech. Rev., 42 (1989), pp. 261–293. [16] M. Gad-el-Hak , Flow Control: Passive, Active, and Reactive Flow Management , Cambridge University Press, 2000. [17] M. B. Giles and N. A. Pierce , An introduction to the adjoint approach to design , Flow Turbul. Combust., 65 (2000), pp. 393–415. [18] M. D. Gunzburger , Perspectives in Flow Control and Optimization , SIAM, 2002. [19] L. Henning, M. Pastoor, R. King, B. R. Noack, and G. Tadmor , Feedback control applied to the bluff body wake , in Active Flow Control, Springer, 2007, pp. 369–390. [20] P. Holmes, J. L. Lumley, and G. Berkooz , Turbulence, Coherent Structures, Dynamical 
+
+17 Systems and Symmetry , Cambridge University Press, 1996. [21] A. Jameson , Aerodynamic design via control theory , J. Sci. Comput., 3 (1988), pp. 233–260. [22] J. Kim and T. R. Bewley , A linear systems approach to flow control , Annu. Rev. Fluid Mech., 39 (2007), pp. 383–417. [23] J.-L. Lions , Optimal Control of Systems Governed by Partial Differential Equations , Springer, 1971. [24] D. Q. Mayne, J. B. Rawlings, C. V. Rao, and P. O. M. Scokaert , Constrained model predictive control: Stability and optimality , Automatica, 36 (2000), pp. 789–814. [25] V. Mnih, K. Kavukcuoglu, D. Silver, A. A. Rusu, J. Veness, M. G. Bellemare, A. Graves, M. Riedmiller, A. K. Fidjeland, G. Ostrovski, et al. , Human-level control through deep reinforcement learning , Nature, 518 (2015), pp. 529–533. [26] H. Mori , Transport, collective motion, and Brownian motion , Prog. Theor. Phys., 33 (1965), pp. 423–455. [27] D. Moxey, C. D. Cantwell, Y. Bao, A. Cassinelli, G. Castiglioni, S. Chun, E. Juda, E. Kazemi, K. Lackhove, J. Marcon, et al. , Nektar++: Enhancing the capability and application of high-fidelity spectral/hp element methods , Comput. Phys. Commun., 249 (2020), p. 107110. [28] B. R. Noack, K. Afanasiev, M. Morzy´ nski, G. Tadmor, and F. Thiele , A hierarchy of low-dimensional models for the transient and post-transient cylinder wake , J. Fluid Mech., 497 (2003), pp. 335–363. [29] B. Peherstorfer and K. Willcox , Data-driven operator inference for nonintrusive projection-based model reduction , Comput. Methods Appl. Mech. Eng., 306 (2016), pp. 196– 215. [30] T. Qin, Z. Chen, J. D. Jakeman, and D. Xiu , Data-driven learning of nonautonomous sys-tems , SIAM J. Sci. Comput., 43 (2021), pp. A1607–A1624. [31] T. Qin, Z. Chen, J. D. Jakeman, and D. Xiu , Deep learning of parameterized equations with applications to uncertainty quantification , Int. J. Uncertain. Quantif., 11 (2021), pp. 63–82. [32] T. Qin, K. Wu, and D. Xiu , Data driven governing equations approximation using deep neural networks , J. Comput. Phys., 395 (2019), pp. 620 – 635. [33] J. Rabault, M. Kuchta, A. Jensen, U. R´ eglade, and N. Cerardi , Artificial neural net-works trained through deep reinforcement learning discover control strategies for active flow control , J. Fluid Mech., 865 (2019), pp. 281–302. [34] S. Rashidi, M. Hayatdavoodi, and J. A. Esfahani , Vortex shedding suppression and wake control: A review , Ocean Eng., 126 (2016), pp. 57–80. [35] J. B. Rawlings, D. Q. Mayne, and M. M. Diehl , Model Predictive Control: Theory, Com-putation, and Design , Nob Hill Publishing, 2nd ed., 2017. [36] C. W. Rowley , Model reduction for fluids using balanced proper orthogonal decomposition ,Int. J. Bifurc. Chaos, 15 (2005), pp. 997–1013. [37] P. J. Schmid , Dynamic mode decomposition of numerical and experimental data , J. Fluid Mech., 656 (2010), pp. 5–28. [38] J. Schulman, F. Wolski, P. Dhariwal, A. Radford, and O. Klimov , Proximal policy optimization algorithms , arXiv preprint arXiv:1707.06347, (2017). [39] R. S. Sutton and A. G. Barto , Reinforcement Learning: An Introduction , MIT Press, 2nd ed., 2018. [40] Z. Wang, D. Fan, X. Jiang, M. S. Triantafyllou, and G. E. Karniadakis , Deep reinforce-ment transfer learning of active control for bluff body flows at high Reynolds number , J. Fluid Mech., 973 (2023), p. A32. [41] C. H. K. Williamson , Vortex dynamics in the cylinder wake , Annu. Rev. Fluid Mech., 28 (1996), pp. 477–539. [42] K. Wu and D. Xiu , Data-driven deep learning of partial differential equations in modal space ,J. Comput. Phys., 408 (2020), p. 109307. [43] Z. Xu, Y. Chen, Q. Chen, and D. Xiu , Modeling unknown stochastic dynamical system via autoencoder , J. Mach. Learn. Model. Comput., 5 (2024), pp. 87–112. [44] M. M. Zdravkovich , Review and classification of various aerodynamic and hydrodynamic means for suppressing vortex shedding , J. Wind Eng. Ind. Aerodyn., 7 (1981), pp. 145– 189. [45] R. Zwanzig , Nonlinear generalized Langevin equations , J. Stat. Phys., 9 (1973), pp. 215–220. 18

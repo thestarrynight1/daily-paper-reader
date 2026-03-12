@@ -1,0 +1,986 @@
+Title: Adaptive Tracking Control of Euler-Lagrange Systems with Time-Varying State and Input Constraints
+
+URL Source: https://arxiv.org/pdf/2603.08307v1
+
+Published Time: Tue, 10 Mar 2026 02:24:16 GMT
+
+Number of Pages: 10
+
+Markdown Content:
+> 1
+
+# Adaptive Tracking Control of Euler-Lagrange Systems with Time-Varying State and Input Constraints 
+
+Poulomee Ghosh and Shubhendu Bhasin 
+
+Abstract —This paper presents an adaptive control framework for Euler–Lagrange (E–L) systems that enforces user-defined time-varying state and input constraints in the presence of para-metric uncertainties and bounded disturbances. The proposed design integrates a time-varying barrier Lyapunov Function (TVBLF) with a saturated control law to guarantee constraint satisfaction without resorting to real-time optimization. A key contribution is the development of an offline, verifiable feasibility condition that certifies the existence of a feasible control policy for any prescribed pair of time-varying state and input envelopes. Additionally, we prove boundedness of all closed-loop signals. Real-time experiments conducted on a 2-DoF helicopter model validate the efficacy and practical viability of the proposed method. 
+
+I. I NTRODUCTION 
+
+A. Motivation 
+
+In many modern safety-critical applications that can be modeled by Euler–Lagrange (E–L) dynamics, ensuring safety is not merely a design preference but a fundamental oper-ational requirement. Small violations in safe operating con-ditions, whether in robotic manipulators, aerial vehicles, or surgical robots, can lead to mechanical damage, performance degradation, or even compromise human safety. Therefore, the system must remain within its admissible safe region at all times. These safety requirements can often be translated into constraints on plant states and control input, and enforcing these limits throughout the system evolution is crucial to pre-vent undesirable behavior. In a helicopter system, for example, violations of the safe operating region, whether due to higher angular positions or velocities, can result in the rotor assembly striking the frame, triggering unmodeled aerodynamic effects, or inducing unstable oscillations. Moreover, the actuators can only supply bounded voltage and torque, and exceeding these limits may result in actuator saturation and performance degradation. Therefore, constraint satisfaction is critical for safe and reliable operation, and the task becomes significantly challenging in the presence of parametric uncertainties and disturbances. 
+
+B. State of the Art: Constrained Control with Static Bounds 
+
+In existing literature, several methods have been proposed to incorporate constraints into nonlinear systems. Optimization-based techniques, such as model predictive Control (MPC) [1]–[3], control barrier function (CBF)-based approaches [4]– [6], impose constraints on plant states and control input                  
+
+> Poulomee Ghosh and Shubhendu Bhasin are with Department of Electrical Engineering, Indian Institute of Technology Delhi, New Delhi, India.
+
+(Email: Poulomee.Ghosh@ee.iitd.ac.in, sbhasin@ee.iitd.ac.in) 
+
+but typically demand substantial computational resources and accurate model knowledge, which are often not suitable for uncertain systems with limited computational power. Barrier Lyapunov Functions (BLFs) [7]–[9] provide a computationally efficient alternative by embedding state constraints directly into the stability analysis. While BLFs effectively handle static state constraints in presence of parametric uncertainties, the high control effort demanded near constraint boundaries can drive the actuator into saturation. In practical systems, actuator saturation is often the dominant bottleneck that leads to unsafe behavior or even loss of stability [10]. Classical Adaptive controllers ensure asymptotic convergence of the tracking error in presence parametric uncertainties in E–L systems [11], [12], but they inherently assume uncon-strained dynamics and unlimited control authority. Conse-quently, they can generate input that saturates the actuators or drive the system outside the safe region. In our earlier work [13], [14], we integrated BLF with a saturated controller in an adaptive framework to impose constraints on both state and input under parametric uncertainties and disturbances. However, that framework relied on static constraint bounds, which may become conservative when the admissible safe region evolves during operation. 
+
+C. What if the admissible safe regions are time-varying? 
+
+In real systems, the allowable state and input envelopes often vary with time due to task-dependent safety require-ments, dynamic workspace conditions, evolving load dynam-ics, or hardware limitations that degrade over time. During the transient phase, tracking errors and control effort are typically large, whereas both reduce significantly as the system approaches steady state. Imposing static constraints under such varying conditions either leads to unnecessary conservatism or fails to reflect the system’s true safety margins. In the context of the helicopter example discussed earlier, the safe pitch and yaw limits may change over time depending on the task; precise maneuvers may require tighter bounds, while more relaxed limits can be imposed during coarse movements. Further, the available actuator torque may reduce during aggressive maneuvers due to thermal and power limitations. Predefined time-varying constraints, therefore, represent more realistic safety requirements. 
+
+D. State of the Art: Constrained Control with Dynamic Bounds 
+
+A few recent works address time-varying state constraints. prescribed performance control (PPC) [15], [16] and funnel control (FC)-based methods [17], [18] explicitly constrain the 
+
+> arXiv:2603.08307v1 [eess.SY] 9 Mar 2026 2
+
+output tracking error within time-varying performance bounds; however, these methods typically do not consider actuator limits. Specifically, PPC adjusts the reference trajectory on-line whenever input saturation occurs, which fundamentally changes the desired tracking objective [19]. FC approaches address this issue by relaxing the performance funnel [20], [21]; however, this may compromise the user-defined perfor-mance guarantees. Time-varying BLF (TVBLF) [22] provides an effective approach for shaping the error trajectories within prescribed time-varying envelopes, ensuring that the plant states evolve within the safe set as long as the desired reference remains admissible. 
+
+E. Contribution 
+
+In this work, we propose an adaptive control framework for E–L systems that enforces both time-varying state and input constraints while ensuring tracking in the presence of parametric uncertainties and bounded disturbances. The primary contributions are as follows. 1) We design an optimization-free adaptive controller for uncertain E-L systems with time-varying state and input constraints. 2) We derive a sufficient, offline-verifiable feasibility con-dition that certifies the existence of a control policy for any user-defined time-varying state and input con-straints. 3) We validate the proposed approach through real-time experiments on a 2-DoF helicopter platform, demon-strating that the pitch and yaw positions and velocities are constrained within predefined time-varying bounds, while the required control torques remain within time-varying input limits. 
+
+F. Notation 
+
+In this paper, R represents the set of real numbers, Rp×q
+
+denotes the set of p × q real matrices, and Ip refers to the identity matrix in Rp×p. log( ·) denotes the natural logarithm of (·), and ∥.∥ represents the Euclidean vector norm and its induced matrix norm. ζ(i)(t) signifies the ith derivative of ζ
+
+with respect to time. The trace of A ∈ Rn×n is represented by, tr (A) and the eigenvalues of A with minimum and maximum real parts are denoted by λmin {A} and λmax {A}, respectively. II. P ROBLEM FORMULATION 
+
+Consider the dynamics of an uncertain Euler–Lagrange (E–L) system given by 
+
+M (q)¨ q + Vm(q, ˙q) ˙ q + Gr (q) + Fd( ˙ q) = τ (1) where q(t), ˙q(t), ¨q(t) ∈ Rn denote the generalized po-sition, velocity, and acceleration vectors, respectively. The matrix M (q) ∈ Rn×n represents the generalized inertia, while Vm(q, ˙q) ∈ Rn×n corresponds to the uncertain cen-tripetal–Coriolis term. The vectors Gr (q) ∈ Rn and Fd( ˙ q) ∈
+
+Rn denote the uncertain generalized gravitational and fric-tional forces. The control input is represented by τ (t) ∈ Rn.The control objective is to design a feasible control policy 
+
+τ (t) such that the plant states q(t), ˙q(t) track the user-defined reference trajectories qd(t), ˙qd(t), respectively, while simultaneously satisfying the following constraints on the plant states and control input. 
+
+State constraints: The generalized position and velocity must remain within the pre-specified time-varying envelopes 
+
+q(t) ∈ Ωq (t) ≜ q ∈ Rn | ∥ q∥ < ϕ q (t) ∀t ≥ 0 (2) 
+
+˙q(t) ∈ Ω ˙q (t) ≜  ˙q ∈ Rn | ∥ ˙q∥ < ϕ ˙q (t) ∀t ≥ 0 (3) where, ϕq , ϕ ˙q : [0 , ∞) → (0 , ∞) are continuously differen-tiable, user-defined positive functions. 
+
+Input constraint: The control input must satisfy 
+
+τ (t) ∈ Ωτ (t) ≜ τ ∈ Rn | ∥ τ ∥ ≤ ϕτ (t) ∀t ≥ 0 (4) where, ϕτ : [0 , ∞) → (0 , ∞) is a continuously differentiable user-defined positive function. For subsequent controller design and stability analysis, the following standard properties of E–L dynamics are assumed to hold [23]: 
+
+Property 1. The inertia matrix M (q) is symmetric and positive-definite, satisfying 
+
+km1 ∥μ∥2 ≤ μT M (q)μ ≤ km2 ∥μ∥2 (5) 
+
+for all μ ∈ Rn, where km1 and km2 are known positive constants. 
+
+Property 2. The centripetal-Coriolis matrix Vm(q, ˙q), the gravity vector Gr (q) and the friction vector Fd( ˙ q) satisfy 
+
+∥Vm(q, ˙q)∥ ≤ kv ∥ ˙q∥ (6) 
+
+∥Gr (q)∥ ≤ kg (7) 
+
+∥Fd( ˙ q)∥ ≤ kf1 + kf2 ∥ ˙q∥ (8) 
+
+where kv , kg , kf1 and kf2 are known positive constants. 
+
+Remark 1. For E–L systems, the bounds, km2 , k v , k g , k f1 ,and kf2 depend on physical parameters such as link lengths, masses, inertial properties, etc. which are typically available from system specifications or can be identified through stan-dard parameter estimation or experimental calibration. 
+
+Property 3. The matrix ˙M (q) − 2Vm(q, ˙q) is skew-symmetric, i.e., 
+
+μT   ˙M (q) − 2Vm(q, ˙q)μ = 0 , ∀μ ∈ Rn. (9) 
+
+Property 4. The system is linearly parameterizable, i.e., 
+
+Y1(q, ˙q, ¨q)θ = M (q)¨ q + Vm(q, ˙q) ˙ q + Gr (q) + Fd( ˙ q) (10) 
+
+where Y1 : Rn × Rn × Rn → Rn×m is the known regression matrix and θ ∈ Rm is the unknown constant parameter vector. 
+
+III. P ROPOSED METHODOLOGY 
+
+The position and velocity tracking errors are defined as 
+
+e ≜ q − qd (11) 
+
+˙e ≜ ˙q − ˙qd (12) 3
+
+To facilitate the constrained control design, we introduce the filtered tracking error 
+
+r ≜ ˙e + α e (13) where α ∈ R is a known positive constant. 
+
+A. Constraint Transformation 
+
+We provide details of how constraints on plant states are transformed into constraints on tracking errors. 
+
+Assumption 1. The reference trajectory qd(t), its first and second derivatives, ˙qd(t) and ¨qd(t), respectively, are bounded such that 
+
+∥qd(t)∥ ≤ ϕqd (t) < ϕ q (t) ∀t ≥ 0 (14) 
+
+∥ ˙qd(t)∥ ≤ ϕ ˙qd (t) < ϕ ˙q (t) ∀t ≥ 0 (15) 
+
+∥¨qd(t)∥ ≤ ϕ¨qd (t) ∀t ≥ 0 (16) 
+
+where ϕqd , ϕ ˙qd , ϕ ¨qd : [0 , ∞) → (0 , ∞) are continuously differentiable known positive functions. 
+
+Provided Assumption 1 holds, the state constraints can be transformed to constraints on the tracking errors 
+
+e(t) ∈ Ωe(t) ≜ {e ∈ Rn | ∥ e∥ < ϕ e(t)} ∀t ≥ 0 (17) 
+
+˙e(t) ∈ Ω ˙e(t) ≜ { ˙e ∈ Rn | ∥ ˙e∥ < ϕ ˙e(t)} ∀t ≥ 0 (18) where, ϕe, ϕ ˙e : [0 , ∞) → (0 , ∞) are continuously differen-tiable functions defined as 
+
+ϕe(t) ≜ ϕq (t) − ϕqd (t) ∀t ≥ 0 (19) 
+
+ϕ ˙e(t) ≜ ϕ ˙q (t) − ϕ ˙qd (t) ∀t ≥ 0 (20) Satisfying (17) and (18) imply satisfying (2) and (3), respectively. 
+
+Assumption 2. Initially, the trajectory tracking and filtered tracking errors satisfy the following bounds 
+
+∥e(0) ∥ ≤ ϕe(0) (21) 
+
+∥r(0) ∥ < ϕ r (0) (22) 
+
+Remark 2. Assumption 2 implies that the plant states initially remain within the user-defined safe set to prevent constraint violation at the initial time, which is a standard assumption in BLF-based constrained control design [7], [8], [24]. 
+
+Lemma 1. [Constraint conversion from (e, ˙e) to r] Let α
+
+satisfy the gain condition 
+
+α < ϕ ˙e(t)
+
+ϕe(t) ∀t ≥ 0 (23) 
+
+and suppose there exists a continuously differentiable function 
+
+ϕr : [0 , ∞) → (0 , ∞), which satisfies the following inequality 
+
+ϕr (t) < min 
+
+n ˙ϕe(t) + αϕ e(t), ϕ ˙e(t) − αϕ e(t)
+
+o
+
+(24) 
+
+Provided Assumption 2 holds and the filtered tracking error remains bounded, i.e., 
+
+r(t) ∈ Ωr (t) ≜ {r ∈ Rn | ∥ r∥ < ϕ r (t)} ∀t ≥ 0 (25) 
+
+the trajectory tracking errors remain within the time-varying envelopes, i.e., e(t) ∈ Ωe(t), ˙e(t) ∈ Ω ˙e(t) for all t ≥ 0.Proof. Let w(t) ≜ ∥e(t)∥. For e(t)̸ = 0 ,
+
+˙w(t) = e⊤ ˙e
+
+∥e∥ = e⊤(r − αe )
+
+∥e∥ ≤ ∥ r∥ − α ∥e∥ = ∥r∥ − α w. 
+
+(26) At points where e(t) = 0 , the upper Dini derivative satisfies 
+
+D+w ≤ ∥ ˙e∥ ≤ ∥ r∥; so, (26) still holds in the sense of an upper bound. 
+
+Step 1 (bound on ∥e∥): Using (24) and (26), 
+
+˙w(t) < ϕ r (t) − α w (t) (27) Consider the scalar comparison system ˙z = ϕr − αz with 
+
+z(0) = ϕe(0) . Using (24), 
+
+˙ϕe(t) > ϕ r (t) − α ϕ e(t) (28) hence ϕe(·) is a supersolution of (27). Since w(0) ≤ ϕe(0) 
+
+by (21), the comparison lemma yields w(t) < ϕ e(t) ∀t ≥ 0,which implies ∥e(t)∥ < ϕ e(t) ∀t ≥ 0.
+
+Step 2 (bound on ∥ ˙e∥): Using ˙e = r − αe , for all t ≥ 0
+
+∥ ˙e(t)∥ ≤ ∥ r(t)∥ + α ∥e(t)∥ < ϕ r (t) + α ϕ e(t) < ϕ ˙e(t) (29) This establishes ˙e(t) ∈ Ω ˙e(t) ∀t ≥ 0.
+
+B. Error Dynamics 
+
+Now, using the E–L dynamics in (1) and Property 4, the derivative of filtered error dynamics can be expressed as 
+
+M ˙r = Y θ + τ + Vmr (30) where, Y ∈ Rn×m is the known regressor matrix, θ ∈ Rm
+
+is the unknown constant parameter vector and Y θ can be expressed as 
+
+Y θ = M  α ˙e − ¨qd
+
+ + Vm
+
+ r − ˙q − Fd − Gr (31) 
+
+Assumption 3. The norm of the unknown plant parameter vector is bounded such that ∥θ∥ < ¯θ, where ¯θ > 0 is assumed to be known. 
+
+Remark 3. Assumption 3 is commonly used in projection-based adaptive control literature [11], where adaptive param-eters are bounded within a predefined set, avoiding parameter drift in the presence of disturbances. In practical systems, unknown parameters are often naturally bounded due to phys-ical constraints or modeling assumptions, and therefore, it is reasonable to assume the bound ¯θ. Moreover, by incorporating system-specific information, ¯θ can be estimated without being overly conservative. C. Saturated Control Design for Time-Varying Input Con-straints 
+
+To bound the control input magnitude within a time-varying envelope, we design an auxiliary control input τa(t) ∈ Rn as 
+
+τa = −Y ˆθ − Kr + ˙ϕr
+
+ϕr
+
+km2 r (32) 4
+
+where, ˆθ(t) ∈ Rm is the estimate of the unknown parameter vector and K ∈ Rn×n is a positive parameter gain. To enforce the input constraint, we design a saturated controller 
+
+τ (t) = 
+
+
+
+τa(t) if ∥τa(t)∥ ≤ ϕτ (t)
+
+ϕτ (t)
+
+∥τa(t)∥ τa(t) if ∥τa(t)∥ > ϕ τ (t) (33) Using (32) and (33), the closed-loop dynamics of the filtered tracking error can be expressed as 
+
+M ˙r = Y ˜θ − Kr − Vmr + ˙ϕr
+
+ϕr
+
+km2 r + ∆ τ (34) where ˜θ(t) ≜ θ(t) − ˆθ(t) ∈ Rm is the parameter estimation error and ∆τ (t) ∈ Rm is defined as the difference between the actual control input τ (t) and auxiliary control input τa(t),i.e., 
+
+∆τ (t) ≜ τ (t) − τa(t) (35) where, 
+
+∆τ (t) = 
+
+
+
+0, ∥τa(t)∥ ≤ ϕτ (t),
+
+
+
+1 − ϕτ (t)
+
+∥τa(t)∥
+
+
+
+τa(t), ∥τa(t)∥ > ϕ τ (t), (36) The term ‘ ∆τ (t)’ captures the effect of input saturation; it vanishes when ∥τa(t)∥ ≤ ϕτ (t) and otherwise acts as a bounded perturbation, which can further be written as 
+
+∥∆τ ∥ ≤ ∥ τa∥ − ϕτ (37) where, 
+
+∥τa∥ ≤ ∥ Y ˆθ∥ + ∥Kr ∥ + ∥ ˙ϕr
+
+ϕr
+
+km2 r∥ (38) Employing Property 2, (38) can be expanded as 
+
+∥τa∥ ≤ ¯θ(km2 (α∥ ˙e∥ + ∥¨qd∥) + kv ∥ ˙q∥(∥r∥ + ∥ ˙q∥) + kg
+
++ kf1 + kf2 ∥ ˙q∥) + λmax {K}∥ r∥ + | ˙ϕr |
+
+ϕr
+
+km2 ∥r∥ (39) Now, solving the differential equation (13) and employing Assumption 2, we obtain ∥e(t)∥ ≤ ∥e(0) ∥ + ∥r(t)∥ 
+
+> α
+
+and 
+
+∥ ˙e(t)∥ ≤ α∥e(0) ∥ + 2 ∥r(t)∥ ∀ t ≥ 0, which in turn implies 
+
+∥ ˙q(t)∥ ≤ α∥e(0) ∥ + 2 ∥r(t)∥ + ϕ ˙q (t) ∀t ≥ 0. substituting the bounds in (39), 
+
+∥τa∥ ≤ Ψ1∥r∥2 + (Ψ 2 + | ˙ϕr |
+
+ϕr
+
+km2 )∥r∥ + Ψ 3 (40) where Ψ1 = 6 ¯θk v is a known positive constant and Ψ2(t) = ¯θ(2 αk m2 +5 kv
+
+ αϕ e(0)+ ϕ ˙qd (t)+2 kf2 )+ λmax {K}, Ψ3(t) = ¯θ[km2
+
+ α2ϕe(0) + ϕ¨qd (t) + kv
+
+ αϕ e(0) + ϕ ˙qd (t)2 + kg +
+
+kf1 + kf2
+
+ αϕ e(0) + ϕ ˙qd (t)] are known positive functions. Substituting the bounds in (37), 
+
+∥∆τ ∥ ≤ Ψ1∥r∥2 + (Ψ 2 + | ˙ϕr |
+
+ϕr
+
+km2 )∥r∥ + Ψ 3 − ϕτ (41) 
+
+Figure 1: BLF (43) with fixed and time-varying bounds. 
+
+D. TVBLF-based Adaptive Law Design for Time-Varying State Constraints 
+
+To bound plant states within an pre-defined time-varying envelope, we employ a TVBLF [25], defined as follows. 
+
+Definition 1 (TVBLF) . Let h : Rn × R≥0 → R be a continuously differentiable function, and define the open time-varying region 
+
+Ωx(t) = {x ∈ Rn | h(x, t ) > 0} (42) 
+
+which contains the origin for all t ≥ 0. A TVBLF is a scalar function V (x, t ), defined with respect to the system 
+
+˙x = f (x, t ) on Ωx(t), that is continuous and positive definite in x for all t ≥ 0, has continuous first-order partial derivatives with respect to x and t at every point of Ωx(t), possesses the barrier property that V (x, t ) → ∞ as x approaches the boundary of Ωx(t) (equivalently, as h(x, t ) → 0+), and satisfies V (x(t), t ) ≤ b for all t ≥ 0 along the solution of 
+
+˙x = f (x, t ), for x(0) ∈ Ωx(0) and some positive constant b.
+
+A commonly used TVBLF is the logarithmic barrier func-tion of the form 
+
+V1 = log ϕx(t)2
+
+ϕx(t)2 − x⊤x (43) defined on Ωx(t) = {x ∈ Rn | ∥x∥ < ϕx(t)}, where 
+
+ϕx : [0 , ∞) → (0 , ∞) is continuously differentiable positive function. As the state ∥x∥ approaches the boundary ϕx(t), the TVBLF diverges, i.e., V1 → ∞ . Fig. 1 shows the evolution of the safe sets in case of BLF (43) with fixed and time-varying bounds. Now, to constrain the filter tracking error r(t), which in turn ensures tracking error and state constraint satisfaction, we consider the following TVBLF Vr defined on the set 
+
+Ω′ 
+
+> r
+
+(t) : {r ∈ Rn | km2 ∥r∥2 < ϕ ′2 
+
+> r
+
+(t)}
+
+Vr ≜ 12 log ϕ′2
+
+> r
+
+ϕ′2 
+
+> r
+
+− r⊤M r (44) where ϕ′ 
+
+> r
+
+= ϕr
+
+pkm2 . Since r⊤M r ≤ km2 ∥r∥2 (Property 1), 
+
+km2 ∥r∥2 < ϕ ′2 
+
+> r
+
+(t) =⇒ r⊤M r < ϕ ′2 
+
+> r
+
+(t) ∀t ≥ 0. Further, as r⊤M r → ϕ′2 
+
+> r
+
+(t), i.e., when the constrained state r(t)
+
+approaches the boundary of the safe set, the BLF Vr → ∞ . For the proposed controller (32) and (33), the following adaptive 5
+
+update laws are defined, which will be employed in the subsequent Lyapunov analysis. 
+
+˙ˆθ = proj Ωθ
+
+ ΓY T rϕ′2 
+
+> r
+
+− km2 ∥r∥2
+
+
+
+(45) where Γ ∈ Rm×m is a user-defined positive-definite matrix. The projection operator [26], denoted as proj (·), ensures that parameters remain bounded within a convex and compact re-gion in the parameter space defined by Ωθ = {ˆθ ∈ Rm|∥ ˆθ∥2 ≤
+
+¯θ2}.
+
+Theorem 1. For the E-L system (1), provided Assumptions 1-3 and the gain condition (23) hold, the controller (32), (33) and the adaptive update law (45) ensure closed-loop stability of the tracking error dynamics, time-varying state and input constraint satisfaction, i.e., q(t), ˙q(t) ∈ Ωq (t), τ (t) ∈ Ωτ (t),
+
+∀t ≥ 0 and boundedness of all closed-loop signals, subject to the following feasibility condition (C1). 
+
+C1: The bound on the control input satisfies the following inequality, 
+
+ϕτ (t) > (Ψ 1ϕr (t) + Ψ ′
+
+> 2
+
+(t) + | ˙ϕr (t)|km2 )ϕr (t) + Ψ 3(t)
+
+(46) 
+
+where Ψ2(t) = Ψ 2(t) − λmin {K} and Ψ1, Ψ2(t), Ψ3(t) are defined in Section III-C. Proof. Consider the candidate Lyapunov function V : Ω ′ 
+
+> r
+
+×
+
+RN → R+ as, 
+
+V = 12
+
+
+
+log ϕ′2
+
+> r
+
+ϕ′2 
+
+> r
+
+− r⊤M r + ˜θT Γ−1 ˜θ
+
+
+
+(47) Taking the time derivative of V along the system trajectory 
+
+˙V = 12( ϕ′2 
+
+> r
+
+− r⊤M r )
+
+
+
+2r⊤(Y ˜θ − Kr − Vmr + ˙ϕr
+
+ϕr
+
+km2 r
+
++ ∆ τ ) + r⊤ ˙M r 
+
+
+
+− ˙ϕr r⊤M r ϕr (ϕ′2 
+
+> r
+
+− r⊤M r ) − ˜θ⊤Γ−1 ˙ˆθ (48) Employing Property 2 and the adaptive update laws in (45), 
+
+˙V ≤ − rT Kr ϕ′2 
+
+> r
+
+− km2 ∥r∥2 + rT ∆τϕ′2 
+
+> r
+
+− km2 ∥r∥2 (49) Substituting the bound of ∥∆τ (t)∥ from (41) in (49), 
+
+˙V ≤ − λmin {K}∥ r∥2
+
+ϕ′2 
+
+> r
+
+− km2 ∥r∥2
+
++ (Ψ 1∥r∥2 + (Ψ 2 + | ˙ϕr | 
+
+> ϕr
+
+)∥r∥ + Ψ 3 − ϕτ )∥r∥
+
+ϕ′2 
+
+> r
+
+− km2 ∥r∥2 (50) 
+
+≤ − λmin {K}∥ r∥
+
+ϕ′2 
+
+> r
+
+− km2 ∥r∥2
+
+ ϕτ − Ψ3
+
+λmin {K}−
+
+ Ψ1∥r∥ + Ψ 2 + | ˙ϕr | 
+
+> ϕr
+
+km2
+
+λmin {K} − 1
+
+
+
+∥r∥
+
+
+
+(51) Now, invoking Assumption 2, i.e., ∥r(0) ∥ < ϕ r (0) which implies km2 ∥r(0) ∥2 < ϕ ′2 
+
+> r
+
+(0) , to achieve a stability result from (51) the following condition must hold. 
+
+ϕτ > (Ψ 1ϕr + Ψ ′ 
+
+> 2
+
++ | ˙ϕr |km2 )ϕr + Ψ 3 (52) which is the feasibility condition C1, where Φ′
+
+> 2
+
+(t) = Ψ 2(t) −
+
+λmin {K} is a known positive function. Provided C1 is satis-fied, since km2 ∥r(0) ∥2 < ϕ r ′2, employing Lemma 1, at t = 0 ,(51) can be written as, 
+
+˙V (0) ≤ 0 (53) Now, define t⋆ ≜ inf {t > 0 : km2 ∥r(t)∥2 = ϕ′2 
+
+> r
+
+(t)}. Pro-vided Assumption 2 and C1 hold r(t) ∈ Ωr for all t ∈ [0 , t ⋆)
+
+and ˙V (t) ≤ 0 for all t ∈ [0 , t ⋆). Hence V (t) ≤ V (0) < ∞
+
+on [0 , t ⋆). Consequently, if t⋆ < ∞, then as t → t⋆ the BLF term Vr (t) → ∞ , and therefore V (t) → ∞ , contradicting the bound V (t) ≤ V (0) < ∞ on [0 , t ⋆). Therefore, t⋆ = ∞ it can be inferred that 
+
+km2 ∥r(t)∥2 < ϕ ′2 
+
+> r
+
+(t) = ⇒ ∥ r(t)∥ < ϕ r (t) ∀t ≥ 0 (54) Invoking Lemma 1, it can be proved that 
+
+∥e(t)∥ < ϕ e(t) ∀t ≥ 0 (55) 
+
+∥ ˙e(t)∥ < ϕ ˙e(t) ∀t ≥ 0 (56) i.e., the trajectory tracking error and its derivative will be constrained within the user-defined safe sets. Furthermore, since the desired trajectory and its derivative are bounded, i.e., ∥qd(t)∥ ≤ ϕqd (t), ∥ ˙qd(t)∥ < ϕ ˙qd (t), it follows directly from (55) and (56) that the proposed controller ensures the plant states remain within the pre-defined time-varying envelopes 
+
+∥q(t)∥ < ϕ e(t) + ϕqd (t) = ϕq (t) ∀t ≥ 0 (57a) 
+
+∥ ˙q(t)∥ < ϕ ˙e(t) + ϕ ˙qd (t) = ϕ ˙q (t) ∀t ≥ 0 (57b) Since the closed-loop trajectory tracking error and the pa-rameter estimation errors are bounded and θ is constant, it follows that the estimated parameters are also bounded, i.e., 
+
+ˆθ(t) ∈ L∞. Consequently, the plant states q(t), ˙q(t) and control input τ (t) remain bounded at all times. Thus, the proposed controller guarantees that all the closed-loop signals are bounded. 
+
+Remark 4. The feasibility condition (C1) captures the interre-lationships and associated trade-offs between the prescribed time-varying error constraints, the reference trajectory, and the admissible input constraints. Particularly, C1 ensures that the control authority available through the input constraint 
+
+ϕτ (t) should be sufficient to handle the prescribed dynamic bounds on the plant states (consequently, on the errors) imposed by ϕr (t), despite the presence of system nonlineari-ties, parametric uncertainties, and external disturbances. The sufficient feasibility condition (C1) also shows that overly restrictive state constraints or excessively fast convergence requirements may render the control problem infeasible under a given input bound. Conversely, for a fixed input constraint envelope, C1 provides a guideline for selecting admissible performance functions and subsequently, time-varying con-straints. 
+
+Algorithm 1 provides a guideline to check the feasibility of any given time-varying constraint set {ϕe(t), ϕ ˙e(t), ϕ τ (t)},where ϵ1, ϵ 2 ∈ R>0 are user-defined constants. 6
+
+Algorithm 1 Feasibility Check 
+
+Input: (i) Time varying state and input constraints: ϕe(t),
+
+˙ϕe(t), ϕ ˙e(t), ϕτ (t); (ii) Known parameters and functions: 
+
+Ψ1, Ψ′
+
+> 2
+
+(t), Ψ3(t), km2 ; (iii) Design parameters: K, ϵ1, ϵ2.
+
+Output: Feasibility or infeasibility of constraint set 
+
+{ϕe, ϕ ˙e, ϕ τ }. 
+
+> 1:
+
+Compute αmax (t) = ϕ ˙e(t) 
+
+> ϕe(t)
+> 2:
+
+Compute αmax = inf t≥0 αmax (t) 
+
+> 3:
+
+Select α ← αmax − ϵ1 
+
+> 4:
+
+Compute 
+
+ϕrmax (t) = min 
+
+n ˙ϕe(t) + αϕ e(t), ϕ ˙e(t) − αϕ e(t)
+
+o 
+
+> 5:
+
+Select ϕr (t) ← ϕrmax (t) − ϵ2 
+
+> 6:
+
+if ϕτ < (Ψ 1ϕr + Ψ ′ 
+
+> 2
+
++ | ˙ϕr |km2 )ϕr + Ψ 3 then  
+
+> 7:
+
+return The constraint set is infeasible (C1 violated)  
+
+> 8:
+
+else The constraint set is feasible  
+
+> 9:
+
+end if Remark 5. The feasibility condition C1 is a sufficient offline certificate derived under worst-case assumptions, including the maximum possible saturation error. Consequently, when the actual saturation effects are less severe than their worst-case bounds, C1 may yield a more conservative error envelope than what is strictly necessary. This conservatism trades off offline verifiability, which guarantees forward invariance of the prescribed constraint sets while preserving the original reference trajectory and the performance envelop. 
+
+Corollary 1. (Convergence under vanishing saturation error) Suppose the saturation error vanishes, i.e., there exists t1 ∈
+
+[0 , ∞) such that ∆τ (t) = 0 ∀t ≥ t1. Then, asymptotic tracking is recovered, e(t) → 0 and ˙e(t) → 0 as t → ∞ .Proof. For t ≥ t1, with ∆τ (t) = 0 , (49) reduces to 
+
+˙V ≤ − λmin {K}∥ r∥2
+
+ϕ′2 
+
+> r
+
+− km2 ∥r∥2 ≤ 0 (58) From (58), we can show that r(t) ∈ L2 and from (34) we obtain ˙r(t) ∈ L∞, which proves r(t) is uniformly continuous on [t1, ∞). Consequently, Barbalat’s lemma [27] yields lim t→∞ r(t) = 0 and from (13) it can be obtained that 
+
+e(t) → 0 and ˙e(t) → 0 as t → 0, which imply q(t) → qd(t)
+
+and ˙q(t) → ˙qd(t) as t → ∞ , respectively. 
+
+Corollary 2. (Plant under disturbance) Consider the uncer-tain E-L plant with an unknown bounded disturbance. 
+
+M (q)¨ q + Vm(q, ˙q) ˙ q + Gr (q) + Fd( ˙ q) = τ + d (59) 
+
+where the disturbance d(t) ∈ Rn is bounded such that 
+
+sup t≥0 ∥d(t)∥ < ¯d and ¯d > 0 is a known constant. Under the projection-based adaptive law (45) , the time-varying state and input constraints (2) –(4) are satisfied, and all closed-loop signals remain bounded for all t ≥ 0 provided the following modified feasibility condition holds for all t ≥ 0:
+
+ϕτ > (Ψ 1ϕr + Ψ 2 + | ˙ϕr |km2 − λmin {K})ϕr + Ψ ′ 
+
+> 3
+
+(60) 
+
+where, Ψ′ 
+
+> 3
+
+= Ψ 3 + ¯d is a known positive constant. Proof. In presence of disturbance, (49) can be rewritten as 
+
+˙V ≤ − rT Kr ϕ′2 
+
+> r
+
+− km2 ∥r∥2 + rT ∆τϕ′2 
+
+> r
+
+− km2 ∥r∥2 + rT dϕ′2 
+
+> r
+
+− km2 ∥r∥2
+
+(61) Using rT d ≤ ¯d ∥r∥ and the bound of ∥∆τ (t)∥ in (41) yields the inequality 
+
+˙V ≤ − λmin {K}∥ r∥
+
+ϕ′2 
+
+> r
+
+− km2 ∥r∥2
+
+ ϕτ − Ψ′
+
+> 3
+
+λmin {K}−
+
+ Ψ1∥r∥ + Ψ 2 + | ˙ϕr |
+
+> ϕr
+
+λmin {K} − 1
+
+
+
+∥r∥
+
+
+
+(62) where, Ψ′ 
+
+> 3
+
+= Ψ 3 + ¯d and the modified feasibility condition becomes, 
+
+ϕτ > (Ψ 1ϕr + Ψ 2 + | ˙ϕr |km2 − λmin {K})ϕr + Ψ ′ 
+
+> 3
+
+(63) If (63) is satisfied, (53) holds, and it can be followed from the proof of Theorem 1 that the time-varying state and input constraints (2)–(4) are satisfied and all the closed-loop signals remain bounded for all time. IV. D ESIGNING TIME -VARYING CONSTRAINTS AS 
+
+PRESCRIBED PERFORMANCE FUNCTIONS (PPF) After establishing closed-loop stability and constraint satis-faction in Section III, we now present the systematic design of the time-varying state and input constraints. Specifically, we show that the proposed framework subsumes PPC and FC-based approaches as special cases by appropriately choosing prescribed performance functions (PPFs). This design flexibil-ity allows shaping of the transient and steady-state behavior of both the tracking error and the control input while preserving constraint satisfaction. A commonly adopted choice of the performance function is defined by 
+
+ϕx(t) ≜ (ϕ0 
+
+> x
+
+− ϕ∞ 
+
+> x
+
+) (1 + κxtνx )−1 + ϕ∞ 
+
+> x
+
+(64) where, ϕx : [0 , ∞) → (ϕ0
+
+> x
+
+, ϕ ∞ 
+
+> x
+
+], ϕ0 
+
+> x
+
+> 0 denotes the initial bound, ϕ∞ 
+
+> x
+
+> 0 represents the final bound and ϕ0 
+
+> x
+
+> ϕ ∞ 
+
+> x
+
+. The parameters κx > 0, νx > 0 are user-defined positive constants that regulate the rate and shape of the performance envelope, respectively. Specifically, the parameter κx governs the decay rate of the performance function and, consequently, determines how rapidly the tracking error is driven toward its prescribed steady-state bound. Larger values of κx induce faster conver-gence, whereas smaller values lead to a more gradual reduction of the performance envelope. The parameter νx modulates the shape of the convergence profile. For 0 < ν x < 1, the performance envelope exhibits a concave decay, characterized by a rapid initial contraction followed by a slower decay to the steady-state bound. In contrast, νx > 1 yields a convex decay profile, resulting in slower initial convergence and faster steady-state convergence. The case νx = 1 corresponds to an exponential-type decay. The time at which the performance function reaches a prescribed accuracy level ϵx, with ϵx > ϕ ∞ 
+
+> x
+
+,can be explicitly determined by solving 
+
+ϕx(t) = ϵx (65) 7 
+
+> (a) (b)
+
+Figure 2: (a) Experimental setup and (b) simplified block diagram of the Quanser 2-DoF helicopter. Substituting the prescribed performance function in (65) yields 
+
+ϵx = ( ϕ0 
+
+> x
+
+− ϕ∞ 
+
+> x
+
+) (1 + κxtνx )−1 + ϕ∞ 
+
+> x
+
+. (66) Solving (66), we obtain the convergence time as 
+
+τx =
+
+ 1
+
+κx
+
+ ϕ0 
+
+> x
+
+− ϕ∞
+
+> x
+
+ϵx − ϕ∞
+
+> x
+
+− 1
+
+ 1
+
+> νx
+
+(67) which highlights a fundamental trade-off between the perfor-mance parameters κx and νx. For a fixed target convergence time τx, increasing νx allows for a smaller value of κx,resulting in a slower initial contraction of the performance envelope followed by a sharper reduction near steady state. Conversely, decreasing νx requires a larger κx, leading to a more aggressive initial decay of the performance bound.  
+
+> (a) (b)
+
+Figure 3: Effect of varying (a) κ and (b) ν on the performance function ϕx(t), where ϕ0 
+
+> x
+
+= 2 , ϕ∞ 
+
+> x
+
+= 0 .1 and ϵ = 0 .2. ν = 1 
+
+and κ = 1 are fixed in (a) and (b), respectively. 
+
+Remark 6. The convergence time τx represents the tightening of the prescribed performance envelopes, rather than directly ensuring finite-time convergence of the trajectories themselves. Since the tracking error and the control input are guaranteed to remain within the corresponding pre-defined performance bounds for all t ≥ 0, tuning τx enables the designer to prescribe the time required for the constrained states to enter within a neighborhood of the steady-state limits. 
+
+Remark 7. In the proposed framework, the PPFs are em-ployed exclusively to impose time-varying state and input constraints. As a result, the constraint design is decoupled from the adaptive law and feedback structure, allowing the designer to specify performance requirements independent of the controller parameterization. This is in contrast to classical PPC and FC formulations, where performance shaping is often intertwined with error transformations or controller gains. Moreover, while standard PPC or FC-based formula-tions enforce time-varying error bounds, the presence of input saturation is typically addressed either by online reshaping of the performance funnel [21], or by modifying the reference trajectory [19]. Consequently, imposing constraints directly on the plant states under input saturation is challenging using these frameworks. In contrast, our approach provides an offline verifiable feasibility condition that certifies a feasible set of time-varying constraints (ϕe(t), ϕ ˙e(t), ϕ τ (t)) for the given plant and reference model. 
+
+V. E XPERIMENTAL RESULTS 
+
+To illustrate the effectiveness of the proposed constrained control algorithm, real-time experiments are conducted on the Quanser 2-DoF helicopter model (Fig. 2b). We consider a simplified dynamic model as follows. 
+
+¨θ = 1
+
+Jp + ml 2
+
+
+
+τp − Bp ˙θ − 12 ml 2 sin(2 θ) ˙ψ2 − mgl cos θ
+
+
+
+(68) 
+
+¨ψ = 1
+
+Jy + ml 2 cos 2 θ
+
+
+
+τy − By ˙ψ + ml 2 sin(2 θ) ˙θ ˙ψ
+
+
+
+(69) where, θ(t) ∈ R (rad) and ψ(t) ∈ R (rad) denote the pitch and yaw angles, respectively, while their time derivatives 
+
+˙θ(t) ∈ R and ˙ψ(t) ∈ R (rad/sec) represent the correspond-ing angular velocities. The generalized position and velocity vectors are defined as q(t) = θ(t) ψ(t)⊤ ∈ R2 and 
+
+˙q(t) =  ˙θ(t) ˙ψ(t)⊤ ∈ R2, respectively. The experimental setup consists of two DC motors driving the front (main) and rear (tail) propellers. The main pro-peller predominantly governs the pitch motion, while the tail propeller influences the yaw motion. Here, τp(t) and τy (t)8
+
+denote the generalized control torques generated along the pitch and yaw axes, respectively, and the torque input vector is defined as τ (t) = τp(t) τy (t)⊤ ∈ R2. These torques are produced by the thrust forces generated by the propellers, which are actuated via the motor voltage V (t) ∈ R2. The mapping between the applied motor voltages and the resulting generalized torques is assumed to be linear and is given by 
+
+τ (t) = T V (t) (70) where, 
+
+T =
+
+Kpp Kpy 
+
+Kyp Kyy 
+
+
+
+(71) is a nonsingular thrust-torque conversion matrix. The system parameters and their numerical values are summarized in Table I. The pitch and yaw angles are measured using high-resolution optical encoders. The angular velocities are obtained via numerical differentiation of the encoder signals. As the propeller angular velocities are not directly measurable, the ac-tuator dynamics and gyroscopic coupling effects are neglected in the model derivation. The desired reference trajectory is given by 
+
+qd(t) = 
+
+−34 + 2 sin(0 .5t)0
+
+
+
+(72) The objective is to design an adaptive tracking controller such that the tracking errors e(t) and ˙e(t) remain bounded within a known dynamic envelope while simultaneously satisfying user-defined time-varying constraints on the state and input. Under Assumption 1, constraints imposed on the system state can be equivalently expressed as constraints on the tracking error, and vice versa. For simulation, the constraints are specified in terms of the tracking error and its derivative; however, unlike PPC and FC-based approaches, the proposed method allows these constraints to be directly interpreted as constraints on the system states. The time-varying bounds on the errorand control input are considered as 
+
+ϕe(t) = ( ϕ0 
+
+> e
+
+− ϕ∞ 
+
+> e
+
+)(1 + κetνe )−1 + ϕ∞ 
+
+> e
+
+(73) 
+
+ϕ ˙e(t) = ( ϕ0˙e − ϕ∞ 
+
+> ˙e
+
+)(1 + κ ˙etν ˙e )−1 + ϕ∞ 
+
+> ˙e
+
+(74) 
+
+ϕτ (t) = ( ϕ0 
+
+> τ
+
+− ϕ∞ 
+
+> τ
+
+)(1 + κτ tντ )−1 + ϕ∞ 
+
+> τ
+
+(75) where, ϕ0
+
+> x
+
+, ϕ ∞ 
+
+> x
+
+, κ x, ν x for x = e, ˙e, τ are defined in Section IV. We have considered ϕ0 
+
+> e
+
+= 11 , ϕ ∞ 
+
+> e
+
+= 1 , ϕ 0˙e = 4 .5, ϕ ∞ 
+
+> ˙e
+
+=1.5, ϕ 0 
+
+> τ
+
+= 6 , ϕ ∞ 
+
+> τ
+
+= 5 , κe = κτ = 0 .2, κ ˙e = 0 .1, ν e = ν ˙e =
+
+ντ = 1 . The other parameters are chosen as: Γ = 2 Im×m,
+
+α3 = 0 .1, ¯d = 0 .5, K =
+
+1.5 00 0.2
+
+
+
+, ¯θ = 0 .91 , km2 =0.0908 , kv = 0 .03365 , kg = 2 .514 , kf1 = 0 , and kf2 = 0 .8.The constraints and design parameters are chosen such that they satisfy the feasibility condition C1. In practice, the bound ¯θ can be obtained from prior knowledge of the physical parameters of the helicopter system. Conserva-tive bounds on quantities such as the inertia, thrust coefficients, and motor constants are typically available from manufacturer specifications or experimental identification. These bounds can be used to derive an upper bound on the unknown parameter vector θ. The resulting bound may be conservative; however, such conservatism is a common trade-off that ensures the feasibility condition to be verified a priori under pre-defined constraints and parametric uncertainties. Fig. 5a and Fig. 5b show that the pitch and yaw angles track the corresponding reference trajectories. We show in Fig. 5c that the position tracking error remain within the predefined safe set, i.e., ∥e(t)∥ < ϕ e(t) ∀t ≥ 0. Similarly, the pitch and yaw velocities also track the desired trajectories (Fig. 5d, 5e) and the velocity error satisfies the prescribed dynamic constraint, i.e., ∥ ˙e(t)∥ < ϕ ˙e(t) ∀t ≥ 0 as shown in Fig. 5f. Further, the proposed controller ensures that the required control input remains within the user-defined time-varying constraint, as shown in Fig. 4. Although the proposed design prescribes time-varying state and input constraints on the plant, in the experimental study, we have designed the time-varying error envelopes as pre-scribed performance functions (PPFs) to ensure that the tra-jectory tracking errors ∥e(t)∥ and ∥ ˙e(t)∥ remain within these envelopes. Under Assumption 1, these error bounds can be directly translated into time-varying constraints on the plant states, i.e., ∥q(t)∥ < ϕ e(t) + 34 − 2 sin(0 .5t) ∀t ≥ 0 and 
+
+∥ ˙q(t)∥ < ϕ ˙e + cos(0 .5t) ∀t ≥ 0.Equivalently, we may prescribe the desired time-varying state constraints and employing Lemma 1, translate them into admissible bounds on the trajectory tracking error, followed by the filtered tracking error. The proposed controller and adaptive laws then ensure forward invariance of the resulting error sets and, consequently, satisfaction of the original state and input constraints. 
+
+Remark 8. A direct quantitative comparison with standard PPC or FC-based methods is not straightforward, since those approaches typically accommodate input saturation by mod-ifying the reference trajectory or reshaping the performance envelope online, which is explicitly excluded in the present framework. 
+
+Figure 4: Required control input for the 2-DoF helicopter using the proposed controller. VI. C ONCLUSION 
+
+In this paper, we design an optimization-free safe adaptive tracking control algorithm for E-L systems, which ensures time-varying state and input constraint satisfaction in the presence of parametric uncertainties and bounded external disturbances. The control strategy integrates a time-varying barrier Lyapunov function (TVBLF)-based approach with a saturated controller, ensuring that both plant states and control inputs remain within predefined dynamic envelopes. We also 9
+
+Plant state Reference trajectory Time-varying constraints 
+
+(a) Pitch angle (b) Yaw angle (c) Position error 
+
+(d) Pitch velocity (e) Yaw velocity (f) Velocity error 
+
+Figure 5: Experimental results using the proposed controller.                         
+
+> Symbol Significance (units) Value
+> JpMoment of inertia about pitch axis (kg/m 2)0.0384
+> JyMoment of inertia about yaw axis (kg/m 2)0.0432
+> mTotal mass of helicopter(Kg) 1.38
+> lPitch–yaw lever distance (m) 0.1857
+> BpViscous damping constant of pitch (N.m.s/rad) 0.8
+> ByViscous damping constant of yaw (N.m.s/rad) 0.318
+> Kpp Torque constant acting on pitch axis from pitch motor (N·m/V) 0.2041
+> Kyy Torque constant acting on yaw axis from yaw motor (N·m/V) 0.0720
+> Kpy Torque constant acting on pitch axis from yaw motor (N·m/V) 0.0068
+> Kyp Torque constant acting on yaw axis from pitch motor (N·m/V) 0.0219
+> gGravitational acceleration (m/s 2)9.81
+
+Table I: Value of the model parameters with significance and units. guarantee boundedness of tracking error within known time-varying limits. We show that through the design of the safe en-velopes as performance functions, PPC and FC-based methods are subsumed as special cases of this more general approach, providing a viable alternative in cases where the reference or performance envelope modification is not permitted. Further-more, an offline verifiable feasibility condition is provided to guarantee the feasibility of the control policy. Experimental results on Quanser 2-DoF helicopter demonstrate the efficacy of the proposed control scheme. REFERENCES [1] E. F. Camacho and C. Bordons, “Constrained model predictive control,” in Model predictive control , pp. 177–216, Springer, 2007. [2] A. Zheng and M. Morari, “Stability of model predictive control with mixed constraints,” IEEE Transactions on automatic control , vol. 40, no. 10, pp. 1818–1823, 1995. [3] D. Q. Mayne, J. B. Rawlings, C. V. Rao, and P. O. Scokaert, “Con-strained model predictive control: Stability and optimality,” Automatica ,vol. 36, no. 6, pp. 789–814, 2000. [4] W. S. Cortez and D. V. Dimarogonas, “Correct-by-design control barrier functions for euler-lagrange systems with input constraints,” in American Control Conference , pp. 950–955, 2020. [5] J. Breeden and D. Panagou, “Robust control barrier functions under high relative degree and input constraints for satellite trajectories,” 
+
+Automatica , vol. 155, p. 111109, 2023. [6] O. So, Z. Serlin, M. Mann, J. Gonzales, K. Rutledge, N. Roy, and C. Fan, “How to train your neural control barrier function: Learning safety filters for complex input-constrained systems,” in 2024 IEEE International Conference on Robotics and Automation (ICRA) , pp. 11532–11539, 2024. [7] K. P. Tee, S. S. Ge, and E. H. Tay, “Barrier lyapunov functions for the control of output-constrained nonlinear systems,” Automatica , vol. 45, no. 4, pp. 918–927, 2009. [8] Y.-J. Liu and S. Tong, “Barrier lyapunov functions-based adaptive control for a class of nonlinear pure-feedback systems with full state constraints,” Automatica , vol. 64, pp. 70–75, 2016. [9] I. Salehi, G. Rotithor, D. Trombetta, and A. P. Dani, “Safe tracking control of an uncertain euler-lagrange system with full-state constraints using barrier functions,” in 2020 59th IEEE Conference on Decision and Control (CDC) , pp. 3310–3315, IEEE, 2020. [10] Y. Li and Z. Lin, Stability and performance of control systems with actuator saturation . Springer, 2018. [11] X. Liu, H. Su, B. Yao, and J. Chu, “Adaptive robust control of a class of uncertain nonlinear systems with unknown sinusoidal disturbances,” in 
+
+2008 47th IEEE Conference on Decision and Control , pp. 2594–2599, 2008. [12] S. Roy, S. B. Roy, and I. N. Kar, “Adaptive–robust control of euler– lagrange systems with linearly parametrizable uncertainty bound,” IEEE Transactions on Control Systems Technology , vol. 26, no. 5, pp. 1842– 1850, 2017. [13] P. Ghosh and S. Bhasin, “State and input constrained model reference adaptive control with robustness and feasibility analysis,” IEEE Trans-actions on Automatic Control , pp. 1–7, 2026. [14] P. Ghosh and S. Bhasin, “Adaptive tracking control of uncertain euler-lagrange systems with state and input constraints,” in 2023 American Control Conference (ACC) , pp. 4229–4234, 2023. [15] C. P. Bechlioulis and G. A. Rovithakis, “Robust adaptive control of feed-back linearizable mimo nonlinear systems with prescribed performance,” 
+
+IEEE Transactions on Automatic Control , vol. 53, no. 9, pp. 2090–2099, 2008. [16] C. P. Bechlioulis and G. A. Rovithakis, “Prescribed performance adap-tive control for multi-input multi-output affine in the control nonlinear systems,” IEEE Transactions on automatic control , vol. 55, no. 5, pp. 1220–1226, 2010. [17] T. Berger, A. Ilchmann, and E. P. Ryan, “Funnel control of nonlin-ear systems,” Mathematics of Control, Signals, and Systems , vol. 33, pp. 151–194, 2021. [18] A. Hastir, J. J. Winkin, and D. Dochain, “Funnel control for aclass of nonlinear infinite-dimensional systems,” Automatica , vol. 152, p. 110964, 2023. [19] F. Fotiadis and G. A. Rovithakis, “Input-constrained prescribed per-formance control for high-order mimo uncertain nonlinear systems via reference modification,” IEEE Transactions on Automatic Control ,vol. 69, no. 5, pp. 3301–3308, 2023. [20] N. Hopfe, A. Ilchmann, and E. P. Ryan, “Funnel control with satura-tion: Linear mimo systems,” IEEE Transactions on Automatic Control ,vol. 55, no. 2, pp. 532–538, 2010. 10 
+
+[21] T. Berger, “Input-constrained funnel control of nonlinear systems,” IEEE Transactions on Automatic Control , vol. 69, no. 8, pp. 5368–5382, 2024. [22] K. P. Tee, B. Ren, and S. S. Ge, “Control of nonlinear systems with time-varying output constraints,” Automatica , vol. 47, no. 11, pp. 2511– 2516, 2011. [23] M. W. Spong and M. Vidyasagar, Robot dynamics and control . John Wiley & Sons, 2008. [24] K. Zhao, Y. Song, T. Ma, and L. He, “Prescribed performance control of uncertain euler–lagrange systems subject to full-state constraints,” IEEE Transactions on Neural Networks and Learning Systems , vol. 29, no. 8, pp. 3478–3489, 2017. [25] K. P. Tee, B. Ren, and S. S. Ge, “Control of nonlinear systems with time-varying output constraints,” Automatica , vol. 47, no. 11, pp. 2511– 2516, 2011. [26] E. Lavretsky and K. A. Wise, “Robust adaptive control,” in Robust and adaptive control: With aerospace applications , pp. 317–353, Springer, 2012. [27] J.-J. E. Slotine, W. Li, et al. , Applied nonlinear control , vol. 199. Prentice hall Englewood Cliffs, NJ, 1991.

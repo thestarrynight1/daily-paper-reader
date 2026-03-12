@@ -1,195 +1,83 @@
 {
-  "generated_at": "2026-03-11T19:36:10.993905+00:00",
-  "updated_date": "20260311",
+  "generated_at": "2026-03-12T19:33:23.761852+00:00",
+  "updated_date": "20260312",
   "carryover_days": 9,
   "items": [
     {
-      "id": "2603.08307v1",
-      "title": "Adaptive Tracking Control of Euler-Lagrange Systems with Time-Varying State and Input Constraints",
-      "abstract": "This paper presents an adaptive control framework for Euler-Lagrange (E-L) systems that enforces user-defined time-varying state and input constraints in the presence of parametric uncertainties and bounded disturbances. The proposed design integrates a time-varying barrier Lyapunov Function (TVBLF) with a saturated control law to guarantee constraint satisfaction without resorting to real-time optimization. A key contribution is the development of an offline, verifiable feasibility condition that certifies the existence of a feasible control policy for any prescribed pair of time-varying state and input envelopes. Additionally, we prove boundedness of all closed-loop signals. Real-time experiments conducted on a 2-DoF helicopter model validate the efficacy and practical viability of the proposed method.",
+      "id": "2603.08633v1",
+      "title": "Reachability-based Temporal Logic Verification for Reliable LLM-guided Human-Autonomy Teaming",
+      "abstract": "We propose a reachability-based framework for reliable LLM-guided human-autonomy teaming (HAT) using signal temporal logic (STL). In the proposed framework, LLM is leveraged as a translator that transfers natural language commands given by a human operator into corresponding STL specifications or vice versa. An STL feasibility filter (SFF) is proposed to check the feasibility of the generated STL. The SFF first decomposes the complex and nested LLM translation into a set of simpler subformulas for parallelization and informative feedback generation. The reachability analysis method is then applied to verify if each subformula is feasible for a target dynamical system: if feasible, perform mission planning, otherwise, reject it. The proposed SFF can identify infeasible subformulas, more than simply providing the boolean verification results for the whole STL, thereby facilitating the feedback generation of LLM to request modification of the command to the human. Consequently, the proposed framework can allow more reliable HAT by enabling safe and informative communication between the human operator and the autonomous agent. Our experiments demonstrate that the proposed framework can successfully filter out infeasible subformulas and generate informative feedback based on such information.",
       "authors": [
-        "Poulomee Ghosh",
-        "Shubhendu Bhasin"
+        "Joonwon Choi",
+        "Kartik Anand Pant",
+        "Karthik Nune",
+        "Inseok Hwang"
       ],
       "primary_category": "eess.SY",
       "categories": [
         "eess.SY"
       ],
-      "published": "2026-03-09T12:30:06+00:00",
-      "link": "https://arxiv.org/pdf/2603.08307v1",
+      "published": "2026-03-09T17:10:09+00:00",
+      "link": "https://arxiv.org/pdf/2603.08633v1",
       "tags": [
         "keyword:WIND/WIND control",
         "query:WIND/WIND control"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "Adaptive tracking control for flight-like systems under constraints and disturbances",
-      "llm_evidence_cn": "约束和扰动下类飞行系统的自适应跟踪控制",
-      "llm_evidence": "约束和扰动下类飞行系统的自适应跟踪控制",
-      "canonical_evidence": "约束和扰动下类飞行系统的自适应跟踪控制",
-      "llm_tldr_en": "Develops adaptive control for Euler-Lagrange systems with time-varying constraints and disturbances.",
-      "llm_tldr_cn": "为具有时变约束和扰动的欧拉-拉格朗日系统开发了自适应控制框架。",
-      "llm_tldr": "为具有时变约束和扰动的欧拉-拉格朗日系统开发了自适应控制框架。",
+      "llm_evidence_en": "Reliable human-autonomy teaming using LLMs and reachability analysis",
+      "llm_evidence_cn": "利用大模型和可达性分析实现可靠的人机协作",
+      "llm_evidence": "利用大模型和可达性分析实现可靠的人机协作",
+      "canonical_evidence": "利用大模型和可达性分析实现可靠的人机协作",
+      "llm_tldr_en": "Proposes a framework for human-autonomy teaming that verifies natural language commands via reachability analysis.",
+      "llm_tldr_cn": "提出一种人机协作框架，通过可达性分析验证自然语言指令的可靠性。",
+      "llm_tldr": "提出一种人机协作框架，通过可达性分析验证自然语言指令的可靠性。",
       "llm_tags": [
         "query:wind-wind-control"
       ],
       "matched_query_tag": "query:wind-wind-control",
-      "matched_query_text": "Control Methods Under Wind Disturbances",
-      "matched_requirement_id": "req-11",
+      "matched_query_text": "How to Achieve Human Machine Co piloting in Extreme Hazardous Situations",
+      "matched_requirement_id": "req-6",
       "selection_source": "carryover_cache",
-      "paper_id": "2603.08307v1",
+      "paper_id": "2603.08633v1",
       "carry_days": 1
     },
     {
-      "id": "2603.07678v1",
-      "title": "Numerical Approach for On-the-Fly Active Flow Control via Flow Map Learning Method",
-      "abstract": "We present a data-driven numerical approach for on-the-fly active flow control and demonstrate its effectiveness for drag reduction in two-dimensional incompressible flow past a cylinder. The method is based on flow map learning (FML), a recently developed framework for modeling unknown dynamical systems that is particularly effective for partially observed systems. For active flow control, we construct an FML dynamical model for the quantities of interest (QoIs), namely the drag and lift forces. During offline learning, training data are generated for the responses of drag and lift to the control variable, and a deep neural network (DNN)-based FML model is constructed. The learned FML model enables online optimal flow control without requiring simulations of the flow field. We demonstrate that the FML-based approach can be integrated with existing optimal control strategies, including deep reinforcement learning (DRL) and model predictive control (MPC). Numerical results show that the proposed approach enables on-the-fly flow control and achieves more than $20\\%$ drag reduction. By eliminating the need for forward simulations during control optimization, the approach offers the potential for real-time optimal control in other systems.",
+      "id": "2603.10392v1",
+      "title": "Safe Probabilistic Planning for Human-Robot Interaction using Conformal Risk Control",
+      "abstract": "In this paper, we present a novel probabilistic safe control framework for human-robot interaction that combines control barrier functions (CBFs) with conformal risk control to provide formal safety guarantees while considering complex human behavior. The approach uses conformal risk control to quantify and control the prediction errors in CBF safety values and establishes formal guarantees on the probability of constraint satisfaction during interaction. We introduce an algorithm that dynamically adjusts the safety margins produced by conformal risk control based on the current interaction context. Through experiments on human-robot navigation scenarios, we demonstrate that our approach significantly reduces collision rates and safety violations as compared to baseline methods while maintaining high success rates in goal-reaching tasks and efficient control. The code, simulations, and other supplementary material can be found on the project website: https://jakeagonzales.github.io/crc-cbf-website/.",
       "authors": [
-        "Xinyu Liu",
-        "Qifan Chen",
-        "Dongbin Xiu"
-      ],
-      "primary_category": "math.NA",
-      "categories": [
-        "math.NA"
-      ],
-      "published": "2026-03-08T15:27:01+00:00",
-      "link": "https://arxiv.org/pdf/2603.07678v1",
-      "tags": [
-        "keyword:WIND/WIND control",
-        "query:WIND/WIND control"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "Data-driven active flow control for drag and lift forces",
-      "llm_evidence_cn": "针对阻力和升力的数控主动流场控制",
-      "llm_evidence": "针对阻力和升力的数控主动流场控制",
-      "canonical_evidence": "针对阻力和升力的数控主动流场控制",
-      "llm_tldr_en": "Presents a flow map learning method for on-the-fly active flow control and drag reduction.",
-      "llm_tldr_cn": "提出一种流图学习方法，用于实时主动流场控制和减阻。",
-      "llm_tldr": "提出一种流图学习方法，用于实时主动流场控制和减阻。",
-      "llm_tags": [
-        "query:wind-wind-control"
-      ],
-      "matched_query_tag": "query:wind-wind-control",
-      "matched_query_text": "Control Methods Under Wind Disturbances",
-      "matched_requirement_id": "req-11",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.07678v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.08465v2",
-      "title": "MUSA-PINN: Multi-scale Weak-form Physics-Informed Neural Networks for Fluid Flow in Complex Geometries",
-      "abstract": "While Physics-Informed Neural Networks (PINNs) offer a mesh-free approach to solving PDEs, standard point-wise residual minimization suffers from convergence pathologies in topologically complex domains like Triply Periodic Minimal Surfaces (TPMS). The locality bias of point-wise constraints fails to propagate global information through tortuous channels, causing unstable gradients and conservation violations. To address this, we propose the Multi-scale Weak-form PINN (MUSA-PINN), which reformulates PDE constraints as integral conservation laws over hierarchical spherical control volumes. We enforce continuity and momentum conservation via flux-balance residuals on control surfaces. Our method utilizes a three-scale subdomain strategy-comprising large volumes for long-range coupling, skeleton-aware meso-scale volumes aligned with transport pathways, and small volumes for local refinement-alongside a two-stage training schedule prioritizing continuity. Experiments on steady incompressible flow in TPMS geometries show MUSA-PINN outperforms state-of-the-art baselines, reducing relative errors by up to 93% and preserving mass conservation.",
-      "authors": [
-        "Weizheng Zhang",
-        "Xunjie Xie",
-        "Hao Pan",
-        "Xiaowei Duan",
-        "Bingteng Sun",
-        "Qiang Du",
-        "Lin Lu"
-      ],
-      "primary_category": "cs.LG",
-      "categories": [
-        "cs.LG"
-      ],
-      "published": "2026-03-09T15:03:50+00:00",
-      "link": "https://arxiv.org/pdf/2603.08465v2",
-      "tags": [
-        "keyword:WIND/WIND control",
-        "query:WIND/WIND control"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "PINN construction for fluid flow using integral conservation laws",
-      "llm_evidence_cn": "利用积分守恒定律构建流体流动的PINN",
-      "llm_evidence": "利用积分守恒定律构建流体流动的PINN",
-      "canonical_evidence": "利用积分守恒定律构建流体流动的PINN",
-      "llm_tldr_en": "Proposes MUSA-PINN to solve fluid flow PDEs in complex geometries using multi-scale weak-form constraints.",
-      "llm_tldr_cn": "提出了MUSA-PINN，利用多尺度弱形式约束解决复杂几何中的流体流动偏微分方程。",
-      "llm_tldr": "提出了MUSA-PINN，利用多尺度弱形式约束解决复杂几何中的流体流动偏微分方程。",
-      "llm_tags": [
-        "query:wind-wind-control"
-      ],
-      "matched_query_tag": "query:wind-wind-control",
-      "matched_query_text": "Construction Method for PINNs Integrating Spatiotemporal Information",
-      "matched_requirement_id": "req-5",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.08465v2",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.07740v1",
-      "title": "Meta-PINNs: Meta-Learning Enhanced Physics-Informed Machine Learning Framework for Turbomachinery Flow Predictions under Varying Operation Conditions",
-      "abstract": "Coupling physics with machine learning models has shown great potential for solving fluid dynamics problems governed by partial differential equations. However, conventional methods, such as physics-informed neural networks, often suffer from slow convergence, unstable training, and limited generalization across different flow conditions. To overcome these challenges, this study proposes a novel meta-learning en- hanced physics-informed neural networks (Meta-PINNs) framework, which integrates a meta-optimization strategy into the training process. The approach allows the model to automatically adapt its learning process to varying physical regimes, thereby substantially improving both training efficiency and predictive robustness. The proposed Meta-PINNs model is evaluated on two representative flow problems: (1) unsteady flow around a circular cylinder at multiple inlet Reynolds numbers, and (2) steady turbulent flow within a compressor cascade passage at various angles of attack. In both cases, the extrapolation performance of the developed framework is comprehensively tested by predicting the flow fields at Reynolds numbers and angles of attack that are not included in the training set. The results demonstrate that Meta-PINNs achieve a 1-2 order-of-magnitude improvement in accuracy over vanilla physics-informed neural networks and standard neural networks, while reducing computational cost by up to 95.7 % and 92.1 %, respectively. It successfully captures the sequential patterns of key flow features such as pressure and velocity distributions under unseen conditions. Thus, the findings confirm that the Meta-PINNs framework offers a notable improvement in convergence and generalization over existing machine learning approaches, providing a promising pathway toward smart simulations of complex turbomachinery flows.",
-      "authors": [
-        "Yuling Han",
-        "Zhihui Li",
-        "Zhibin Yu"
-      ],
-      "primary_category": "physics.flu-dyn",
-      "categories": [
-        "physics.flu-dyn"
-      ],
-      "published": "2026-03-08T17:31:02+00:00",
-      "link": "https://arxiv.org/pdf/2603.07740v1",
-      "tags": [
-        "keyword:WIND/WIND control",
-        "query:WIND/WIND control"
-      ],
-      "llm_score": 8.0,
-      "llm_evidence_en": "Meta-learning enhanced PINNs for fluid dynamics and flow predictions",
-      "llm_evidence_cn": "元学习增强的PINN用于流体动力学和流场预测",
-      "llm_evidence": "元学习增强的PINN用于流体动力学和流场预测",
-      "canonical_evidence": "元学习增强的PINN用于流体动力学和流场预测",
-      "llm_tldr_en": "A Meta-PINNs framework that improves convergence and generalization for turbomachinery flow predictions.",
-      "llm_tldr_cn": "一种Meta-PINNs框架，提高了涡轮机械流场预测的收敛性和泛化能力。",
-      "llm_tldr": "一种Meta-PINNs框架，提高了涡轮机械流场预测的收敛性和泛化能力。",
-      "llm_tags": [
-        "query:wind-wind-control"
-      ],
-      "matched_query_tag": "query:wind-wind-control",
-      "matched_query_text": "Construction Method for PINNs Integrating Spatiotemporal Information",
-      "matched_requirement_id": "req-5",
-      "selection_source": "carryover_cache",
-      "paper_id": "2603.07740v1",
-      "carry_days": 1
-    },
-    {
-      "id": "2603.07998v1",
-      "title": "Aero-Promptness: Drag-Aware Aerodynamic Manipulability for Propeller-driven Vehicles",
-      "abstract": "This work introduces the Drag-Aware Aerodynamic Manipulability (DAAM), a geometric framework for control allocation in redundant multirotors. By equipping the propeller spin-rate space with a Riemannian metric based on the remaining symmetric acceleration capacity of each motor, the formulation explicitly accounts for motor torque limits and aerodynamic drag. Mapping this metric through the nonlinear thrust law to the generalized force space yields a state-dependent manipulability volume. The log-determinant of this volume acts as a natural barrier function, strictly penalizing drag-induced saturation and low-spin thrust loss. Optimizing this volume along the allocation fibers provides a redundancy resolution strategy inherently invariant to arbitrary coordinate scaling in the generalized-force space. Analytically, we prove that the resulting optimal allocations locally form smooth embedded manifolds, and we geometrically characterize the global jump discontinuities that inevitably arise from physical actuator limits and spin-rate sign transitions.",
-      "authors": [
-        "Antonio Franchi"
+        "Jake Gonzales",
+        "Kazuki Mizuta",
+        "Karen Leung",
+        "Lillian J. Ratliff"
       ],
       "primary_category": "cs.RO",
       "categories": [
         "cs.RO",
-        "cs.AI",
-        "eess.SY",
-        "math.OC"
+        "cs.AI"
       ],
-      "published": "2026-03-09T06:02:59+00:00",
-      "link": "https://arxiv.org/pdf/2603.07998v1",
+      "published": "2026-03-11T04:19:44+00:00",
+      "link": "https://arxiv.org/pdf/2603.10392v1",
       "tags": [
         "keyword:WIND/WIND control",
         "query:WIND/WIND control"
       ],
       "llm_score": 8.0,
-      "llm_evidence_en": "aerodynamic manipulability and control allocation for propeller-driven vehicles",
-      "llm_evidence_cn": "螺旋桨驱动飞行器的气动操纵性与控制分配",
-      "llm_evidence": "螺旋桨驱动飞行器的气动操纵性与控制分配",
-      "canonical_evidence": "螺旋桨驱动飞行器的气动操纵性与控制分配",
-      "llm_tldr_en": "Introduces a geometric framework for control allocation in multirotors considering aerodynamic drag and motor limits.",
-      "llm_tldr_cn": "引入了一种考虑气动阻力和电机限制的多旋翼飞行器控制分配几何框架。",
-      "llm_tldr": "引入了一种考虑气动阻力和电机限制的多旋翼飞行器控制分配几何框架。",
+      "llm_evidence_en": "safe control for human-robot interaction with formal safety guarantees",
+      "llm_evidence_cn": "具有正式安全保证的人机交互安全控制",
+      "llm_evidence": "具有正式安全保证的人机交互安全控制",
+      "canonical_evidence": "具有正式安全保证的人机交互安全控制",
+      "llm_tldr_en": "Develops a probabilistic safe control framework for human-robot interaction using conformal risk control.",
+      "llm_tldr_cn": "利用符合风险控制开发了一种用于人机交互的概率安全控制框架。",
+      "llm_tldr": "利用符合风险控制开发了一种用于人机交互的概率安全控制框架。",
       "llm_tags": [
         "query:wind-wind-control"
       ],
       "matched_query_tag": "query:wind-wind-control",
-      "matched_query_text": "Control Methods Under Wind Disturbances",
-      "matched_requirement_id": "req-11",
+      "matched_query_text": "How to Achieve Human Machine Co piloting in Extreme Hazardous Situations",
+      "matched_requirement_id": "req-6",
       "selection_source": "carryover_cache",
-      "paper_id": "2603.07998v1",
+      "paper_id": "2603.10392v1",
       "carry_days": 1
     }
   ]

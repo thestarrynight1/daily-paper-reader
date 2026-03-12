@@ -1,0 +1,691 @@
+Title: Optimize discrete loss with finite-difference physics constraint and time-stepping for solving incompressible flow
+
+URL Source: https://arxiv.org/pdf/2603.07151v1
+
+Published Time: Tue, 10 Mar 2026 00:44:14 GMT
+
+Number of Pages: 22
+
+Markdown Content:
+# Optimize discrete loss with finite-di ff erence physics constraint and time-stepping for solving incompressible flow 
+
+Yali Luo a,b,d , Yiye Zou a,d , Heng Zhang e,f , Mingjie Zhang d, Gang Wei e, Jingyu Wang c,d,e, ∗, Xiaogang Deng d
+
+> aSchool of Computer Science, Sichuan University, Chengdu 610065, China
+> bChengdu Jincheng College, Chengdu 611731, China
+> cSchool of Aeronautics and Astronautics,Sichuan University, Chengdu 610065, China
+> dNational Key Laboratory of Fundamental Algorithms and Models for Engineering Simulation, Sichuan University, Chengdu 610207, China
+> eSimulation and Precision Control Research Center, Taihang Laboratory, Chengdu 610213, China
+> fInstitute for Aero Engine, Tsinghua University, Beijing 100084, China
+
+Abstract 
+
+Computational Fluid Dynamics (CFD) is an important approach for analyzing flow phenomena and predicting engineering-relevant quantities. The governing physics is formulated as partial di ff erential equations(PDEs) and solved numerically on computational grids. Physics-informed neural networks(PINNs) have emerged as a popular optimization-based approach for solving PDEs, but they often su ff er from ill-conditioned objectives and the high cost of automatic di ff erentiation. Optimization-based discretizations such as ODIL mitigate several PINN drawbacks by optimizing discrete variables directly, yet accuracy and e ffi ciency remain lim-ited on body-fitted geometries and for time-dependent problems. This paper proposes FDTO, a finite-di ff erence time-stepping loss-optimization solver that defines physics losses from discrete residuals. FDTO couples curvilinear coordinate transforms with body-fitted structured grids and decomposes long-horizon evolution into sequential, well-conditioned subproblems consistent with time marching. The method is primarily evaluated on incompressible Navier-Stokes flows, including lid-driven cavity benchmarks, external airfoil aerodynamics (lift /drag consistency), and a cylinder case on a multi-block structured mesh with cross-block co-herent solutions. Additional validations on di ff usion and flow-mixing problems further demonstrate generality. Compared with representative PINN-based solvers, FDTO reduces GPU memory by about 82.6% on the lid-driven cavity case and achieves 3-5 ×
+
+lower relative error on the flow-mixing problem. These results indicate that FDTO enables accurate, stable, and memory-e ffi cient discrete-loss optimization for incompressible-flow solutions, while remaining applicable to other PDE models. 
+
+Keywords: Computational Fluid Dynamics, Partial Di ff erential Equations, Optimization-based PDE Solvers, Finite-di ff erence Methods, Body-fitted Structured Grids, Time-stepping-oriented optimization 
+
+1. Introduction 
+
+In scientific computing and engineering, computational fluid dynamics (CFD) studies flow phenomena by formulating the governing physics as partial di ff erential equations (PDEs). These PDEs are then solved numerically by discretizing them on computational grids, yielding algebraic systems whose so-lutions approximate the underlying physical behavior (Blazek, 2015). After decades of development, numerical solution methods such as the finite-di ff erence method(FDM)(LeVeque, 2007), finite-volume method(FVM)(Moukalled et al., 2015), and finite-element method(Reddy, 1993),have achieved tremendous success(Wang et al., 2018)(Wang et al., 2020)(Chen et al., 2024a). However, traditional numeri-cal methods often exhibit limited computational e ffi ciency in the presence of complex geometries and boundary condi-tions(ZENG and ZHANG, 2025)(CAO et al., 2025). Advances in computing hardware and data science have promoted data-driven approaches for physics-based problems. 
+
+> ∗Corresponding author. E-mail address: wangjingyu@scu.edu.cn(Jingyu Wang)
+
+Deep neural networks provide new opportunities for e ffi cient PDE solvers(Lu et al., 2026). Recent studies have explored in-tegrating neural networks with PDE methods to enhance com-putational performance and to learn spatiotemporal dynam-ics from data(Bar-Sinai et al., 2019)(Sanchez-Gonzalez et al., 2020)(Thuerey et al., 2020). Yet the increasing prevalence of noisy or incomplete data, together with the high cost of high-quality datasets, calls for more flexible and robust solution strategies(Chen et al., 2024b). In recent years, optimization-based PDE solvers that mini-mize scalar objectives have attracted substantial attention. In this paradigm, unknown fields can be parameterized by neural networks and optimized by minimizing residual-based objec-tives, as in physics-informed neural networks (PINNs) (Raissi et al., 2019), or treated as discrete degrees of freedom and op-timized directly through discrete residual losses, as in discrete-loss optimization (ODIL) (Karnakov et al., 2024). PINNs provide a mesh-free paradigm for solving PDEs and can be trained without labeled solution data by enforcing governing equations and boundary /initial conditions through a physics-informed objective. With automatic di ff erentiation 
+
+> arXiv:2603.07151v1 [physics.flu-dyn] 7 Mar 2026
+
+(AD), PINNs evaluate PDE residuals and optimize network pa-rameters to satisfy the governing equations and boundary con-ditions. This physics-constrained learning paradigm has shown promise across a range of PDEs, including the Navier-Stokes equations (Rao et al., 2020). To alleviate the ill-conditioned global objectives in standard PINNs, the time-stepping ori-ented neural network (TSONN) reformulates the optimization in a time-marching manner, embedding classical time-stepping schemes into the learning process (Cao and Zhang, 2025a). Nevertheless, PINNs typically rely on AD (Baydin et al., 2018) in deep-learning frameworks to compute derivatives of the physical fields. When high-order derivatives are required, AD can become prohibitively expensive during backpropagation because it must generate and retain a large number of inter-mediate tensors(Bhatia and Dangel, 2024)(Gunes Baydin et al., 2015). As a result, PINNs are often di ffi cult to scale to PDEs involving high-order di ff erential operators, since the cost of nested AD grows rapidly with the di ff erentiation order(Baydin et al., 2018)(Bettencourt et al., 2019). Moreover, for complex flows at high Reynolds numbers, PINNs may converge to non-physical pseudo-solutions(Wang et al., 2023). These limitations have motivated new hybrid approaches that integrate deep learning with classical numerical discretizations, using established schemes to approximate derivatives while re-taining the flexibility of learning-based representations(Li et al., 2024)(Lu et al., 2025)(Gao et al., 2022). Training neural net-works can be computationally intensive. In addition, when neu-ral networks are embedded within PDE solvers, convergence must be monitored not only through reductions in PDE residu-als but also through the optimization of network parameters. This coupling complicates convergence diagnostics and may obscure whether the computed solution has truly converged. A complementary optimization-based approach is ODIL, which builds on conventional PDE discretizations and does not rely solely on a neural surrogate to represent the solu-tion. Instead, it formulates the governing equations on dis-cretized variables and minimizes a loss constructed from the discretized PDE residuals. The resulting optimization problem can be solved using gradient-based or Newton-type methods. By inheriting the structure and properties of the underlying dis-cretization, ODIL better preserves physical consistency and nu-merical stability, mitigating ill-conditioned global objectives, unstable gradients, and AD-related overhead that commonly hinder PINNs. In addition, ODIL can be combined with mod-ern machine-learning techniques to accelerate selected numer-ical components and improve overall computational e ffi ciency. ODIL has been successfully applied to a range of incompress-ible viscous-flow settings (Karnakov et al., 2023). More re-cently, the ODIL framework has been extended to jointly infer both obstacle geometry and the associated flow field in three-dimensional steady-state supersonic flows (Buhendwa et al., 2025). In parallel, e ff orts to improve ODIL e ffi ciency have fo-cused on alleviating loss ill-conditioning: Cao and Zhang (Cao and Zhang, 2025b) proposed the stabilized gradient residual (SGR) loss, which is better conditioned than mean-squared residual objectives and can substantially accelerate conver-gence. While ODIL has shown strong performance as an optimization-based PDE solver, existing ODIL formulations have been developed and demonstrated primarily on uniform Cartesian grids, to the best of current knowledge (Karnakov et al., 2024) (Cao and Zhang, 2025b). In practical engi-neering applications, especially for time-dependent flows with pronounced boundary-layer e ff ects, body-fitted meshes with near-wall refinement are typically essential. Extending dis-crete optimization-based solvers to such body-fitted geometries therefore remains an important challenge. Beyond geometric considerations, many physical systems evolve in both space and time. In fluid mechanics, these dynamics are governed by the Navier-Stokes equations (Temam, 2024), requiring solvers to accurately capture temporal evolution in addition to spa-tial structure. Most existing ODIL studies, however, have fo-cused on computing time-invariant solutions or single-time ob-jectives (Karnakov et al., 2024) (Cao and Zhang, 2025b), which limits applicability to convection-dominated flows where the solution undergoes sustained temporal development and com-plex wake-boundary-layer interactions. These regimes typi-cally demand stable time marching, motivating an ODIL frame-work that performs trajectory-level optimization over multiple time steps rather than optimizing a single stationary residual. Furthermore, prior ODIL results have been reported mainly on canonical benchmarks such as the lid-driven cavity, where ef-ficiency is typically demonstrated on simple geometries using a single structured grid. The behavior of ODIL on body-fitted multi-block meshes and in more realistic external-flow config-urations remains less explored. Therefore, an ODIL framework that improves geomet-ric adaptability and e ffi ciently addresses flows with time-dependent dynamics is highly desirable. Leveraging the scheme-consistent finite-di ff erence operators in curvilinear co-ordinates and the multi-block body-fitted treatment introduced in FDGN (Zou et al., 2024), this work enhances the geomet-ric applicability of ODIL and enables discrete-loss optimiza-tion on body-fitted multi-block structured meshes. Building on this foundation, a finite-di ff erence-based time-stepping loss op-timization solver(FDTO) is developed, which couples ODIL with scheme-consistent finite-di ff erence discretizations and a time-stepping-oriented optimization strategy to improve condi-tioning, stability, and e ffi ciency while preserving physical con-sistency. The main contributions are as follows: 
+
+• Geometrically adaptable ODIL on body-fitted grids. 
+
+Scheme-consistent finite-di ff erence operators in curvi-linear coordinates are integrated into ODIL, enabling discrete-loss optimization directly on body-fitted struc-tured grids (including multi-block configurations). By minimizing discrete residuals with interface-consistent transfers, the resulting formulation improves geometric and boundary-condition compatibility while preserving the e ffi ciency and accuracy of finite-di ff erence discretiza-tions. 
+
+• Time-marching ODIL via trajectory-level optimiza-tion. Time-marching optimization is extended to 2the ODIL framework, reformulating the global time-dependent objective into a sequence of time-window sub-problems consistent with the time-marching updates. This ODIL-compatible trajectory decomposition improves con-ditioning and promotes stable convergence for nonlinear time-dependent optimization. 
+
+• Validation on engineering-relevant configurations. The proposed method is evaluated on di ff usion and nonlin-ear mixing, as well as incompressible Navier-Stokes cases on body-fitted grids, including the lid-driven cavity, air-foils, and flow around a cylinder. The results demonstrate strong accuracy, robustness, and memory e ffi ciency across geometry-adaptive configurations and long-term temporal evolution. The remainder of this paper is organized as follows. Sec-tion 2 presents the proposed method, including the coordinate-transformed finite-di ff erence discretization and the time-stepping optimization strategy. Section 3 reports results on di ff usion equation, flow mixing problem, and incompressible Navier-Stokes equation, and compares proposed method with representative baselines. Finally, Section 4 concludes the paper and discusses limitations and future directions. 
+
+2. Methodology 2.1. Paradigms of PDE Solvers 
+
+Three representative paradigms for solving PDEs in fluid dy-namics are illustrated in Fig. 1: conventional computational fluid dynamics (CFD), FDTO, and PINNs. Although all three target the same governing equations, they di ff er fundamentally in how PDE constraints are enforced and how the solution is represented and updated. In conventional CFD solvers, the governing equations are discretized in space and time, and the flow field is advanced through explicit or implicit time-marching schemes. At each time step, large sparse linear or nonlinear systems must be solved, typically involving global matrix assembly and itera-tive solvers. While this paradigm is well established and nu-merically robust, its computational cost and memory footprint grow rapidly for fine meshes, complex geometries, and time-dependent simulations, particularly when repeated solves are required in optimization, inverse problems, or parametric stud-ies. PINNs reformulate PDE solving as a global function-approximation problem, where a neural network is trained to satisfy the governing equations together with boundary condi-tions, and initial conditions through loss minimization. This mesh-free paradigm avoids explicit matrix assembly and o ff ers strong flexibility for irregular domains. Nevertheless, PINNs introduce new challenges, including high training cost, substan-tial memory overhead from automatic di ff erentiation, and sti ff 
+
+objectives arising from competing loss terms. These issues be-come especially pronounced for time-dependent, convection-dominated regimes at high Reynolds numbers, where reliable convergence and accuracy are di ffi cult to guarantee. The proposed FDTO framework represents a unique inter-mediate paradigm between classical CFD and PINNs. Similar to CFD, FDTO retains finite-di ff erence discretizations on body-fitted structured grids, thereby preserving the numerical stabil-ity, locality, and physical consistency of traditional schemes. In contrast to CFD, FDTO avoids the solution of large algebraic systems. Instead, the discrete flow variables are updated by minimizing a residual-based loss function at each time step, en-abling matrix-free updates driven by optimization algorithms. Compared with PINNs, FDTO optimizes discrete flow vari-ables directly rather than neural-network parameters. This re-moves the need for network training, reduces the memory over-head of deep automatic-di ff erentiation graphs, and avoids the sti ff ness associated with global function approximation. By constructing the objective from classical finite-di ff erence oper-ators, FDTO inherits the stability and consistency of established numerical schemes. Moreover, this discrete-optimization view-point supports time-marching-oriented optimization for time-dependent problems, while remaining compatible with complex geometries and conventional CFD data structures. In summary, CFD solves the discretized governing equations, PINNs learn a global neural approximation, and FDTO opti-mizes discrete flow states. By incorporating coordinate trans-formations and operates in curvilinear coordinates on body-fitted grids, FDTO improves geometric adaptability for com-plex geometries. Coupled with finite-di ff erence discretiza-tion with time-stepping-oriented optimization, FDTO further achieves a favorable balance among numerical stability, compu-tational e ffi ciency, and modeling flexibility for time-dependent problems. 
+
+2.2. FDTO framework 
+
+The general formulation of the proposed FDTO framework is shown in Fig. 1. Built on body-fitted structured grids, FDTO casts each time-marching update as a discrete optimization problem, leading to improved conditioning and enhanced nu-merical stability. 
+
+Body-fitted structured grid and node-wise representation: 
+
+The physical domain is discretized with a body-fitted structured grid a body-fitted structured grid that conforms to the boundary geometry. At each grid node, we store node-wise quantities, in-cluding the flow state ϕ = (u, p), precomputed geometric met-rics (e.g., ξx, ξ y, η x, η y, J−1), and PDE-related parameters. This node-wise representation retains the locality and stencil struc-ture of classical finite-di ff erence schemes, thereby providing a natural basis for discrete optimization over the flow variables. 
+
+Curvilinear coordinate transformation: In two dimensions, we consider a coordinate mapping from the physical space ( x, y)to the computational space ( ξ, η ): 
+
+
+
+ξ = ξ(x, y)
+
+η = η(x, y) (1) Fig. 2 illustrates a coordinate mapping from the physical do-main to the computational domain, where a body-fitted curvi-linear grid in the physical space is mapped onto a uniform grid in the computational space. Curves in the same color denote 3Updated Flow State  at  t+Δt       
+
+> Residual Evaluation
+> (1)Apply BC (2)FDM
+> (3)Residual
+> Loss Function
+> Optimizer
+> Flow State at t
+> k+1 ≤Nmax Inner step
+> Y
+> N
+> Coordinate Transform
+> Variable points
+> CFD
+> FDTO
+> PINN Figure 1: Paradigms of PDE solvers. top: CFD; middle: FDTO; bottom: PINN.
+
+corresponding grid lines (or boundary curves) in the two coor-dinate systems. Throughout, subscripts denote partial deriva-tives, for example, qx = ∂q/∂ x. The inverse Jacobian matrix associated with the mapping can be written as 
+
+J−1 =
+
+"xξ yξ
+
+xη yη
+
+#
+
+=
+
+"ξx ηx
+
+ξy ηy
+
+#−1
+
+(2) where the Jacobian determinant is 
+
+J−1 = xξyη − xηyξ (3) Accordingly, the metric coe ffi cients (grid derivatives) satisfy: 
+
+
+
+˜ξx = ξx/J = yη
+
+˜ξy = ξy/J = −xη
+
+˜ηx = ηx/J = −yξ
+
+˜ηy = ηy/J = xξ
+
+(4) In practice, the geometric derivatives xξ, xη, yξandy η are eval-uated on the structured grid using finite di ff erences. In this work, these partial-derivative terms are approximated using second-order central finite di ff erences at interior points, while second-order forward and backward finite di ff erences are used near boundaries. The computational mesh spacings are often taken as ∆ξ = ∆ η = 1. The coordinate transformation of the PDEs is formulated in a conservative form in computational space. A general two-dimensional conservation-law PDE is considered in the physical space ( x, y). 
+
+∂Q
+
+∂t + ∂F
+
+∂x + ∂G
+
+∂y = 0 (5) where Q is the conserved quantity, and F and G are the fluxes in the x- and y-directions, respectively. Given the coordinate mapping in Eq. (1), physical-space derivatives can be written via the chain rule as 
+
+∂∂x = ξx
+
+∂∂ξ + ηx
+
+∂∂η , ∂∂y = ξy
+
+∂∂ξ + ηy
+
+∂∂η (6) Applying Eq. (6) to Eq. (5) results in 
+
+∂Q
+
+∂t + ∂∂ξ 
+
+ξx F + ξyG + ∂∂η 
+
+ηx F + ηyG = 0 (7) To retain a conservative form in computational space, the equa-tion is written as 
+
+∂J−1 Q
+
+∂t + ∂ ˜F
+
+∂ξ + ∂ ˜G
+
+∂η = 0 (8) where the transformed (contravariant) fluxes are defined by ˜F = ˜ξx F + ˜ξyG, ˜G = ˜ηx F + ˜ηyG (9) Eq. (8) is thus the conservative-form representation of the conservation law in the curvilinear computational coordinates (ξ, η ). 4ξ 
+
+> η
+> x
+> yFigure 2: An example of coordinate transformation from physical space (left) to computational space (right).
+
+Boundary Condition: After the coordinate transformation, appropriate boundary closures are applied to ensure a well-posed discrete formulation on body-fitted structured grids. FDTO employs explicit ghost nodes, and boundary treatment is constructed locally using three node sets (Fig. 1): ghost nodes 
+
+G outside the physical domain, boundary nodes B on the physi-cal boundary, and adjacent interior nodes I involved in near-boundary stencils. For each boundary segment, ghost-node states are populated by a linear extrapolation operator that uses information on B and I to maintain stencil consistency for gra-dient evaluation near the boundary. Specifically, for a generic variable ϕ ∈ { u, p},
+
+ϕghost = Elin (ϕB, ϕ I) (10) where Elin (·) denotes a linear extrapolation along the local boundary-normal direction (equivalently, along the boundary-adjacent grid line). As illustrated by the dashed diagonal in Fig. 1, each boundary node is paired with its nearest inte-rior neighbor along this local normal direction, and the ghost-node value is obtained by linearly extending the same line beyond the boundary. This construction yields a smooth, geometry-consistent closure for near-boundary stencils and provides a unified discrete treatment across di ff erent physical boundary specifications without introducing additional penalty terms. Consequently, ghost-node extrapolation preserves local-ity, maintains consistent residual evaluation near boundaries, and improves robustness during time-stepping optimization. 
+
+Finite-di ff erence discretization: Spatial discretization is per-formed using conservative finite-di ff erence schemes. As il-lustrated in Fig. 3, interpolation, flux evaluation, and flux di-vergence are applied at distinct stencil locations, leading to discrete residuals that closely mirror those of classical CFD solvers. Boundary conditions are imposed directly at the dis-crete level by modifying the residuals associated with bound-ary nodes, preserving physical constraints without introducing additional penalty terms. Further implementation details of the finite-di ff erence operators and stencil organization please refer to FDGN(Zou et al., 2024). Let n denote the number of nodes of a grid in a d-dimensional space Rd,the nodal unknowns are stacked as: 
+
+ϕ = u0, p0, u1, p1, . . . , un−1, pn−1
+
+⊤ ∈ R3n (11) where u j = [u j, v j]⊤ and p j denote the velocity vector and pres-sure at node j ∈ n, respectively. A class of nonlinear PDEs is considered in the form: 
+
+N[ϕ]( x, y, t) = fs(x, y, t) (x, y) ∈ Ω, t ∈ Γ (12) where N denotes a nonlinear di ff erential operator, ϕ(x, y) is the unknown solution field, and fs(x, y) is the source term. The physical domain Ω is discretized and N is approximated by finite di ff erences scheme, yielding a system of nonlinear al-gebraic equations that can be written compactly as a discrete residual: 
+
+rPDE (ϕ) = 0 (13) 
+
+Residual-based loss formulation: A locally linearized resid-ual system is considered, given by: 
+
+f = Aϕ − b = 0 (14) where A ∈ Rn×n is the Jacobian matrix (or linearized residual operator), ϕ ∈ Rn is the discretized solution vector, and b ∈ Rn
+
+is the source term evaluated at the current iterate ϕk, with k
+
+representing the time step. The finite-di ff erence discretization leads to the residual sys-tem 
+
+rPDE (ϕ) = Aϕ − b (15) which is incorporated into the loss function 
+
+LPDE (ϕ) = 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+rPDE ,i(ϕ) 2 (16) This approach avoids the need for global matrix inversion, while maintaining the numerical consistency of the underlying discretization scheme. The FDTO minimizes the loss function using gradient-based optimizers, such as Adam (Kingma, 2014), Soap (Vyas et al., 2024), or L-BFGS (Zhu et al., 1997). The full loss function is given by 
+
+LPDE (ϕ) = 1
+
+N
+
+> N
+
+X
+
+> i=1
+
+∥Aϕ − b∥22 (17) 
+
+2.3. Time-stepping Method 
+
+For a time-dependent PDE written in semi-discrete form: 
+
+∂ϕ ∂t + N(ϕ) = 0 (18) 5Interpolation        
+
+> Half point on edge
+> Flux calculation Flux partial derivative
+> Node Figure 3: Diagram of FDTO spatial discretization procedure. (left) Node-stored variables (and precomputed grid metrics) are linearly interpolated to edge midpoints to obtain face states. (middle) Conservative numerical fluxes are evaluated on these faces using the interpolated states. (right) The nodal residual is assembled by a finite-di ff erence flux divergence, i.e., di ff erences of neighboring face fluxes in the computational ξ/ηdirections.
+
+the discrete state ϕn is advanced to ϕn+1 using the unified scheme: 
+
+ϕn+1 − ϕn
+
+∆t + α N(ϕn) + (1 − α) N(ϕn+1) = 0 α ∈ { 0, 0.5, 1}
+
+(19) where ∆t is the time-step size and N(·) denotes the spatial op-erator after finite-di ff erence discretization (including boundary treatments). The parameter α controls the degree of implic-itness: α = 1 recovers the forward (explicit) Euler scheme, 
+
+α = 0 corresponds to the backward (implicit) Euler scheme, and α = 0.5 yields the Crank-Nicolson discretization(Crank and Nicolson, 1947). Instead of advancing Eq. (19) with a conventional time-integration implementation (e.g., explicit marching, or implicit updates requiring the solution of linear /nonlinear systems at each step), FDTO treats ϕn+1 as the optimization variable and minimizes the norm of the discrete residual at each time step. A local-in-time optimization subproblem is formulated and solved, initialized from ϕn:
+
+ϕn+1 = arg min  
+
+> ϕ
+
+Ln+1PDE (ϕ; ϕn) (20) This time-marching optimization enhances conditioning by restricting each optimization solve to a single time-step update, rather than optimizing over the entire time horizon at once. In addition, the finite-di ff erence discretization provides resid-ual scaling /normalization, which keeps the gradients well bal-anced across state components (e.g., velocity and pressure) and thereby promotes stable convergence under first-order /quasi-Newton optimizers. Within each time step, the optimizer iteratively updates the candidate state via 
+
+ϕn+1 ← Optimizer ϕn+1, η ∇ϕn+1 Ln+1PDE 
+
+ (21) where η is the learning rate and the gradient is taken with re-spect to ϕn+1. At the end of inner loop, the optimized state 
+
+ϕn+1 = (un+1, pn+1) is accepted and used to initialize the next step, thereby continuing the time-marching process. 
+
+2.4. Optimization Algorithm 
+
+Algorithm 1 summarizes the procedure for advancing the so-lution within the FDTO framework and serves as the basis for the algorithmic workflow discussed in this subsection. The current solution ϕk serves as the initialization for the in-ner iterations, during which discrete residuals are evaluated and minimized. All spatial operators are applied locally through a finite-di ff erence operator N, while boundary conditions are en-forced to residual evaluation to ensure valid stencil access near domain boundaries. Mesh-related quantities, including coordinate metrics and connectivity information, are precomputed and remain fixed throughout the optimization. As a result, each inner iteration operates only on the evolving flow variables, enabling e ffi -cient and stable loss and gradient evaluations. The optimiza-tion terminates when the maximum number of inner iterations is reached. Once the inner-loop optimization terminates, the updated state is accepted as ϕn+1 and the algorithm proceeds to the next time step. The optimizer state is reset before each new step to avoid carrying over step-specific history. This local-in-time strategy circumvents global matrix assembly and inver-sion, while preserving the stencil structure and numerical sta-bility of the underlying finite-di ff erence discretization. Furthermore, an additional stabilization strategy is intro-duced to mitigate error accumulation and suppress pressure os-cillations in wake-dominated airfoil flows. As illustrated in Fig. 4, a node-to-cell-to-node (N-C-N) averaging operator is applied as a local smoothing on body-fitted structured meshes. First, cell-centered values are computed as the arithmetic mean of the four corner nodal values for each adjacent cell. Next, these cell-center values are pairwise averaged along the com-putational ξ direction to obtain two intermediate face-centered values. Finally, the two face-centered values are averaged along the η direction to update the nodal value. This purely discrete, locality-preserving procedure damps high-frequency numeri-cal noise that may accumulate during optimization-driven time marching, thereby improving the stability of pressure recon-struction in regions with strong shear and sharp gradients. In practice, the N-C-N smoothing is applied after each outer time-6Algorithm 1: Finite di ff erence and time-stepping opti-mization 
+
+Require: u0, p0
+
+; time step ∆t; learning rate η; max steps Kmax ;
+
+Ensure: Optimized ϕ; trajectory ϕk
+
+|Kmax  
+
+> k=0
+> 1
+
+Initialize: ϕ ← u0, p0
+
+;Precomputed mesh metrics ξx, η x, ξ y, η y, J−1 
+
+> 2
+
+Define: FDM operator N;Optimizer  
+
+> 3
+
+while not reached max steps (k < Kmax ) do  
+
+> 4
+
+for i ← 0 to Ninner − 1 do  
+
+> 5
+
+ϕ∗|∂Ω ← ImposeBC( ϕ) 
+
+> 6
+
+ϕik ← N (ϕ∗) 
+
+> 7
+
+LPDE (ϕ) ← 1
+
+> N
+
+PNi=1 rPDE ,i(ϕik) 2 
+
+> 8
+
+i ← i + 1 
+
+> 9
+
+ϕi+1 
+
+> k
+
+← Optimizer( ϕik, ∇L PDE (ϕ), η ) 
+
+> 10
+
+k ← k + 1 
+
+> 11
+
+ϕk+1 ← ϕNinner −1 
+
+> k
+> 12
+
+Reset Optimizer  
+
+> 13
+
+return ϕK
+
+marching update to enhance interface consistency and suppress spurious oscillations on curvilinear body-fitted meshes. 
+
+3. Results and Discussions 
+
+This section assesses the proposed FDTO solver on a set of representative cases spanning di ff erent mesh configurations, boundary conditions, and physical models, with primary em-phasis on incompressible Navier-Stokes equations. The incom-pressible tests include lid-driven cavity benchmarks, external airfoil aerodynamics on body-fitted grids, and a cylinder case on a multi-block structured mesh. Since ODIL baselines are not yet available for time-dependent PDEs in the current setting, the di ff usion equation and a nonlinear flow-mixing problem are included as additional evaluations to demonstrate broader ap-plicability. Reference solutions are taken from analytical ex-pressions when available, and otherwise obtained from a con-ventional CFD solver (e.g., COMSOL). The relative L2 error, defined as ∥ϕopt − ϕref ∥L2 / ∥ϕref ∥L2 is used for all subsequent er-ror calculations. Here, ϕopt denotes the optimized solution ob-tained from the proposed method. The reference solution ϕref 
+
+represents the ground-truth solution used for comparison. All experiments are conducted on an NVIDIA GeForce RTX 5090. The implementation of the FDTO solver is publicly available at 
+
+https://github.com/My-git96/FDTO_PDE .Tab. 1 summarizes the case configurations used to validate the proposed solver. The test set includes incompressible Navier-Stokes cases covering both internal and external flows (lid-driven cavity, airfoil, and cylinder), together with di ff usion and nonlinear flow mixing problem on a square domain. Three mesh types are considered: a uniform Cartesian grid for the square and cavity cases, a curvilinear body-fitted grid for the airfoil configuration, and a multi-block mesh for the cylinder case. L-BFGS is used for the uniform-grid problems, whereas the airfoil and cylinder cases adopt the SOAP optimizer with a smaller learning rate. The time-step size ∆t, epoch budget, and inner-iteration count are selected case by case to reflect dif-ferences in conditioning and geometric complexity, enabling a systematic assessment of robustness and accuracy across phys-ical models, geometries, and mesh configurations. 
+
+3.1. Lid-driven Cavity 
+
+To begin the incompressible Navier-Stokes evaluation with a well-established internal-flow benchmark, the lid-driven cavity flow is considered. This canonical test enables a clear assess-ment of numerical accuracy, and high-fidelity reference data are available (Ghia et al., 1982). The physical domain is the unit square [0 , 1] × [0 , 1] and is discretized on a structured 201 × 201 grid. As shown in Fig. 5, no-slip velocity con-ditions are imposed on the stationary walls, while the top lid moves with a prescribed tangential velocity ( u, v) = (1 , 0). For pressure, a homogeneous Neumann condition ∂p/∂ n = 0 is ap-plied on all boundaries. The performance of FDTO is com-pared with ODIL-SGR (Cao and Zhang, 2025b) and representa-tive PINN-based neural discretization (PINN-ND) solvers (Zou et al., 2024) (Li et al., 2025). Fig. 6 illustrates the predicted velocity fields and the corre-sponding error maps at Re = 2500 and Re = 5000. ODIL-SGR achieves errors comparable to (and slightly lower than) FDTO at Re = 2500, but its accuracy degrades markedly at Re = 5000, where the errors become substantially larger than FDTO. By contrast, FDTO maintains consistently low error levels at both Reynolds numbers, indicating improved robustness as convec-tion e ff ects intensify with increasing Re. The streamline visual-izations in Fig. 7 further corroborate the field-level comparison. FDTO reliably reproduces the expected vortex topology from Re = 2500 to Re = 7500, including the emergence of the char-acteristic multi-vortex structure at higher Reynolds numbers. To probe a more challenging regime, the Re = 10000 case is initialized from the converged solution at Re = 3200. Time marching is then performed with ∆t = 0.05. Fig. 8 shows in-stantaneous streamlines at representative time instances, illus-trating the temporal evolution of the vortex structures. Beyond qualitative visualization, Fig. 9 reports representa-tive centerline profiles, including velocity and pressure distribu-tions along the cavity centerlines. These profiles provide a con-cise quantitative check of the flow structure, and confirm that FDTO reproduces the expected near-wall behavior and overall recirculation patterns in the time-dependent case. Fig. 10 sum-marizes the convergence histories. Across Reynolds numbers, FDTO exhibits faster error reduction and consistently lower relative L2 errors than ODIL-SGR, with the performance gap widening as Re increases and the optimization landscape be-comes more nonlinear. Consistent with these trends, Tab. 2 re-ports the minimum achieved error and the corresponding run-time, highlighting the e ffi ciency advantage of FDTO at higher Reynolds numbers. Notably, at Re = 7500, ODIL-SGR fails to converge to a stable solution, whereas FDTO still reaches a low-error state within a finite runtime. 7Node to cell     
+
+> Edge center
+> Cell to edge Edge to point
+> Cell center Point Figure 4: Schematic of N-C-N averaging operator on body-fitted meshes.
+> Table 1: Case configurations for evaluating the FDTO solver.
+
+Equation Type Geometry Mesh type Mesh size Optimizer Epoch Delta t Inner-iteration Learning rate Di ff sion Square Uniform 101*101 L-BFGS 100 1/100 100 1.0 Flow Mixing Square Uniform 256*256 L-BFGS 256 1/64 100 1.0 Incompressible Lid-driven Cavity Uniform 201*201 L-BFGS 1000 1/10 100 1.0 Navier-Stokes Airfoil Curvelinear 399*150 Soap 1000 1/100 2000 5e-4 Cylinder Multi-block 29801 Soap 3000 1/10 2000 5e-4    
+
+> Table 2: Comparison of minimum error and convergence time for FDTO and ODIL-SGR in lid-driven cavity flow(201 ×201).
+
+Method Re = 2500 Re = 3200 Re = 5000 Re = 7500 relative L2 error t(s) relative L2 error t(s) relative L2 error t(s) relative L2 error t(s) FDTO 0.05 1193 0.05 1409 0.06 2291 0.12 4510 ODIL-SGR 0.05 1689 0.06 2452 0.20 2445 0.57 -u = 1, v = 0                 
+
+> u= 0, v= 0 u= 0, v= 0
+> u= 0, v= 0
+> (0,0) (1,0)
+> (1,1) (0,1) 0
+> p=n0
+> p=n0
+> p=n0
+> p=n
+> Figure 5: Boundary Conditions for the lid-driven cavity (Uniform).
+
+Finally, FDTO is compared with representative PINN-ND solvers by assessing practical e ffi ciency (per-epoch runtime and GPU memory usage) together with convergence stability. The convergence curves in Fig. 11 highlight the stability of the proposed framework: FDTO exhibits smooth, nearly mono-tonic error decay, whereas FDGN and Gen-FVGN converge more slowly and show more pronounced oscillations, suggest-ing reduced optimization stability. From an e ffi ciency stand-point, Tab. 3 further shows that FDTO achieves a substantially smaller GPU memory footprint than Gen-FVGN while main-taining competitive runtime, indicating a favorable trade-o ff be-tween memory usage and computational speed. This trend is consistent with the core design of FDTO, where the unknown fields are optimized directly on discrete degrees of freedom un-der physics constraints rather than being represented by a global neural parameterization. By avoiding backpropagation through deep network surrogates and their associated intermediate acti-vations, FDTO reduces memory overhead and maintains stable coupled updates of velocity and pressure under challenging dy-namics.      
+
+> Table 3: Comparison of GPU memory usage and time costs per epoch for di ff erent methods in lid-driven cavity flow(201 ×201, Re =2500).
+
+Method GPU memory (MB) Time cost per epoch (s) FDGN 4072 2.52 Gen-FVGN 7611 2.22 FDTO 710 1.02 
+
+3.2. AirFoil Flow 
+
+When extending the evaluation from canonical internal flows to external aerodynamic configurations, pressure reconstruction 8CFD  FDTO  ODIL -SGR  |u| CFD  FDTO  ODIL -SGR  |u|Figure 6: Comparison of CFD, FDTO, and ODIL-SGR for the lid-driven cavity at Re = 2500 (left) and Re = 5000 (right), showing velocity fields and absolute error maps on a 201 × 201 grid. Re=2500 
+
+> FDTO
+
+Re=3200  Re=5000  Re=7500  |u|       
+
+> Figure 7: FDTO-optimized streamlines for lid-driven cavity flow from Re =2500 to Re =7500 on a 201 ×201 grid. Re10000
+
+Nstep=1000  Nstep=1400  Nstep=2000  |u|         
+
+> Figure 8: FDTO-optimized lid-driven cavity streamlines at Re =10000 on a 201 ×201 grid for di ff erent time steps ( Nstep =1000 ,1400 ,2000).
+
+becomes more challenging on body-fitted grids, especially in wake-dominated regions where strong shear and sharp gradi-ents may trigger oscillations during optimization-based time stepping. This subsection focuses on engineering-relevant air-foil cases. The goal is to assess geometric adaptability on body-fitted structured grids, robustness of pressure reconstruc-tion in convection-dominated regimes, and preservation of key aerodynamic quantities of interest. Four representative airfoils (NACA0012, NACA4424, RAE2822, and RAE5214) are con-sidered, as shown in Fig. 12 and summarized in Tab. 4. Un-less otherwise specified, all cases are computed on a 399 × 150 body-fitted structured grid (Fig. 13). The computational do-main consists of an upstream semicircular far-field boundary and the top /bottom far-field boundaries, together with a down-stream outlet boundary, the airfoil surface is treated as a solid wall. On the far-field boundary, a uniform free stream with angle of attack α is prescribed for velocity, while a homo-geneous Neumann condition is imposed for pressure:( u, v) =
+
+(cos α, sin α), ∂ p/∂ n = 0, where n denotes the outward unit normal. On the outlet boundary, a reference pressure is pre-scribed and zero-normal-gradient conditions are applied to the velocity: p = 0, ∂u/∂n=0 and ∂v/∂n=0. On the airfoil wall, a no-slip condition is imposed: u = 0 and v = 0. All bound-ary specifications are enforced through the ghost-node linear extrapolation closure described in Sec. 2.2, ensuring stencil-consistent gradient evaluation near the body-fitted boundary and stable pressure reconstruction in the wake region. Fig. 14 visualizes the velocity and pressure fields for the air-9中心线剖面速度 Figure 9: Comparisons of horizontal velocity along the vertical centerline (left) and vertical velocity along the horizontal centerline (right) for the time-averaged lid-driven cavity flows at Re = 2500 on a 201 × 201 grid. 与SGR 比较求解效率与误差         
+
+> Figure 10: Convergence comparison of FDTO and ODIL-SGR for lid-driven cavity flow on a 201 ×201 grid: relative L2error versus runtime at Re =2500, 3200, 5000, and 7500.
+> Table 4: Airfoil test-case configurations (Reynolds number and angle of at-tack).
+
+Cases Re α
+
+NACA0012 100 15 ◦
+
+NACA4424 200 11 ◦
+
+RAE2822 500 7◦
+
+RAE5214 1000 3◦
+
+foil cases, comparing the reference CFD solutions with the pre-dictions of FDTO and the parametric solver (Cao et al., 2025). For each case, velocity-magnitude contours and absolute ve-locity errors are reported, together with pressure contours and absolute pressure errors. Across all configurations, FDTO re-produces the global flow topology around the airfoil and yields small errors that remain mainly localized to sharp-gradient re-gions (e.g., near the trailing edge and the near wake), support-ing geometric adaptability and flow field fidelity on body-fitted grids. By comparison, the parametric solver exhibits larger 10 1.0 0.8 64 00 }
+
+> JO匕
+
+3N7  gA!lBlgJ  0.2 
+
+# — FDGN 
+
+# — Gen-FVGN 
+
+# — FDTO 。 500 1000 1500    
+
+> epoch 2000 2500 3000
+
+Figure 11: Convergence comparison on lid-driven cavity flow at Re = 2500 on a 201 × 201 grid: relative L2 error versus epoch for FDTO, FDGN, and Gen-FVGN. 
+
+Figure 12: Representative airfoil geometries (NACA0012, NACA4424, RAE2822, and RAE5214). 
+
+and more spatially distributed errors, particularly in the down-stream wake, indicating reduced robustness in shear-dominated regions. Beyond flow-field contours, wall-pressure consistency is as-sessed using the surface pressure distribution, a sensitive diag-nostic for external aerodynamics. Fig. 15 shows that FDTO closely matches the CFD reference across all airfoils, captur-ing both the leading-edge suction peak and the downstream pressure recovery for symmetric and cambered geometries. By contrast, the parametric solver exhibits more pronounced de-viations near strong-gradient regions, consistent with the error patterns observed in the wake and trailing-edge vicinity. Following the qualitative field comparisons in Fig. 14, quan-titative assessments are further reported in terms of solution errors and integrated aerodynamic loads. Tab. 5 reports the relative L2 errors of |u| and p across all cases. FDTO attains consistently lower velocity errors while maintaining compet-itive pressure accuracy, with more pronounced gains in con-figurations featuring stronger nonlinear wake interactions (e.g., RAE2822). Beyond field-level metrics, Tab. 6 compares the lift and drag coe ffi cients among CFD, the parametric solver, and FDTO. Across di ff erent Reynolds numbers and angles of attack, FDTO remains in close agreement with the CFD refer-ences and exhibits reduced deviations-particularly in drag for the more nonlinear cases-indicating that improved flow and pressure reconstruction translates into reliable integrated aero-dynamic loads. 
+
+3.3. Cylinder 
+
+To assess geometric adaptability on multi-block structured grids, incompressible flow around a cylinder in a channel is considered. In this setting, block interfaces and inter-block con-nectivity may introduce numerical artifacts unless the discrete state remains coherent across blocks. As shown in Fig. 16, the computational domain is a rectangle ( x, y) ∈ [0 , 2.2] × [0 , 0.41] with a circular cylinder embedded near the inlet. The mesh is partitioned into multiple structured blocks. A body-fitted, lo-cally refined block surrounds the cylinder to resolve near-wall gradients and separated shear layers, while an elongated down-stream block uses stretched spacing to e ffi ciently capture wake development. The resulting multi-block mesh contains approx-imately 2 .98 × 10 4 points, together with connectors associated with block interfaces. The left boundary is prescribed as a uni-form inflow: u = uin , v = 0, ∂p/∂n=0. On the cylinder surface and the channel walls (top and bottom), no-slip conditions are enforced: u = 0, v = 0, ∂p/∂n=0, where n denotes the outward unit normal. At the right boundary, a reference pressure is pre-scribed as p = 0, and a compatible outflow pressure closure is applied via ghost-node extrapolation consistent with the near-boundary stencils. All boundary conditions and inter-block in-terface continuity are enforced using the unified ghost-node lin-ear extrapolation and interface-consistent transfer operators de-scribed in Sec. 2.2, helping maintain cross-block coherence and suppress spurious oscillations near block connectors. With the multi-block mesh and boundary conditions speci-fied above, solution quality and cross-block coherence are as-sessed on this external-flow case. Fig. 17 compares the CFD reference solution with FDTO for the velocity magnitude |u|
+
+and pressure p, along with the corresponding absolute error maps. FDTO reproduces the dominant wake physics, including acceleration /deceleration around the cylinder, the low-speed re-circulation region, and the downstream evolution of separated shear layers. Quantitatively, FDTO attains relative L2 errors of 4.1651 × 10 −2 for |u| and 6 .7093 × 10 −2 for p, demonstrating agreement with the CFD reference in both velocity and pres-sure fields. Importantly, the errors remain localized to gradient-dominated regions (e.g., near-wall pressure variations and the shear-layer /wake core) rather than forming bands aligned with block interfaces. This indicates that the proposed framework preserves cross-block field coherence and mitigates interface-related artifacts on multi-block grids. 
+
+3.4. Di ff usion Equation 
+
+Accordingly, a nonlinear di ff usion equation is considered as a representative parabolic PDE widely used to describe heat and scalar transport processes (Cho et al., 2023). The governing equation is given by 
+
+∂tu = α ∥∇ u∥2 + u∆u , x ∈ Ω, t ∈ Γ (22) subject to the initial and boundary conditions 
+
+u(x, 0) = uic (x), x ∈ Ω (23) 11 Inlet                
+
+> Airfoil wall
+> Outlet
+> u= cos( a)
+> v= sin( a)0
+> p=n
+> u= 0
+> v= 0
+> p= 0 0
+> =
+> unFigure 13: Computational domain, boundary conditions (left), and body-fitted structured mesh (right) for airfoil flows (curvelinear).
+> Table 5: Relative L2errors of |u|and pfor airfoil cases: FDTO versus the parametric solver.
+
+Cases Method |u| Relative L2 Error p Relative L2 Error NACA0012 (Re = 100, α = 15 ◦) ParametricSolver 0.016 0.060 FDTO 0.011 0.068 NACA4424 (Re = 200, α = 11 ◦) ParametricSolver 0.016 0.049 FDTO 0.012 0.069 RAE2822 (Re = 500, α = 7◦) ParametricSolver 0.014 0.054 FDTO 0.009 0.033 RAE5214 (Re = 1000, α = 3◦) ParametricSolver 0.009 0.042 FDTO 0.008 0.049    
+
+> Table 6: Comparison of lift and drag coe ffi cients ( Cl,Cd) for airfoil cases: CFD, FDTO, and the parametric solver.
+
+Cases Method Cl Cd
+
+CFD 0.6626 0.5036 NACA0012(Re = 100, α = 15 ◦) ParametricSolver 0.6727 0.4826 FDTO 0.6498 0.5118 CFD 0.3223 0.3821 NACA4424 (Re = 200, α = 11 ◦) ParametricSolver 0.3498 0.3770 FDTO 0.3391 0.3947 CFD 0.3581 0.1849 RAE2822 (Re = 500, α = 7◦) ParametricSolver 0.3741 0.1833 FDTO 0.3742 0.1889 CFD 0.2191 0.1176 RAE5214 (Re = 1000, α = 3◦) ParametricSolver 0.2222 0.1187 FDTO 0.2244 0.1203 
+
+u(x, t) = 0, t ∈ Γ (24) The spatial domain is defined as Ω = [−1, 1] 2, and the tem-poral domain is Γ = [0 , 1]. The di ff usion coe ffi cient is set to 
+
+α = 0.05. The initial condition is constructed as a superposi-tion of three Gaussian functions: 
+
+uic (x, y) = 0.25 exp h−10 {(x − 0.2) 2 + (y − 0.3) 2}i
+
++ 0.4 exp h−15 {(x + 0.1) 2 + (y + 0.5) 2}i
+
++ 0.3 exp h−20 {(x + 0.5) 2 + y2}i (25) A comparative study is conducted between the proposed FDTO solver, separable PINN (SPINN), and a standard PINN, 12 CFD  FDTO  Parametric Solver  |u|
+
+(a)NACA0012(Re=100, α=15 °)
+
+CFD  FDTO  Parametric Solver  |u|
+
+(b)NACA4424 (Re=200, α=11 °)
+
+(c)RAE2822 (Re=500, α=7 °)
+
+CFD  FDTO  Parametric Solver  |u| CFD  FDTO  Parametric Solver  |u|
+
+> p
+
+(d)RAE5244 (Re=1000, α=3 °)
+
+> p
+> p
+> p
+> p
+> p
+
+Figure 14: Comparison of airfoil flow fields and absolute error maps.For each case, the columns (left to right) show the reference CFD solution, FDTO prediction, and the parametric solver prediction. The rows (top to bottom) report the velocity-magnitude contours, the absolute velocity error, the pressure contours, and the absolute pressure error. 
+
+13 （surface pressure) Figure 15: Comparison of surface pressure distributions: CFD, FDTO, and the parametric solver. Top-left: NACA0012(Re = 100, α = 15 ◦); top-right: NACA4424(Re = 200, α = 11 ◦); bottom-left: RAE2822(Re = 500, α = 7◦); bottom-right: RAE5214(Re = 1000, α = 3◦). (0, 0) 
+
+(0, 0.41)  (2.2, 0.41) 
+
+(2.2, 0) 
+
+u = uin 
+
+v = 0 0
+
+p =n
+
+p = 0 u = 0 ,  v = 0 
+
+u = 0 ,  v = 0 
+
+u = 0 ,  v = 0 0
+
+p =n0
+
+p =n0
+
+p =n0
+
+p =n
+
+Figure 16: Cylinder-in-channel configuration: boundary conditions (left) and the body-fitted multi-block structured mesh (right). CFD  FDTO  |u|
+
+p
+
+Figure 17: Comparison of FDTO against CFD for cylinder flow. Top row: velocity-magnitude and error; bottom row: pressure fields and error. 
+
+14 using the reference solution reported in (Cho et al., 2023) as the ground-truth baseline. Fig. 18 presents the solution fields together with the corresponding absolute error maps on a 101 × 101 grid at t = 0, 0 .5, and 1. Both FDTO and SPINN closely reproduce the reference solution across all snapshots, with small errors that remain confined to localized regions. In contrast, the standard PINN exhibits noticeable deviations in the background region and near steep gradients, together with spatially di ff use error patterns. Consistent with these distribu-tions, the PINN yields substantially larger errors at all time in-stances, indicating reduced fidelity in capturing the di ff usion dynamics under the same evaluation setting. These results sug-gest that optimizing directly over discrete degrees of freedom allows FDTO to preserve di ff usion dynamics with localized, physically consistent errors, while avoiding the di ff use error spread characteristic of a globally parameterized PINN. Consistent with the trends observed in the solution and er-ror contours, Tab. 7 provides a quantitative comparison of rel-ative L2 error and GPU memory consumption for the di ff u-sion equation. FDTO maintains low errors at t = 0, 0 .5, and 1, while SPINN achieves comparable (slightly smaller) errors. From a computational perspective, SPINN is the most memory-effi cient, requiring 590 MB of GPU memory. FDTO uses slightly more memory (636 MB) but remains lightweight and practical. In contrast, the PINN requires 8762 MB-over an or-der of magnitude higher than both FDTO and SPINN (approxi-mately 13.8 times compared with FDTO). Taken together, these results indicate that FDTO achieves near-SPINN-level accuracy while maintaining low GPU memory usage, and substantially outperforms the PINN baseline in both accuracy and memory footprint on this di ff usion test.      
+
+> Table 7: Comparison of relative L2error and GPU memory for the di ff usion equation on a 101 ×101 grid.
+
+Method relative L2 error GPU memory (MB) 
+
+t = 0 s t = 0.5 s t = 1 s SPINN 0.005 0.004 0.003 590 PINN 0.046 0.034 0.038 8762 FDTO 0.004 0.005 0.005 636 
+
+3.5. Flow Mixing Problem 
+
+To further assess the proposed solver, a more challenging nonlinear (2 + 1)-dimensional mixing-flow case is considered, representing the mixing of two fluids. Following the setup in CAN-PINNs (Cho et al., 2023)(Chiu et al., 2022), the govern-ing equation is given by 
+
+∂u(t, x, y)
+
+∂t + a ∂u(t, x, y)
+
+∂x + b ∂u(t, x, y)
+
+∂y = 0,
+
+t ∈ [0 , 4] , x ∈ [−4, 4] , y ∈ [−4, 4] (26) where 
+
+a(x, y) = − vt
+
+vt,max 
+
+yr (27) 
+
+b(x, y) = vt
+
+vt,max 
+
+xr (28) 
+
+vt = sech 2(r) tanh( r) (29) 
+
+r =
+
+q
+
+x2 + y2 (30) with vt,max = 0.385. The spatial domain is Ω = [−4, 4] ×[−4, 4], and the temporal domain is t ∈ [0 , 4]. This problem has an analytical solution: 
+
+u(t, x, y) = − tanh 
+
+ y
+
+2 cos( ωt) − x
+
+2 sin( ωt)
+
+
+
+(31) where ω = vt/(r v t,max ). The initial and boundary conditions are extracted directly from the analytical solution. Methods are evaluated on a structured 256 × 256 grid with the same temporal discretization as in the previous section. The governing equations and boundary conditions are specified con-sistently for FDTO, SPINN, and PINN. For a fair comparison, solution fields are sampled on an identical spatiotemporal grid, and the analytical solution is used as the reference. Fig. 19 compares the solution fields and absolute error maps at t = 0, 2, and 4 for a nonlinear advection problem fea-turing strong rotational deformation and interface stretching. FDTO accurately captures the spiral mixing structures and re-mains in close agreement with the reference across all snap-shots, with errors primarily confined to the thin spiral interface where gradients are strongest and negligible in the bulk region. SPINN reproduces the main mixing pattern but exhibits slight smoothing in strongly deformed regions, leading to moderate interface-localized errors. By comparison, PINN shows pro-nounced numerical di ff usion and interface distortion, especially at later times, with substantially larger and more scattered errors around the vortex core and along the mixing interface. To complement the qualitative comparisons in the solution and error contours, Tab. 8 summarizes the quantitative results, reporting the relative L2 errors together with GPU memory con-sumption. FDTO achieves the lowest error at t = 0 and main-tains its advantage as the mixing evolves. At t = 2, FDTO attains a relative error of 0.014, which is nearly three times smaller than SPINN and about five times smaller than PINN. Similar trends persist at t = 4. In terms of resource usage, SPINN is the most memory e ffi cient, while FDTO requires slightly more GPU memory but remains lightweight and practi-cal. In contrast, PINN consumes roughly twice the GPU mem-ory of FDTO. The proposed solver achieves a favorable balance between solution fidelity and memory e ffi ciency.      
+
+> Table 8: Comparison of relative L2error and GPU memory for the flow mixing problem on a 256 ×256 grid.
+
+Method relative L2 error GPU memory (MB) 
+
+t = 0 s t = 2 s t = 4 s SPINN 0.010 0.040 0.045 570 PINN 0.022 0.068 0.066 1590 FDTO 0.009 0.014 0.023 670 
+
+3.6. Ablation Studies 
+
+3.6.1. Convergence Comparison 
+
+Beyond optimization-based baselines, FDTO is further compared with a conventional explicit time-marching finite-15 Ref  FDTO  SPINN 
+
+t=0 
+
+t=0.5 
+
+t=1 
+
+PINN 
+
+u
+
+FDTO  SPINN  PINN Figure 18: Comparison of flow field (left) and absolute error (right) for di ff usion equation on a 101 × 101 grid. Ref  FDTO  SPINN 
+
+t=0 
+
+t=2 
+
+t=4 
+
+PINN 
+
+u
+
+FDTO  SPINN  PINN 
+
+Figure 19: Comparison of flow field (left) and absolute error (right) for flow mixing problem on a 256 × 256 grid. 
+
+volume(ETM-FVM) solver to highlight the benefit of allevi-ating Courant-Friedrichs-Lewy(CFL) limited updates (Fripp). Fig. 20 presents the convergence histories of the proposed FDTO solver and a ETM-FVM solver for the lid-driven cav-ity at Re = 2500 and Re = 3200. In both cases, the ETM-FVM advances the flow field using an explicit update with a CFL lim-ited time step chosen to be the largest empirically stable value, whereas FDTO performs optimization-driven time marching by directly minimizing the discrete residual. The results demon-strate that FDTO reaches a low-error plateau within roughly 200-300 iterations with smooth and nearly monotonic decay, while the ETM-FVM exhibits much slower error reduction and remains at a substantially higher relative L2 error under the same iteration budget. As the Reynolds number increases, the convergence turning point of FDTO is mildly delayed and the plateau error increases slightly. Nevertheless, FDTO converges markedly faster than the explicit ETM-FVM across all cases, indicating improved e ffi ciency by alleviating the time-step sta-bility constraints inherent to explicit time-marching schemes. 1.0 0.8 64 00
+
+> KO 匕
+
+# 3t73AneI3 J
+
+0.2 
+
+> FDTO Re =2500 CFD Re =2500 FDTO Re =3200 CFD Re =3200
+
+－－ －－ －－－－ -.... -.... －－ ＿ ＿ ＿ ＿ ＿ ＿ ＿ 
+
+# －－－ －----------------------------
+
+# 。． 。。 100 200 300 400 500 600 700 800 900 
+
+epoch 
+
+Figure 20: Comparison of FDTO and an explicit time-marching finite-volume solver (ETM-FVM) on a 201 × 201 lid-driven cavity grid: relative L2 error versus epoch at Re = 2500 and Re = 3200. 
+
+16 3.6.2. Inner-Iteration Study 
+
+This subsubsection investigates the sensitivity of FDTO to the number of inner optimization steps per epoch(i.e., per outer time-marching update). As shown in Fig. 21, the impact of the inner-iteration budget is strongly case-dependent. For the di ff u-sion and flow mixing problem, the three curves nearly overlap: increasing inner iterations from 10 to 1000 yields only marginal changes, and the relative L2 error follows a similar trend as epochs progress (from nearly 4 × 10 −3 to 5 × 10 −3 for di ff u-sion, and from 10 −2 to 2 .3 × 10 −2 for flow mixing), indicating that the overall error is primarily governed by the outer update and discretization rather than insu ffi cient inner solves. In contrast, the lid-driven cavity case is highly sensitive to inner iterations: with only 10 inner steps, the error decreases slowly and remains large even after 2000 epochs, whereas 100 or 1000 inner steps produce a rapid error drop and reach a low-error plateau around 5 × 10 −2, with 1000 iterations converging noticeably faster in the early stage but attaining a similar final level as 100 iterations (diminishing returns). For the NACA0012 case, 100 inner iterations improves con-vergence over 10 iterations and reaches a lower steady error level. In contrast, 1000 inner iterations becomes unstable: af-ter an initially rapid decrease, the error gradually increases and eventually diverges. This behavior suggests that an overly ag-gressive inner-iteration budget can destabilize the coupled outer update in a more nonlinear, geometry-influenced setting. These results indicate a practical trade-o ff . Increasing the inner-iteration budget can substantially accelerate convergence when inner under-optimization is the main bottleneck (e.g., the lid-driven cavity case), but it o ff ers limited benefit when conver-gence is dominated by the outer update (di ff usion /mixing) and may even reduce robustness (NACA0012). A moderate choice (e.g., 100) provides a favorable balance among accuracy, com-putational cost, and stability across the tested cases. 
+
+3.6.3. E ff ect of Time-step Size 
+
+The influence of the outer time-step size ∆t on FDTO conver-gence is also investigated. Fig. 22 reports the relative L2 error histories for ∆t ∈ { 0.01 , 0.05 , 0.1} under the same optimization configuration. For the lid-driven cavity at Re = 2500, increasing ∆t yields faster and deeper error reduction. With ∆t = 0.1, the error de-cays nearly monotonically, reaches 10 −2 within a few hundred epochs, and then remains on a low plateau. By comparison, 
+
+∆t = 0.05 converges more slowly and levels o ff at a higher er-ror, while ∆t = 0.01 shows only marginal improvement over 600 epochs and stays above 10 −1. These trends suggest that an overly small ∆t leads to under-updated outer steps and conse-quently slow practical convergence for this case. For the NACA0012 case (Re = 100, α = 15 ◦), the trend is reversed. While ∆t = 0.01 and ∆t = 0.05 both yield stable convergence to a low-error regime (around 10 −2) after the rapid initial drop in the error, the large step size ∆t = 0.1 becomes un-stable: despite an early decrease, the error gradually increases and eventually grows to a significantly higher level. This indi-cates that, an overly aggressive outer update can overshoot the stable descent region and amplify discretization /coupling errors in the optimization-driven update. Fig. 22 reveals a robustness-speed trade-o ff in selecting ∆t.Larger ∆t can accelerate convergence when the dynamics are relatively well behaved (e.g., the lid-driven cavity), but it may reduce stability for more challenging cases (e.g., airfoil flow). In practice, a moderate or smaller ∆t is often preferable for ro-bustness, and an adaptive schedule that decreases ∆t over the optimization can balance early-stage speed with late-stage sta-bility. 
+
+3.6.4. Optimizer selection 
+
+Three optimizers (Adam, L-BFGS, and SOAP) are compared for minimizing the discrete loss under identical discretization, optimization settings, and stopping criteria. For each case, the relative L2 error of the predicted solution is tracked against the corresponding reference (analytical /CFD) solution as optimiza-tion proceeds. Fig. 23 shows that optimizer behavior is strongly problem dependent. For the di ff usion and flow mixing problem, L-BFGS consistently maintains the lowest error throughout train-ing, indicating that quasi-Newton updates are e ff ective for these smooth objectives and can better control error growth over epochs. For the lid-driven cavity case, all optimizers reduce the error, but L-BFGS converges faster and reaches a lower fi-nal plateau, while Adam converges more slowly and Soap ex-hibits a higher-error saturation, suggesting reduced e ff ective-ness when the optimization becomes increasingly sti ff in later epochs. In contrast, for the NACA0012 case, Adam and Soap rapidly drive the error down to a low level within the early epochs, whereas L-BFGS stalls at a substantially higher error. No single optimizer dominates across all regimes: L-BFGS is highly competitive on smooth PDE cases and the lid-driven cavity flow, while adaptive first-order methods (Adam) and pre-conditioned variants (Soap) are more robust for the airfoil case. 
+
+3.6.5. Grid-Resolution Study 
+
+A grid-resolution study is conducted to assess the sensitiv-ity of FDTO to spatial discretization and the robustness of its convergence across mesh sizes. Fig. 24 reports the relative 
+
+L2 error histories for the lid-driven cavity at Re = 2500 on 151 × 151, 201 × 201, 251 × 251, and 301 × 301 grids. Across all resolutions, the error decreases smoothly and transitions into a stable plateau, indicating robust convergence with respect to mesh refinement. The convergence behavior, however, exhibits a clear accuracy-e ff ort trade-o ff : coarser grids reduce the error more rapidly in the early stage but settle at higher plateau lev-els, whereas finer grids require more epochs to reach the turn-ing point yet achieve lower final errors. These trends suggest that higher resolutions expose richer small-scale features and stricter residual consistency, which increases optimization di ffi -culty; stronger optimization settings (e.g., larger inner-iteration budgets or adaptive schedules) can therefore be beneficial to fully realize the accuracy gains on refined meshes. 17 Figure 21: Comparison of inner iterations on convergence across four cases: di ff usion equation, flow mixing problem, lid-driven cavity (Re = 2500) and NACA0012 (Re = 100, α = 15 ◦).         
+
+> Figure 22: Eff ect of time-stepping choice ( ∆t=0.1, 0.05, 0.01) on lid-driven cavity (Re =2500), and NACA0012 (Re =100, α=15 ◦).
+
+3.6.6. Time-Stepping Ablation 
+
+The impact of the proposed time-stepping (TS) optimiza-tion on stability and temporal coherence is assessed within the optimization-driven time-marching procedure. As shown in Fig. 25 for the lid-driven cavity at Re = 2500 on a 201 × 201 grid, the velocity-magnitude contours (top row) recover the dominant recirculation pattern in both settings; the absolute error maps (bottom row), however, reveal pronounced di ff er-ences. With TS enabled, errors remain uniformly small and spatially smooth, whereas disabling TS leads to substantially larger and more structured discrepancies, including a distinct high-error band around the primary vortex and amplified errors near wall-adjacent shear layers. This advantage is further quan-tified by the convergence histories: Fig. 26 shows that the time-marching formulation converges faster and attains lower errors than the time-independent variant. These results indicate that incorporating temporal dynamics improves optimization stabil-ity and helps resolve nonlinear flow structures. TS therefore serves as an e ff ective stabilization mechanism, enforcing tem-porally consistent evolution, reducing oscillatory updates dur-ing time marching, and improving robustness and accuracy in convection-dominated, high-Reynolds-number regimes. 
+
+3.6.7. Ablation of N-C-N Stabilization 
+
+The e ff ect of the N-C-N averaging treatment on suppress-ing spurious oscillations in convection-dominated regimes is 18 Figure 23: Eff ect of optimizer choice (Adam, L-BFGS, and Soap) across four cases: di ff usion equation, flow mixing problem, lid-driven cavity (Re = 2500), and NACA0012 (Re = 100, α = 15 ◦).              
+
+> Figure 24: Grid-resolution study for lid-driven cavity flow at Re =2500: rela-tive L2error versus epoch on 151 ×151, 201 ×201, 251 ×251, and 301 ×301 grids.
+
+assessed next. Fig. 27 shows that, without N-C-N averaging, high-frequency oscillations accumulate during optimization-driven time marching, producing irregular pressure contours and enlarged pressure-error regions near the trailing edge and within the wake. When the N-C-N operator is applied to the discrete state ( u, p), field regularity improves markedly and pressure errors are substantially reduced across the domain. These results indicate that the lightweight, fully discrete N-C-N stabilization improves optimization stability and strengthens FDTO-with-TS  FDTO-without-TS  |u|     
+
+> Figure 25: Eff ect of TS optimization on lid-driven cavity flow at Re =2500 on a 201 ×201 grid: velocity-magnitude contours (top) and absolute error maps (bottom) for FDTO with and without TS.
+
+pressure-reconstruction robustness in wake-dominated flows, consistent with the design rationale discussed in the Introduc-tion. 19 1.0 0.8 64 oo JO匕g Z7 gA  !lBl  gJ                 
+
+> 0.2
+> 一～ 一without TS
+> 一七 一with TS 0.0 500 1000 1500
+> epoch
+> 2000 2500 3000 Figure 26: Eff ect of time-stepping optimization on lid-driven cavity flow at Re =2500 on a 201 ×201 grid: convergence of relative L2error with and without TS. without N -C-N
+> with N -C-N
+> |u|p
+> Figure 27: Ablation study of the N-C-N treatment for an airfoil case: compari-son of velocity magnitude (left), pressure (middle), and absolute pressure error (right) without (top row) and with (bottom row) N-C-N.
+
+4. Conclusions 
+
+This work proposes FDTO, a finite-di ff erentiable, discrete-optimization framework for PDE solving that optimizes the un-known fields directly over discrete degrees of freedom. FDTO combines classical discretizations with an optimization-driven time-marching scheme and incorporates a lightweight, fully discrete smoothing treatment to suppress error accumulation in convection-dominated regimes. As a result, the method im-proves convergence stability while retaining geometric adapt-ability on body-fitted grids. Sec. 3 demonstrates the e ff ectiveness of FDTO primarily on incompressible Navier-Stokes problems, including lid-driven cavity flows across a wide Reynolds-number range, external air-foil aerodynamics, and a cylinder wake on a multi-block struc-tured grid. Di ff usion and nonlinear mixing are also included to illustrate broader applicability. Across these settings, FDTO delivers accurate field predictions with smooth, stable conver-gence and substantially lower GPU memory usage than repre-sentative neural solvers. Moreover, it maintains robust pres-sure reconstruction in wake-dominated regions and preserves cross-block coherence without interface-aligned artifacts. Col-lectively, these results suggest that FDTO provides a practical route for solving convection-dominated flows and other PDEs through a purely discrete optimization formulation. Several limitations remain. Optimization becomes more demanding on finer grids, motivating grid-consistent normal-ization /weighting and continuation strategies such as coarse-to-fine initialization. Extending the framework to higher-Reynolds-number regimes and fully three-dimensional geome-tries will likely require stronger stabilization and precondition-ing, together with scalable parallel implementations. Address-ing these challenges is an important direction toward large-scale, engineering-grade applications. 
+
+Author contributions 
+
+CRediT: Yali Luo:Investigation, Methodology, Software, Validation, Visualization, Writing-original draft; Yiye Zou: In-vestigation, Methodology, Software; Heng Zhang: Validation, Visualization; Mingjie Zhang: Writing review & editing; Gang Wei: Writing review & editing; Jingyu Wang: Funding acquisi-tion, Resources, Supervision, Writing-review & editing; Xiao-gang Deng:Project administration, Writing-review & editing 
+
+Disclosure statement 
+
+No potential conflict of interest was reported by the author(s). 
+
+Funding 
+
+This research is funded by the Sichuan Science and Tech-nology Program (Project No.2021ZDZX0001), the Open Fund-ing of National key laboratory of Fundamental Algorithms and Models for Engineering Simulation, and the Sichuan University Interdisciplinary Innovation Fund. 
+
+Data availability statement 
+
+The code and grid used in this paper can be found in the GitHub repository: https://github.com/My-git96/FDTO_ PDE 
+
+Declaration of generative AI and AI-assisted technologies in the writing process 
+
+During the preparation of this work the author(s) used Chat-GPT in order to improve phrasing. After using this tool /service, the author(s) reviewed and edited the content as needed and take(s) full responsibility for the content of the publication. 
+
+References 
+
+Bar-Sinai, Y., Hoyer, S., Hickey, J., Brenner, M.P., 2019. Learn-ing data-driven discretizations for partial di ff erential equa-tions. Proceedings of the National Academy of Sciences 116, 15344–15349. 20 Baydin, A.G., Pearlmutter, B.A., Radul, A.A., Siskind, J.M., 2018. Automatic di ff erentiation in machine learning: a sur-vey. Journal of machine learning research 18, 1–43. Bettencourt, J., Johnson, M.J., Duvenaud, D., 2019. Taylor-mode automatic di ff erentiation for higher-order derivatives in jax, in: Program Transformations for ML Workshop at NeurIPS 2019. Bhatia, S., Dangel, F., 2024. Lowering pytorch’s memory consumption for selective di ff erentiation, in: Proceedings of the IEEE /CVF Conference on Computer Vision and Pattern Recognition, pp. 8260–8265. Blazek, J., 2015. Computational fluid dynamics: principles and applications. Butterworth-Heinemann. Buhendwa, A.B., Bezgin, D.A., Karnakov, P., Adams, N.A., Koumoutsakos, P., 2025. Data-driven shape inference in three-dimensional steady-state supersonic flows: Optimizing a discrete loss with jax-fluids. Physical Review Fluids 10, 084902. CAO, D., LI, Q., XU, Y., Yu, F., 2025. A promotion approach for digital construction in the equipment field. Gas Turbine Experiment and Research 38, 118–122. Cao, W., Tang, S., Ma, Q., Ouyang, W., Zhang, W., 2025. A surrogate model based on parametric neural network solvers for laminar flows around aerofoils. Engineering Applications of Computational Fluid Mechanics 19, 2559110. Cao, W., Zhang, W., 2025a. An analysis and solution of ill-conditioning in physics-informed neural networks. Journal of Computational Physics 520, 113494. Cao, W., Zhang, W., 2025b. Overcoming the loss conditioning bottleneck in optimization-based pde solvers: A novel well-conditioned loss function. arXiv preprint arXiv:2508.02692 .Chen, R., Wang, S., Wang, S., Cai, J., 2024a. Separation and reattachment fixed reynolds-stress model for iced airfoil and wing simulations. Aerospace Science and Technology 155, 109587. Chen, X., Wang, Z., Deng, L., Yan, J., Gong, C., Yang, B., Wang, Q., Zhang, Q., Yang, L., Pang, Y., et al., 2024b. To-wards a new paradigm in intelligence-driven computational fluid dynamics simulations. Engineering Applications of Computational Fluid Mechanics 18, 2407005. Chiu, P.H., Wong, J.C., Ooi, C., Dao, M.H., Ong, Y.S., 2022. Can-pinn: A fast physics-informed neural network based on coupled-automatic–numerical di ff erentiation method. Com-puter Methods in Applied Mechanics and Engineering 395, 114909. Cho, J., Nam, S., Yang, H., Yun, S.B., Hong, Y., Park, E., 2023. Separable physics-informed neural networks. Advances in Neural Information Processing Systems 36, 23761–23788. Crank, J., Nicolson, P., 1947. A practical method for numeri-cal evaluation of solutions of partial di ff erential equations of the heat-conduction type, in: Mathematical proceedings of the Cambridge philosophical society, Cambridge University Press. pp. 50–67. Fripp, K., . Finite-volume-cfd-in-matlab: A 2d time-dependent cfd solver in matlab using a staggered grid and non-uniform cartesian meshes. GitHub reposi-tory. URL: https://github.com/KevinGFripp/ Finite-Volume-CFD-in-MATLAB .Gao, H., Zahr, M.J., Wang, J.X., 2022. Physics-informed graph neural galerkin networks: A unified framework for solving pde-governed forward and inverse problems. Com-puter Methods in Applied Mechanics and Engineering 390, 114502. Ghia, U., Ghia, K.N., Shin, C., 1982. High-re solutions for incompressible flow using the navier-stokes equations and a multigrid method. Journal of computational physics 48, 387– 411. Gunes Baydin, A., Pearlmutter, B.A., Andreyevich Radul, A., Siskind, J.M., 2015. Automatic di ff erentiation in machine learning: a survey. arXiv e-prints , arXiv–1502. Karnakov, P., Litvinov, S., Koumoutsakos, P., 2023. Flow re-construction by multiresolution optimization of a discrete loss with automatic di ff erentiation. The European Physical Journal E 46, 59. Karnakov, P., Litvinov, S., Koumoutsakos, P., 2024. Solving inverse problems in physics by optimizing a discrete loss: Fast and accurate learning without neural networks. PNAS nexus 3, pgae005. Kingma, D.P., 2014. Adam: A method for stochastic optimiza-tion. arXiv preprint arXiv:1412.6980 . LeVeque, R.J., 2007. Finite di ff erence methods for ordinary and partial di ff erential equations: steady-state and time-dependent problems. SIAM. Li, T., Zou, S., Chang, X., Zhang, L., Deng, X., 2024. Pre-dicting unsteady incompressible fluid dynamics with finite volume informed neural network. Physics of Fluids 36. Li, T., Zou, Y., Zou, S., Chang, X., Zhang, L., Deng, X., 2025. Learning to solve pdes with finite volume-informed neural networks in a data-free approach. Journal of Computational Physics 530, 113919. Lu, L., Su, J., Wang, J., Deng, X., 2026. Amspinn: anisotropic and multiscale cross-attention physics-inspired neural net-works for turbulence prediction. Engineering Applications of Computational Fluid Mechanics 20, 2628951. Lu, L., Zou, Y., Wang, J., Zou, S., Zhang, L., Deng, X., 2025. Unsupervised learning with physics informed graph networks for partial di ff erential equations: L. lu et al. Ap-plied Intelligence 55, 617. 21 Moukalled, F., Mangani, L., Darwish, M., 2015. The finite volume method, in: The finite volume method in computa-tional fluid dynamics: An advanced introduction with Open-FOAM ® and Matlab. Springer, pp. 103–135. Raissi, M., Perdikaris, P., Karniadakis, G.E., 2019. Physics-informed neural networks: A deep learning framework for solving forward and inverse problems involving nonlinear partial di ff erential equations. Journal of Computational physics 378, 686–707. Rao, C., Sun, H., Liu, Y., 2020. Physics-informed deep learning for incompressible laminar flows. Theoretical and Applied Mechanics Letters 10, 207–212. Reddy, J.N., 1993. An introduction to the finite element method. New York 27. Sanchez-Gonzalez, A., Godwin, J., Pfa ff , T., Ying, R., Leskovec, J., Battaglia, P., 2020. Learning to simulate com-plex physics with graph networks, in: International confer-ence on machine learning, PMLR. pp. 8459–8468. Temam, R., 2024. Navier–Stokes equations: theory and numer-ical analysis. volume 343. American Mathematical Society. Thuerey, N., Weißenow, K., Prantl, L., Hu, X., 2020. Deep learning methods for reynolds-averaged navier–stokes simu-lations of airfoil flows. AIAA journal 58, 25–36. Vyas, N., Morwani, D., Zhao, R., Kwun, M., Shapira, I., Brand-fonbrener, D., Janson, L., Kakade, S., 2024. Soap: Im-proving and stabilizing shampoo using adam. arXiv preprint arXiv:2409.11321 . Wang, S., Deng, X., Wang, G., Yang, X., 2020. Blending the eddy-viscosity and reynolds-stress models using uniform high-order discretization. AIAA Journal 58, 5361–5378. Wang, S., Dong, Y., Deng, X., Wang, G., Wang, J., 2018. High-order simulation of aeronautical separated flows with a reynold stress model. Journal of Aircraft 55, 1177–1190. Wang, Z., Meng, X., Jiang, X., Xiang, H., Karniadakis, G.E., 2023. Solution multiplicity and e ff ects of data and eddy viscosity on navier-stokes solutions inferred by physics-informed neural networks. arXiv preprint arXiv:2309.06010 .ZENG, J., ZHANG, J., 2025. Application of computational fluid dynamics in aero-engine development. Gas Turbine Ex-periment and Research 38, 58–72. Zhu, C., Byrd, R.H., Lu, P., Nocedal, J., 1997. Algorithm 778: L-bfgs-b: Fortran subroutines for large-scale bound-constrained optimization. ACM Transactions on mathemati-cal software (TOMS) 23, 550–560. Zou, Y., Li, T., Lu, L., Wang, J., Zou, S., Zhang, L., Deng, X., 2024. Finite-di ff erence-informed graph network for solving steady-state incompressible flows on block-structured grids. Physics of Fluids 36. 22

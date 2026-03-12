@@ -1,0 +1,423 @@
+Title: Adaptive Vision-Based Control of Redundant Robots with Null-Space Interaction for Human-Robot Collaboration
+
+URL Source: https://arxiv.org/pdf/2603.08089v1
+
+Published Time: Tue, 10 Mar 2026 01:55:50 GMT
+
+Number of Pages: 7
+
+Markdown Content:
+# Adaptive Vision-Based Control of Redundant Robots with Null-Space Interaction for Human-Robot Collaboration 
+
+Xiangjie Yan, Chen Chen, and Xiang Li 
+
+Abstract — Human-robot collaboration aims to extend human ability through cooperation with robots. This technology is cur-rently helping people with physical disabilities, has transformed the manufacturing process of companies, improved surgical performance, and will likely revolutionize the daily lives of everyone in the future. Being able to enhance the performance of both sides, such that human-robot collaboration outperforms a single robot/human, remains an open issue. For safer and more effective collaboration, a new control scheme has been proposed for redundant robots in this paper, consisting of an adaptive vision-based control term in task space and an interactive control term in null space. Such a formulation allows the robot to autonomously carry out tasks in an unknown environment without prior calibration while also interacting with humans to deal with unforeseen changes (e.g., potential collision, temporary needs) under the redundant configuration. The decoupling between task space and null space helps to explore the collaboration safely and effectively without affecting the main task of the robot end-effector. The stability of the closed-loop system has been rigorously proved with Lyapunov methods, and both the convergence of the position error in task space and that of the damping model in null space are guaranteed. The experimental results of a robot manipulator guided with the technology of augmented reality (AR) are presented to illustrate the performance of the control scheme. 
+
+I. I NTRODUCTION 
+
+An increasing amount of attention has been given to human-robot collaboration, which combines human cognitive skills, dexterity, and flexibility with robots’ advantage to complement tasks requiring high precision, high speed, high repetition and the response to unforeseen changes. Several applications of human-robot collaboration can be found in space/deep-sea exploration [1], [2], surgical/rehabilitation scenarios [3], [4] and the manufacturing industry [5]. Re-cently, a practical application comes in the form of a nasal swab robot, which can assist with diagnosing COVID-19 [6]. Human-robot collaboration focuses on effectively combin-ing the contribution of both humans and robots. A straight-forward approach to human-robot collaboration would be to suspend the current main task of the robot end-effector, and then force it to follow human guidance, and finally switch it back to implement the main task automatically after that [7], [8]. To guarantee efficiency, considerable works have also been done to establish the framework where both human and robot work simultaneously, through direct contact, indirect contact (mediated by a third object), and teleoperation [9], 
+
+> X. Yan, C. Chen, and X. Li are with Department of Automation, Tsinghua University. This work was supported in part by the Science and Technology Innovation 2030-Key Project under Grant 2021ZD0201404, in part by Beijing National Research Center for Information Science and Technology, and in part by the National Natural Science Foundation of China under Grant U21A20517. Corresponding author: Xiang Li (xiangli@tsinghua.edu.cn)
+
+[10]. A direct-contact formulation is presented in [11], where a null-space impedance controller with observers is proposed for redundant robots, which maintains the compliance of the robot’s body during physical contact with humans or its surrounding environment. Collaboration through indirect contact can be found in various tasks, such as collaboratively carrying a table through a door [12], polishing [13], and manipulating a large object [14], where the robot continu-ously adjusts its role to suit the human motion or intention. One example of teleoperated collaboration is surgery [15], where the surgeon is dominant in controlling the position of the robot’s end-effector, while the robot autonomously varies the end-effector’s orientation according to the task and environment. In the aforementioned works, the role division is commonly designed beforehand, in the sense that less flexibility may be provided to deal with the unforeseen changes during the task; for example, a suddenly appearing obstacle which may crash into the robot. In such scenarios, the role-division may not be able to respond effectively or even fail. Hence, a more dynamic formulation that allows for human intervention at any time is needed. For a robot working with humans in an uncalibrated environment (e.g., surgical environment, cluttered industrial workshop), the robot control scheme must be able to deal with various uncertainties. Much progress has been achieved in the robust/adaptive control of robot manipulators. To overcome the problem of uncertain kinematics, Cheah et al. proposed the adaptive Jacobian robot controller with the online estimation of both the kinematic and dynamic parameters [16]. Liu et al. proposed an uncalibrated vision-based control in eye-to-hand configuration where the depth information was unknown [17]. Liang et al. extended that to a unified adaptive method for both eye-in-hand and eye-to-hand configuration [18]. An adaptive task space controller without measuring task space or joint-space velocity is introduced in [19]. However, the aforementioned control methods are designed for isolated robots that do not interact with humans. Human participation is likely to disturb the adaptation of unknown parameters and hence deteriorate the control performance. Note that most existing frameworks for human-robot col-laboration commonly focus on the task of robot end-effector by shaping its position or trajectory. However for some manipulation tasks, especially in an uncalibrated environ-ment, the robot’s body should also be controlled to suit the unstructured surface or cramped space (e.g., a shipwreck salvage or surgical environment), or to avoid the collision of unforeseen obstacles. In these scenarios, the robot may not 
+
+> arXiv:2603.08089v1 [cs.RO] 9 Mar 2026
+
+be able to respond promptly or perceive it due to having a limited sensing zone, and hence utilizing human knowledge or experience to handle such issues would be an effective solution. In an attempt to fulfill this requirement, this paper presents a new adaptive vision-based control scheme for redundant robots, where the redundant configuration is explored to achieve a safer and more efficient human-robot collaboration. In order to guarantee safety, a damping model is formulated in the null space of the robot end-effector to regulate the dynamic relationship between human effort and the robot’s joint velocity. Such a formulation allows the human to get involved at any time to deal with unforeseen changes without affecting the main task of the robot end-effector, which then guarantees efficiency. A series of online adaption laws are also designed to deal with unknown parameters in the vision-based control system, such that the convergence of task error to zero is achieved in the presence of uncalibrated cameras. The stability of the closed-loop system, in both task space and null space, is rigorously proved. Experimental results on an AR-guided robot manipulator are presented to validate the performance of the proposed controller in different scenarios. II. P RELIMINARIES 
+
+A. Null Space of Redundant Robot 
+
+The forward kinematic relationship for a robot manipulator can be described as 
+
+r = h(q), (1) where r ∈ ℜ m denotes the feature’s position in Cartesian space (e.g., robot end-effector), q ∈ ℜ n is the vector of joint angles, and h(·)∈ℜ n → ℜ m denotes the function of forward kinematics. Next, the relationship between the velocity of the feature in Cartesian space and the joint-space velocity is [20] 
+
+˙r = J(q) ˙ q, (2) where J(·) ∈ ℜ m×n is the Jacobian matrix from joint space to Cartesian space. Consider a redundant robot where n > m . The pseudo-inverse of the Jacobian matrix is given as 
+
+J+(q) △
+
+= JT (q)( J(q)JT (q)) −1 ∈ ℜ n×m, (3) such that J(q)J+(q)= Im, where Im ∈ ℜ m×m is an identity matrix. This holds as long as J(q) is nonsingular. Now, the null-space matrix can be introduced as [11] 
+
+N (q) △
+
+= In − J+(q)J(q) ∈ ℜ n×n, (4) where In ∈ ℜ n×n also represents an identity matrix. Note that J(q)N (q) = 0, N (q)J+(q) = 0, and N 2(q) = N (q).
+
+B. Vision Space and Camera Model 
+
+This paper considers a vision-based robot manipulator, where the manipulation task is specified in vision space. Specifically, the feature’s velocity in vision space can be related to the velocity of robot end-effector in Cartesian space, under an eye-to-hand configuration as 
+
+˙x = 1 
+
+> z(q)
+
+Js(r) ˙ r, (5) where x ∈ ℜ 2 is the feature’s position in vision space (i.e., the pixel coordinate), Js(r) ∈ ℜ 2×m is the image Jacobian matrix, and z(q) is a scalar, representing the depth of the feature with respect to the focal plane, depending on the joint configuration. Note that (5) can be represented as 
+
+z(q) ˙ x = Js(r) ˙ r, (6) where both sides can be parameterized respectively as [20] 
+
+z(q) ˙ x = Yz ( ˙ x, q)θz , (7) 
+
+Js(r) ˙ r = Yk( ˙ r, r)θk. (8) The Yz (·) ∈ ℜ 2×nz , Yk(·) ∈ ℜ 2×nk are regressor matrices. 
+
+θz ∈ ℜ nz is the vector of parameters for the depth. θk ∈ ℜ nk
+
+is the vector of intrinsic and extrinsic parameters of the camera. nz and nk denote the dimension. Note that the actual values of θk and θz are unknown if the camera is uncalibrated. 
+
+Problem Statement : Consider the kinematic control problem of a redundant robot, where the control input is executed on the joint velocity as 
+
+˙q = u, (9) 
+
+where u ∈ ℜ n denotes the input. The objective is to design the input to achieve both the main task in vision space and the interaction task in null space. 
+
+III. V ISION -B ASED CONTROL WITH NULL -S PACE INTERACTION 
+
+In this section, an adaptive vision-based controller with null-space interaction is proposed, and its structure is illus-trated in Fig. 1. In vision space, the robot end-effector is controlled to move to the desired position in the presence of an uncalibrated camera. In null space, the redundant joints are controlled to suit the human intention under the desired damping model, such that humans can get involved in dealing with unforeseen changes during the manipulation. 
+
+A. Controller Development 
+
+First, the control objective in sensory space is to ensure the convergence of x → xd where xd ∈ ℜ 2 is the desired position in vision space, specifying the main task. When the robot is working in an uncalibrated environ-ment, the exact information about the camera model is usually unknown (e.g., the unknown depth information). While calibration techniques may be implemented to obtain the knowledge of the model, identifying or solving param-eters requires effort. Even after considerable works on the Fig. 1. Block diagram of the proposed control scheme. In the presence of an uncalibrated camera, the exact information about the image Jacobian matrix is unknown and denoted as ˆJs(r). In vision space, the robot end-effector is controlled to move to the desired position, that is, x → xd;In null space, the redundant joints are controlled to suit human intention under the desired damping model, that is, cd ˙q = d, where cd is a positive constant and d denotes the control efforts from a human. 
+
+modeling, some uncertainty may still exist, affecting the stability of the control system. Moreover, calibration must be repeated when the robotic system is migrated to similar scenarios. The aforementioned have motivated us to consider the uncalibrated camera as a general situation in this paper. In the presence of the uncalibrated camera, the unknown depth and image Jacobian matrix are represented as ˆz(q) and 
+
+ˆJs(r), respectively. From (7) and (8) it is obtained that 
+
+ˆz(q) ˙ x = Yz ( ˙ x, q) ˆθz , (10) 
+
+ˆJs(r) ˙ r = Yk( ˙ r, r) ˆθk, (11) where ˆθz and ˆθk denote the estimates of θz and θk,respectively. Now, the vision-space control term is proposed as 
+
+uT = −ˆz(q)J+(q) ˆJ+ 
+
+> s
+
+(r)Kp(x−xd), (12) where Kp ∈ ℜ 2×2 represents the control gain which is a diagonal and positive-definite matrix, ˆJ+ 
+
+> s
+
+(r) is the pseudo-inverse of ˆJs(r). In the vision-space control term (12), the uncertain parameters of depth and image Jacobian matrix in (12) are updated by the following adaptation laws 
+
+˙ˆθz = −ˆz−1(q)Lz Y Tz ( ˙ x, q)( x − xd), (13) 
+
+˙ˆθk = ˆ z−1(q)LkY Tk ( ˙ r, r)( x − xd), (14) where Lz ∈ℜ nz ×nz , Lk ∈ℜ nk ×nk are diagonal and positive-definite, which govern the convergence of the estimated parameters. The updating laws in (13) and (14) are driven by the vision-space error x−xd, which is always activated until the end-effector reaches the desired position, i.e., x → xd.Next, the objective of null-space control is to achieve the desired damping model as 
+
+N (q)( cd ˙q − d) = 0, (15) where cd is a positive constant which denotes the desired damping factor, which is positive, and d specifies the human intention. The model (15) damps the redundant joints, and hence makes them compliant to the input d. Note that the damping parameter can be adjusted according to the specific task. Now, the null-space interactive control term can be pro-posed as 
+
+uN = N (q)( c−1 
+
+> d
+
+d). (16) Note that the vector d defines a general descriptor for human control efforts, which can be specified in different forms (see Fig. 2). For example, it represents the interaction force or torque when the human directly pushes or pulls the robot; it can be the command sent from a joystick or AR device, where the human is involved in a teleoperated way. 
+
+Remark 1: The key novelty of the proposed null-space interactive control is to make the redundant joints passive and hence allow the human to exert additional control efforts for collaboration. As shown in Fig. 2, the control efforts from humans shapes the redundant joints without affecting the main task of the end-effector. This is useful when the overall body may need to be controlled to avoid dynamic obstacles or suit the environment.  
+
+> Fig. 2. The human can input via various interfaces, e.g., head-mounted display, haptic device, or tactile sensor, to shape the redundant configuration without affecting the robot end-effector.
+
+B. Stability Analysis 
+
+The overall control input is the summation of both control terms, that is, 
+
+u = uT + uN . (17) Then, substituting (17) into (9) yields 
+
+˙q = −ˆz(q)J+(q) ˆJ+ 
+
+> s
+
+(r)Kp(x − xd)+N (q)( c−1 
+
+> d
+
+d). (18) Multiplying both sides of (18) with J(q), the closed-loop equation in Cartesian space is obtained as 
+
+˙r = −ˆz(q) ˆJ+ 
+
+> s
+
+(r)Kp(x−xd). (19) Multiplying both sides of (18) with N (q) and using the property of N 2(q) = N (q), the closed-loop equation in null space is obtained as 
+
+N (q) ˙ q = N (q)( c−1 
+
+> d
+
+d), (20) which clearly shows the realization of the desired damping model (15). Next, multiplying both sizes of (19) with ˆz−1(q) ˆJs(r), it is obtained that 
+
+ˆz−1(q) ˆJs(r) ˙ r = −Kp(x−xd). (21) Note that 
+
+ˆz−1(q) ˆJs(r) ˙ r = ˆ z−1(q) ˆJs(r) ˙ r − ˆz−1(q)z(q) ˙ x
+
++ˆ z−1(q)z(q) ˙ x − ˙x + ˙ x
+
+= ˆ z−1(q)[ ˆJs(r) ˙ r − z(q) ˙ x]+ˆ z−1(q)[ z(q) ˙ x − ˆz(q) ˙ x] + ˙ x, (22) By referring to (6), (7), and (8), the above equation can be written as 
+
+ˆz−1(q)[ ˆJs(r) ˙ r − z(q) ˙ x]+ˆ z−1(q)[ z(q) ˙ x − ˆz(q) ˙ x] + ˙ x
+
+= −ˆz−1(q)[ Js(r) ˙ r − ˆJs(r) ˙ r]+ˆ z−1(q)[ z(q) ˙ x − ˆz(q) ˙ x] + ˙ x
+
+= ˙ x − ˆz−1(q)[ Yk( ˙ r, r)∆ θk − Yz ( ˙ x, q)∆ θz ], (23) where ∆θk = θk − ˆθk and ∆θz = θz − ˆθz .Substituting (23) into (19), we have 
+
+˙x = ˆ z−1(q)[ Yk( ˙ r, r)∆ θk − Yz ( ˙ x, q)∆ θz ]
+
+−Kp(x−xd). (24) We are now in the position to state the following theorem. 
+
+Theorem : The proposed adaptive control scheme described by (12), (13), (14), (16), and (17) ensures the convergence of the position error in vision space to zero and also the realization of the desired damping model in null space, in the presence of the uncalibrated camera. Proof: To prove the stability, a Lyapunov candidate is proposed as 
+
+V = 12 (x − xd)T (x − xd) + 12 ∆θTk L−1 
+
+> k
+
+∆θk
+
++ 12 ∆θTz L−1 
+
+> z
+
+∆θz . (25) Differentiating (25) with respect to time yields 
+
+˙V = ( x − xd)T ˙x − ∆θTk L−1
+
+> k
+
+˙ˆθk − ∆θTz L−1
+
+> z
+
+˙ˆθz , (26) where ˙xd ≡ 0. Then, substituting (24) into (26) yields 
+
+˙V = ( x − xd)T {− Kp(x−xd) (27) 
+
++ˆ z−1(q)[ Yk( ˙ r, r)∆ θk − Yz ( ˙ x, q)∆ θz ]}−∆θTk L−1
+
+> k
+
+˙ˆθk − ∆θTz L−1
+
+> z
+
+˙ˆθz . (28) Substituting the update laws (13) and (14) into the above equation yields 
+
+˙V = −(x − xd)T Kp(x − xd) ≤ 0. (29) Since V > 0 and ˙V ≤ 0, V is bounded. The boundedness of V ensures the boundedness of x − xd, ∆θz , and ∆θk.Then, from (19), it is derived that ˙r is bounded, indicating that ˙x is also bounded from (5). Hence, x − xd is uniformly  
+
+> (a)
+> (b) Fig. 3. (a) Experimental setup of an AR-guided robot manipulator (b) A snapshot of the human-robot interface deployed on HoloLens 2. The sliders were placed on the left side, and the virtual manipulator model was on the right side, overlapped with the real manipulator. The human operator was pointing at joint 3 and giving a sign of moving up. The virtual manipulator model could also be placed somewhere else according to the situations.
+
+continuous. It can be derived from (29) that (x − xd) ∈
+
+L2(0 , ∞) (i.e., L2 boundedness). Then, according to [21], [22], x − xd → 0, that is, x → xd as t → ∞ . As analyzed previously, (20) has guaranteed the realization of the desired damping model. Therefore, both the tasks in the sensory space and null space are achieved. IV. E XPERIMENT 
+
+Experiments were carried out to validate the performance of the proposed method on an AR-guided robot manipulator, as shown in Fig. 3(a). The overall system consisted of four modules: (i) the algorithm ran on Robot Operating System (ROS) with Ubuntu 18.04 LTS, (ii) the 6-degrees-of-freedom UR5 robot, whose end-effector is overlaid with an ArUco marker, (iii) a Basler ace acA1440-220uc camera with 
+
+1440 × 1080 resolution, fixed in the workspace of the robot but not calibrated, (iv) the human-robot interface deployed on HoloLens 2, a mixed reality headset developed by Microsoft. 
+
+A. Experimental Setup 
+
+The ArUco marker was installed on the end-effector (i.e., the feature point position in the end-effector frame 
+
+> e
+
+r = [0 , 0, 0] T ) and set as the task feature, whose position in Cartesian space was captured by the camera and then specified in vision space. That is, the image Jacobian matrix 
+
+ˆJs(r) in (5) was a 2 × 3 matrix in our experiments. Note that the camera’s depth was unknown and dependent on the specific joint configuration of the robot. It was assumed that the camera was not calibrated, and its model was initialized with some random values. The actual value can be obtained with standard calibration techniques, which was treated as the ground truth for evaluation. (a) (b) (c) (d) Fig. 4. Snapshots of task 1. The manipulator was controlled to move to the desired point in vision space, while the operator exerted additional control efforts to make another human subject more comfortable via the AR interface. (a) t = 0 .0s : The end-effector started at the lower-right corner of the camera frame, and would move to the desired point at the center in 1.6s . (b) t = 6 .0s : The operator began to drag sliders corresponding to joint 2 and joint 3 to change the manipulator’s configuration because another human subject entered the workspace and stretched his body in an uncomfortable pose to fetch tools. (c) t = 20 .1s : The manipulator adjusted its pose according to the command, while the position of the end-effector in vision space remained the same. Meanwhile, it enabled the human subject to have a safer and more comfortable workspace. (d) t = 30 .3s : After the subject left, the robot’s joint moved back to its original position according to the operator’s command. 0 10 20 30    
+
+> time (s)
+> 0
+> 100
+> 200
+> 300
+> error (pixel)
+> x
+> y
+> 010 20 30
+> time (s)
+> 0.0
+> 0.2
+> 0.4
+> input (rad/s)
+> 1
+> 2
+> 3
+> 4
+> 5
+> 6
+
+(a) 700 800 900 1000  
+
+> x (pixel)
+> 400
+> 450
+> 500
+> 550
+> 600
+> 650
+> 700
+> 750
+> 800
+> y (pixel)
+> actual
+> target
+
+(b) Fig. 5. Results of task 1: (a) top: The position errors of the end-effector in vision space; bottom: The human’s control efforts applied to the joints. (b) The trajectory of the end-effector in vision space. 0 1 2 3 4 5 6      
+
+> time (s)
+> 0
+> 100
+> 200
+> 300
+> error (pixel)
+> x
+> y
+> 0123456
+> time (s)
+> 0
+> 100
+> 200
+> 300
+> error (pixel)
+> x
+> y
+
+(a) 0 10 20 30 40  
+
+> time (s)
+> 0.20
+> 0.25
+> 0.30
+> 0.35
+> 0.40
+> 0.45
+> 0.50
+> 0.55
+> depth (m)
+> estimated depth
+> actual depth
+
+(b) Fig. 6. Results of ablation study: (a) The position errors of the end-effector in vision space during the first 6.5s, without adaptation law (top) and with adaptation law (bottom). (b) The estimated and actual depth in the whole process of task 1. 
+
+The human-robot interface contained two key components (see Fig. 3(b)), a series of sliders and a full-scale virtual manipulator. The sliders were used to define the value of the human intention d, and the virtual manipulator was used to visualize the current configuration of the real manipulator. Both of them could be placed anywhere inside the frame, according to the operator’s preference. When the virtual manipulator was overlapped with the real manipulator, the operator could use hand rays and air tap gestures to manipulate a certain joint; otherwise, the operator could move the virtual manipulator closer and then "grab" a certain joint. Under such framework, the human can input the control efforts in two ways, that is, - stacking the value of sliders, which was directly con-verted to the vector d in (15); - moving a certain joint of the virtual manipulator in Cartesian space, which was represented as a vector. The vector was proportional to the command velocity. The command velocity was then projected back the joint space with the pseudo-inverse of the Jacobian matrix from base to that exact joint and represented as d by the end. 
+
+B. Experimental Results 
+
+In the first experiment, the main task was to move the end-effector to the desired position in vision space. During the task, a human subject entered the robot’s workspace and intended to fetch tools by stretching his body over the robot in an awkward pose. Seeing this inconvenience, the operator dragged the sliders corresponding to joint 2 and joint 3 via the interface. Hence, the manipulator changed its configu-ration, improving the co-existed human’s experience. The whole process was shown in Fig. 4, where the positioning task of the robot end-effector was not affected or suspended throughout the interaction. 
+
+TABLE I CONTROL PARAMETERS 
+
+Task 1 Task 2 
+
+Kp 2 × I2 5 × I2
+
+cd 1 0.5
+
+Lz 0.001 × I4 0.001 × I4
+
+Lk 0.001 × I15 0.001 × I15 
+
+Target (720 , 540) pixel x = 720 + 100 cos π 
+
+> 15
+
+(t − t0) pixel ,
+
+y = 540 + 100 sin π 
+
+> 15
+
+(t − t0) pixel 
+
+The control parameters in (12), (13), (14), and (16) were set according to Table I, where I2 ∈ ℜ 2×2 is an identity ma-trix. The initial values of ˆθz and ˆθk were chosen randomly, and the control frequency was set as 30 Hz . The experimental results are shown in Fig. 5, in which the manipulator started to move to the desired position at t = 0 .0 s . It was seen in Fig. 5(a) that the position error in vision space was converged to zero in 1.6 seconds. Then the operator began to input the control efforts at t ≈ 6.0 s (see Fig. 5(a)), and the null-space control term was activated to smoothly react to it to drive the motion of redundant joints while maintaining the positioning task of the robot end-effector. The task error at (a) (b) (c) (d) (e) Fig. 7. Snapshots of task 2. The manipulator end-effector was performing a path-following task in vision space while the operator was guiding the manipulator body through the AR interface to avoid the collision. (a) t = 0 .0s : Initial state. (b) t = 5 .4s : The end-effector began to follow the circular path. (c) t = 15 .8s : A human subject placed a toolbox on the workbench, which raised the safety issue. (d) t = 31 .1s : The manipulator adjusted its pose according to the operator’s inputs, while the end-effector’s position in vision space remained unaffected. (e) t = 57 .3s : Guided by the operator, the manipulator resumed its original pose after the toolbox was removed. 0 25 50 
+
+> time (s)
+> 80
+> 90
+> 100
+> 110
+> 120
+> angle (degree)
+
+(a) 0 25 50  
+
+> time (s)
+> −190
+> −180
+> −170
+> −160
+> −150
+> angle (degree)
+
+(b) 0 25 50  
+
+> time (s)
+> −10
+> 0
+> 10
+> 20
+> 30
+> angle (degree)
+
+(c) 0 25 50  
+
+> time (s)
+> −20
+> −10
+> 0
+> 10
+> 20
+> angle (degree)
+
+(d) 0 25 50  
+
+> time (s)
+> 50
+> 60
+> 70
+> 80
+> 90
+> angle (degree)
+
+(e) 0 25 50  
+
+> time (s)
+> 130
+> 140
+> 150
+> 160
+> 170
+> angle (degree)
+
+(f) Fig. 8. Joint motions in task 2. (a) Joint 1; (b) Joint 2; (c) Joint 3; (d) Joint 4; (e) Joint 5; (f) Joint 6; 0 10 20 30 40 50 60       
+
+> time (s)
+> 0
+> 50
+> 100
+> error (pixel)
+> x
+> y
+> 010 20 30 40 50 60
+> time (s)
+> 0.0
+> 0.5
+> input (rad/s)
+> 1
+> 2
+> 3
+> 4
+> 5
+> 6
+
+(a) 600 650 700 750 800 850 900 950  
+
+> x (pixel)
+> 350
+> 400
+> 450
+> 500
+> 550
+> 600
+> 650
+> 700
+> y (pixel)
+> actual
+> desired
+
+(b) Fig. 9. Results of task 2: (a) top: the position errors of the end-effector in vision space; bottom: the human intention applied to the joints (b) The trajectory of the end-effector in vision space. 
+
+steady state was less than 27 pixels, proving the realization of the positioning task. An ablation study was also conducted to show the ef-fectiveness of the adaptation of unknown parameters. A controller without adaptation was implemented by setting 
+
+Lz , Lk as zeros, where other parameters remained the same as Table I. As shown in Fig. 6(a), the convergence without adaptation (the upper one) is slower than the proposed controller (the lower one). Fig. 6(b) illustrates the estimated and actual depth in task 1, where the depth is updated and becomes closer to the actual value, and the adaptation stops when the position error reduces to zero. In the second experiment, the manipulator was controlled to track a circular path in vision space. The moving velocity of the path was minimal, such that the moving target can be treated as a series of setpoints. During the task, a toolbox was placed around the base of the manipulator to simulate the presence of unforeseen changes. Such change may result in the collision, but it was outside the FOV of the camera and hence not detectable by the robot itself. The operator got involved in handling it by moving joint 3 away from the box. The whole process is shown in Fig. 7. In this task, the virtual robot manipulator was overlapped with the real manipulator, and hence the operator applied control efforts in an air tapping manner. The desired path and the control parameters can be found in Table I. As shown in Fig. 9, the position error of the end-effector was mainly induced from the periodic path-following in the main task and independent of human involvement. This was because the null-space interactive control term responded and isolated its influence to the main task. The motion of the joint angles is shown in Fig. 8, where joint 2 to joint 4 moved to respond to the operator’s command without affecting the task of the robot end-effector. The experimental results proved the feasibility and the effectiveness of the proposed control scheme in those scenarios where both the uncalibrated relationship and dynamic changes arose. The results can also be found in the video submission. V. C ONCLUSIONS 
+
+In this paper, an adaptive vision-based controller with null-space interaction has been proposed for redundant robots, which guarantees both the positioning accuracy in sensory space and compliance in null space. Such a formulation allows humans to get involved in dealing with unforeseen changes without affecting the task of the robot end-effector. Online adaptation laws have been proposed to deal with unknown camera models, laying the foundation for robotic manipulation applications in uncalibrated environments. The stability of the closed-loop system has been rigorously proved with Lyapunov methods, and the convergence of both the position error in vision space and damping model in null space is theoretically guaranteed. Experiments have been carried out to illustrate the performance of the proposed control scheme in different scenarios. Future works will be devoted to the extension to dynamics-based control tasks and validation on a 7-degrees-of-freedom force-control enabled industrial manipulator. REFERENCES [1] A. Douglas and Y. Xu, “Real-time shared control system for space telerobotics,” Journal of Intelligent and Robotic Systems , vol. 13, no. 3, pp. 247–262, 1995. [2] G. Brantner and O. Khatib, “Controlling ocean one: Human–robot collaboration for deep-sea manipulation,” Journal of Field Robotics ,vol. 38, no. 1, pp. 28–51, 2021. [3] A. Amarillo, E. Sanchez, J. Caceres, and J. Oñativia, “Collaborative human–robot interaction interface: Development for a spinal surgery robotic assistant,” International Journal of Social Robotics , pp. 1–12, 2021. [4] J. Casas, N. Cespedes, M. Múnera, and C. A. Cifuentes, “Human-robot interaction for rehabilitation scenarios,” in Control Systems Design of Bio-Robotics and Bio-mechatronics with Advanced Applications ,pp. 1–31, Elsevier, 2020. [5] I. Aaltonen, T. Salmi, and I. Marstio, “Refining levels of collaboration to support the design and evaluation of human-robot interaction in the manufacturing industry,” Procedia CIRP , vol. 72, pp. 93–98, 2018. [6] S. Wang, K. Wang, R. Tang, J. Qiao, H. Liu, and Z.-G. Hou, “Design of a low-cost miniature robot to assist the covid-19 nasopharyngeal swab sampling,” IEEE Transactions on Medical Robotics and Bionics ,vol. 3, no. 1, pp. 289–293, 2020. [7] X. Li, G. Chi, S. Vidas, and C. C. Cheah, “Human-guided robotic comanipulation: Two illustrative scenarios,” IEEE Transactions on Control Systems Technology , vol. 24, no. 5, pp. 1751–1763, 2016. [8] S. Lyu and C. C. Cheah, “Human–robot interaction control based on a general energy shaping method,” IEEE Transactions on Control Systems Technology , vol. 28, no. 6, pp. 2445–2460, 2019. [9] A. De Santis, B. Siciliano, A. De Luca, and A. Bicchi, “An atlas of physical human–robot interaction,” Mechanism and Machine Theory ,vol. 43, no. 3, pp. 253–270, 2008. [10] D. P. Losey, C. G. McDonald, E. Battaglia, and M. K. O’Malley, “A review of intent detection, arbitration, and communication aspects of shared control for physical human–robot interaction,” Applied Mechanics Reviews , vol. 70, no. 1, 2018. [11] H. Sadeghian, L. Villani, M. Keshmiri, and B. Siciliano, “Task-space control of robot manipulators with null-space compliance,” IEEE Transactions on Robotics , vol. 30, no. 2, pp. 493–506, 2013. [12] S. Nikolaidis, D. Hsu, and S. Srinivasa, “Human-robot mutual adapta-tion in collaborative tasks: Models and experiments,” The International Journal of Robotics Research , vol. 36, no. 5-7, pp. 618–634, 2017. [13] L. Peternel, C. Fang, N. Tsagarakis, and A. Ajoudani, “Online human muscle force estimation for fatigue management in human-robot co-manipulation,” in 2018 IEEE/RSJ International Conference on Intel-ligent Robots and Systems (IROS) , pp. 1340–1346, IEEE, 2018. [14] T. Stouraitis, I. Chatzinikolaidis, M. Gienger, and S. Vijayakumar, “Online hybrid motion planning for dyadic collaborative manipulation via bilevel optimization,” IEEE Transactions on Robotics , vol. 36, no. 5, pp. 1452–1471, 2020. [15] H. Su, J. Sandoval, M. Makhdoomi, G. Ferrigno, and E. De Momi, “Safety-enhanced human-robot interaction control of redundant robot for teleoperated minimally invasive surgery,” in 2018 IEEE Interna-tional Conference on Robotics and Automation (ICRA) , pp. 6611– 6616, IEEE, 2018. [16] C.-C. Cheah, C. Liu, and J.-J. E. Slotine, “Adaptive tracking control for robots with unknown kinematic and dynamic properties,” The International Journal of Robotics Research , vol. 25, no. 3, pp. 283– 296, 2006. [17] Y.-H. Liu, H. Wang, C. Wang, and K. K. Lam, “Uncalibrated visual servoing of robots using a depth-independent interaction matrix,” IEEE Transactions on Robotics , vol. 22, no. 4, pp. 804–817, 2006. [18] X. Liang, H. Wang, Y.-H. Liu, W. Chen, and J. Zhao, “A unified design method for adaptive visual tracking control of robots with eye-in-hand/fixed camera configuration,” Automatica , vol. 59, pp. 97–105, 2015. [19] X. Liang, X. Huang, M. Wang, and X. Zeng, “Adaptive task-space tracking control of robots without task-space-and joint-space-velocity measurements,” IEEE Transactions on robotics , vol. 26, no. 4, pp. 733–742, 2010. [20] C. C. Cheah and X. Li, Task-space sensory feedback control of robot manipulators , vol. 73, pp. 79–86. Springer, 2015. [21] S. Arimoto, “Control theory of nonlinear mechanical systems,” APassivity-based and Circuit-theoretic Approach , 1996. [22] J.-J. E. Slotine, W. Li, et al. , Applied nonlinear control , vol. 199. Prentice hall Englewood Cliffs, NJ, 1991.
